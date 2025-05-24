@@ -16,7 +16,7 @@
       "name": "Tableau de bord",
       "short_name": "Dashboard",
       "description": "Accès rapide au tableau de bord principal",
-      "url": "/index.html",
+      "url": "/sensor.html",
       "icons": [{ "src": "icons/dashboard-192.png", "sizes": "192x192" }]
     },
     {
