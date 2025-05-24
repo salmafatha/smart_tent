@@ -506,7 +506,63 @@
             background: rgba(255,255,255,0.3);
         }
 
-        /* 📱 MOBILE SPECIFIC STYLES */
+        /* 🔔 LOADING STATES */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 🔔 NOTIFICATION STYLES */
+        .notification {
+            position: fixed;
+            bottom: calc(20px + var(--safe-area-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-green);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideUp 0.5s ease;
+            max-width: 90vw;
+        }
+
+        .notification.error {
+            background: var(--danger-red);
+        }
+
+        .notification.warning {
+            background: var(--warning-orange);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 📱 MOBILE RESPONSIVE */
         @media (max-width: 767px) {
             .mobile-dashboard {
                 padding: 0.5rem;
@@ -566,62 +622,6 @@
             .sensor-card {
                 background: #1B2E20;
             }
-        }
-
-        /* 🎯 LOADING STATES */
-        .loading {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-light);
-        }
-
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--bg-green);
-            border-top: 2px solid var(--primary-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* 🔔 NOTIFICATION STYLES */
-        .notification {
-            position: fixed;
-            bottom: calc(20px + var(--safe-area-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary-green);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideUp 0.5s ease;
-            max-width: 90vw;
-        }
-
-        .notification.error {
-            background: var(--danger-red);
-        }
-
-        .notification.warning {
-            background: var(--warning-orange);
-        }
-
-        @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
     </style>
 </head>
@@ -812,6 +812,11 @@
                         <div class="sensor-label">CPU Temp</div>
                     </div>
                     
+                    <div class="sensor-card" onclick="showSensorDetails('storage')">
+                        <div class="sensor-icon">💾</div>
+                        <div class="sensor-value" id="storage">-- GB</div>
+                        <div class="sensor-label">Stockage</div>
+                    </div>
                 </div>
                 
                 <div style="margin-top: 1rem; display: flex; gap: 0.8rem;">
@@ -867,15 +872,15 @@
     </div>
 
     <!-- Include API -->
-    <script src="js/api.js"></script>
+    <script src="api.js"></script>
     
     <script>
-        // 📱 SMART TENT COMPLETE MOBILE APP
+        // 📱 SMART TENT COMPLETE MOBILE APP WITH MONGODB INTEGRATION
         class SmartTentMobileApp {
             constructor() {
                 this.api = window.smartTentAPI;
                 this.updateInterval = null;
-                this.currentTent = 'tent_001';
+                this.currentTent = null;
                 this.isOnline = navigator.onLine;
                 this.dataUsage = 0;
                 
@@ -883,65 +888,91 @@
             }
 
             async init() {
-                console.log('📱 Initializing Smart Tent Mobile App...');
+                console.log('📱 Initializing Smart Tent Mobile App with MongoDB...');
                 
                 // Setup core functionality
-                this.setupTentSelector();
+                await this.setupTentSelector();
                 this.setupConnectionMonitoring();
                 this.setupDataUsageTracking();
                 this.setupCriticalAlerts();
                 
-                // Load initial data
-                await this.loadData();
-                
-                // Start auto-update
-                this.startAutoUpdate();
+                // Load initial data if device is selected
+                if (this.currentTent) {
+                    await this.loadData();
+                    this.startAutoUpdate();
+                }
                 
                 console.log('✅ Mobile app initialized');
             }
 
-            setupTentSelector() {
-                // Charger les appareils depuis l'index
-                const savedDevices = localStorage.getItem('smartTentDevices');
+            async setupTentSelector() {
                 const selector = document.getElementById('tentSelector');
                 
-                if (savedDevices) {
-                    const devices = JSON.parse(savedDevices);
+                try {
+                    // First, load devices from MongoDB backend
+                    const devices = await this.api.getDevices();
                     
                     if (devices.length === 0) {
-                        // Aucun appareil configuré - rediriger vers l'index
-                        selector.innerHTML = '<option value="">Aucune tente configurée</option>';
+                        // No devices found in database
+                        selector.innerHTML = '<option value="">Aucune tente trouvée</option>';
                         setTimeout(() => {
-                            alert('Aucune tente configurée. Redirection vers la page de configuration...');
+                            alert('Aucune tente trouvée dans la base de données. Veuillez vérifier votre backend.');
                             window.location.href = 'index.html';
                         }, 2000);
                         return;
                     }
                     
-                    // Remplir le dropdown avec les appareils configurés
+                    // Populate dropdown with devices from MongoDB
                     selector.innerHTML = devices.map(device => 
                         `<option value="${device.id}">🏕️ ${device.name}</option>`
                     ).join('');
                     
-                    // Sélectionner le premier appareil par défaut
-                    this.currentTent = devices[0].id;
-                    selector.value = this.currentTent;
+                    // Set current device
+                    const savedTent = localStorage.getItem('selectedTent');
+                    if (savedTent && devices.some(device => device.id === savedTent)) {
+                        this.currentTent = savedTent;
+                        selector.value = savedTent;
+                        this.api.setCurrentDevice(savedTent);
+                    } else if (devices.length > 0) {
+                        // Select first device if no saved device
+                        this.currentTent = devices[0].id;
+                        selector.value = this.currentTent;
+                        this.api.setCurrentDevice(this.currentTent);
+                        localStorage.setItem('selectedTent', this.currentTent);
+                    }
                     
-                } else {
-                    // Aucun appareil sauvegardé - rediriger vers l'index
-                    selector.innerHTML = '<option value="">Configurez vos appareils</option>';
-                    setTimeout(() => {
-                        alert('Veuillez d\'abord configurer vos appareils Smart Tent.');
-                        window.location.href = 'index.html';
-                    }, 2000);
-                    return;
-                }
-                
-                // Charger la tente sauvegardée si elle existe
-                const savedTent = localStorage.getItem('selectedTent');
-                if (savedTent && devices.some(device => device.id === savedTent)) {
-                    this.currentTent = savedTent;
-                    selector.value = savedTent;
+                } catch (error) {
+                    console.error('Failed to load devices from MongoDB:', error);
+                    
+                    // Fallback to localStorage devices (from index.html)
+                    const savedDevices = localStorage.getItem('smartTentDevices');
+                    if (savedDevices) {
+                        const devices = JSON.parse(savedDevices);
+                        
+                        if (devices.length === 0) {
+                            selector.innerHTML = '<option value="">Aucune tente configurée</option>';
+                            setTimeout(() => {
+                                alert('Aucune tente configurée. Redirection vers la page de configuration...');
+                                window.location.href = 'index.html';
+                            }, 2000);
+                            return;
+                        }
+                        
+                        selector.innerHTML = devices.map(device => 
+                            `<option value="${device.id}">🏕️ ${device.name}</option>`
+                        ).join('');
+                        
+                        this.currentTent = devices[0].id;
+                        selector.value = this.currentTent;
+                        this.api.setCurrentDevice(this.currentTent);
+                    } else {
+                        selector.innerHTML = '<option value="">Erreur de connexion</option>';
+                        setTimeout(() => {
+                            alert('Impossible de charger les appareils. Vérifiez votre connexion au backend.');
+                            window.location.href = 'index.html';
+                        }, 2000);
+                        return;
+                    }
                 }
                 
                 selector.addEventListener('change', async (e) => {
@@ -953,13 +984,20 @@
                 console.log(`🔄 Switching to tent: ${tentId}`);
                 
                 this.currentTent = tentId;
+                this.api.setCurrentDevice(tentId);
                 localStorage.setItem('selectedTent', tentId);
                 
                 // Show loading state
                 this.showLoading();
                 
+                // Stop current updates
+                this.stopAutoUpdate();
+                
                 // Load data for new tent
                 await this.loadData();
+                
+                // Restart auto-update
+                this.startAutoUpdate();
                 
                 this.showNotification(`Basculé vers ${tentId}`, 'success');
             }
@@ -968,7 +1006,7 @@
                 const updateConnectionStatus = () => {
                     const status = document.getElementById('connectionStatus');
                     
-                    if (navigator.onLine) {
+                    if (navigator.onLine && this.api.isOnline) {
                         status.className = 'status-indicator online';
                         status.innerHTML = '<div class="status-dot"></div>En ligne';
                         this.isOnline = true;
@@ -981,6 +1019,12 @@
 
                 window.addEventListener('online', updateConnectionStatus);
                 window.addEventListener('offline', updateConnectionStatus);
+                
+                // Listen to API connection events
+                this.api.addEventListener('connection', (data) => {
+                    this.isOnline = data.online;
+                    updateConnectionStatus();
+                });
             }
 
             setupDataUsageTracking() {
@@ -996,29 +1040,50 @@
 
             setupCriticalAlerts() {
                 // Check for critical alerts periodically
-                setInterval(() => {
-                    this.checkCriticalConditions();
+                setInterval(async () => {
+                    await this.checkCriticalConditions();
                 }, 5000);
             }
 
-            checkCriticalConditions() {
-                const gasValue = parseInt(document.getElementById('gasSensor').textContent);
-                const batteryValue = parseInt(document.getElementById('battery').textContent);
-                
-                // Gas alert
-                if (gasValue >= 300 && !isNaN(gasValue)) {
-                    this.showCriticalAlert(
-                        '⚠️ ALERTE GAZ!',
-                        `Niveau détecté: ${gasValue} ppm - Ventilez immédiatement`
+            async checkCriticalConditions() {
+                try {
+                    // Get recent alerts from MongoDB
+                    const alerts = await this.api.getAlerts(1); // Last 1 hour
+                    
+                    // Check for critical unacknowledged alerts
+                    const criticalAlerts = alerts.filter(alert => 
+                        alert.severity === 'critical' && !alert.acknowledged
                     );
-                }
-                
-                // Battery alert
-                if (batteryValue <= 10 && !isNaN(batteryValue)) {
-                    this.showCriticalAlert(
-                        '🔋 BATTERIE FAIBLE!',
-                        `Niveau batterie: ${batteryValue}% - Rechargez immédiatement`
-                    );
+                    
+                    if (criticalAlerts.length > 0) {
+                        const latestAlert = criticalAlerts[0];
+                        this.showCriticalAlert(
+                            `⚠️ ${latestAlert.type.toUpperCase()}!`,
+                            latestAlert.message
+                        );
+                    }
+                    
+                    // Also check current sensor values
+                    const gasValue = parseInt(document.getElementById('gasSensor').textContent);
+                    const batteryValue = parseInt(document.getElementById('battery').textContent);
+                    
+                    // Gas alert
+                    if (gasValue >= 300 && !isNaN(gasValue)) {
+                        this.showCriticalAlert(
+                            '⚠️ ALERTE GAZ!',
+                            `Niveau détecté: ${gasValue} ppm - Ventilez immédiatement`
+                        );
+                    }
+                    
+                    // Battery alert
+                    if (batteryValue <= 10 && !isNaN(batteryValue)) {
+                        this.showCriticalAlert(
+                            '🔋 BATTERIE FAIBLE!',
+                            `Niveau batterie: ${batteryValue}% - Rechargez immédiatement`
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error checking critical conditions:', error);
                 }
             }
 
@@ -1034,20 +1099,29 @@
             }
 
             async loadData() {
+                if (!this.currentTent) {
+                    console.warn('No tent selected for data loading');
+                    return;
+                }
+
                 try {
                     this.updateConnectionStatus(true);
                     
-                    const data = await this.api.getAllSensorData(this.currentTent);
+                    // Get real-time sensor data from MongoDB
+                    const data = await this.api.getAllSensorData();
                     
-                    if (data && data.length > 0) {
-                        this.updateSensorDisplays(data[0]);
+                    if (data && data.deviceId) {
+                        this.updateSensorDisplays(data);
                         this.updateLastSync();
+                        
+                        // Cache the data for offline use
+                        localStorage.setItem(`sensor-data-${this.currentTent}`, JSON.stringify(data));
                     } else {
                         this.showOfflineData();
                     }
                     
                 } catch (error) {
-                    console.error('❌ Failed to load data:', error);
+                    console.error('❌ Failed to load data from MongoDB:', error);
                     this.updateConnectionStatus(false);
                     this.showOfflineData();
                 }
@@ -1055,30 +1129,35 @@
 
             updateSensorDisplays(data) {
                 // Interior conditions
-                document.getElementById('tempInterior').textContent = data.sensors?.temperature_interior || '--°C';
-                document.getElementById('humidityInterior').textContent = data.sensors?.humidity_interior || '--%';
-                document.getElementById('gasSensor').textContent = data.sensors?.gas || '-- ppm';
-                document.getElementById('motionInterior').textContent = data.sensors?.motion_interior ? 'Détecté' : 'Aucun';
+                document.getElementById('tempInterior').textContent = `${data.interior.temperature}°C`;
+                document.getElementById('humidityInterior').textContent = `${data.interior.humidity}%`;
+                document.getElementById('gasSensor').textContent = `${data.interior.gasLevel} ppm`;
+                document.getElementById('motionInterior').textContent = data.interior.motion ? 'Détecté' : 'Aucun';
                 
                 // Exterior conditions
-                document.getElementById('tempExterior').textContent = data.sensors?.temperature_exterior || '--°C';
-                document.getElementById('humidityExterior').textContent = data.sensors?.humidity_exterior || '--%';
-                document.getElementById('windSpeed').textContent = data.sensors?.wind_speed || '-- km/h';
-                document.getElementById('motionExterior').textContent = data.sensors?.motion_exterior ? 'Détecté' : 'Aucun';
+                document.getElementById('tempExterior').textContent = `${data.exterior.temperature}°C`;
+                document.getElementById('humidityExterior').textContent = `${data.exterior.humidity}%`;
+                document.getElementById('windSpeed').textContent = `${data.exterior.windSpeed} km/h`;
+                document.getElementById('motionExterior').textContent = data.exterior.motion ? 'Détecté' : 'Aucun';
                 
                 // System status
-                document.getElementById('signal4g').textContent = data.system?.signal_4g || '-- %';
-                document.getElementById('battery').textContent = data.system?.battery || '-- %';
-                document.getElementById('cpuTemp').textContent = data.system?.cpu_temp || '--°C';
-                document.getElementById('storage').textContent = data.system?.storage || '-- GB';
+                document.getElementById('signal4g').textContent = `${data.system.signal4G}%`;
+                document.getElementById('battery').textContent = `${data.system.batteryLevel}%`;
+                document.getElementById('cpuTemp').textContent = `${data.system.deviceTemperature}°C`;
+                document.getElementById('storage').textContent = `${data.system.storage} GB`;
                 
                 // Update visual indicators
                 this.updateVisualIndicators(data);
+                
+                // Update camera feed if available
+                if (data.camera.hasImage && data.camera.imageData) {
+                    document.getElementById('cameraFeed').src = data.camera.imageData;
+                }
             }
 
             updateVisualIndicators(data) {
                 // Gas sensor bar
-                const gasValue = parseInt(data.sensors?.gas) || 0;
+                const gasValue = data.interior.gasLevel;
                 const gasBar = document.getElementById('gasSensorBar');
                 const gasPercentage = Math.min((gasValue / 1000) * 100, 100);
                 gasBar.style.width = `${gasPercentage}%`;
@@ -1092,7 +1171,7 @@
                 }
                 
                 // Battery indicator
-                const batteryValue = parseInt(data.system?.battery) || 0;
+                const batteryValue = data.system.batteryLevel;
                 const batteryBar = document.getElementById('battery-indicator');
                 batteryBar.style.width = `${batteryValue}%`;
                 
@@ -1105,7 +1184,7 @@
                 }
                 
                 // Signal bars
-                const signalValue = parseInt(data.system?.signal_4g) || 0;
+                const signalValue = data.system.signal4G;
                 const signalBars = document.querySelectorAll('#signal-bars .bar');
                 const activeBars = Math.ceil((signalValue / 100) * 4);
                 
@@ -1125,6 +1204,13 @@
                     const data = JSON.parse(cachedData);
                     this.updateSensorDisplays(data);
                     this.showNotification('Utilisation des données en cache', 'warning');
+                } else {
+                    // Show empty state
+                    document.querySelectorAll('.sensor-value').forEach(el => {
+                        if (!el.textContent.includes('--')) {
+                            el.textContent = '--';
+                        }
+                    });
                 }
             }
 
@@ -1154,11 +1240,21 @@
                     clearInterval(this.updateInterval);
                 }
                 
-                this.updateInterval = setInterval(() => {
-                    if (this.isOnline) {
-                        this.loadData();
+                this.updateInterval = setInterval(async () => {
+                    if (this.isOnline && this.currentTent) {
+                        await this.loadData();
                     }
                 }, 2000); // Update every 2 seconds when online
+                
+                console.log('🔄 Auto-update started for MongoDB integration');
+            }
+
+            stopAutoUpdate() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                    console.log('⏹️ Auto-update stopped');
+                }
             }
 
             showLoading() {
@@ -1182,7 +1278,7 @@
             }
         }
 
-        // 🎮 GLOBAL FUNCTIONS
+        // 🎮 GLOBAL FUNCTIONS FOR MONGODB INTEGRATION
         let mobileApp;
 
         function dismissCriticalAlert() {
@@ -1190,7 +1286,7 @@
         }
 
         function showSensorDetails(sensorType) {
-            // Show detailed sensor information in a modal or new page
+            // Show detailed sensor information
             console.log(`📊 Showing details for: ${sensorType}`);
             mobileApp.showNotification(`Détails pour ${sensorType}`, 'info');
         }
@@ -1198,9 +1294,22 @@
         async function takePhoto() {
             console.log('📸 Taking photo...');
             try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'take_photo', {});
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                await mobileApp.api.sendCommand('take_photo', {
+                    resolution: 'high',
+                    timestamp: new Date().toISOString()
+                });
+                
                 mobileApp.showNotification('Photo prise avec succès!', 'success');
+                
+                // Refresh data to get new photo
+                setTimeout(() => mobileApp.loadData(), 1000);
+                
             } catch (error) {
+                console.error('Failed to take photo:', error);
                 mobileApp.showNotification('Erreur lors de la prise de photo', 'error');
             }
         }
@@ -1211,8 +1320,15 @@
             const isActive = btn.textContent.includes('Arrêter');
             
             try {
-                const command = isActive ? 'stop_detection' : 'start_detection';
-                await mobileApp.api.sendCommand(mobileApp.currentTent, command, {});
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                const command = isActive ? 'stop_motion_detection' : 'start_motion_detection';
+                await mobileApp.api.sendCommand(command, {
+                    sensitivity: 'medium',
+                    zones: ['exterior']
+                });
                 
                 btn.textContent = isActive ? '👁️ Démarrer' : '👁️ Arrêter';
                 mobileApp.showNotification(
@@ -1220,6 +1336,7 @@
                     'success'
                 );
             } catch (error) {
+                console.error('Failed to toggle detection:', error);
                 mobileApp.showNotification('Erreur lors de la modification de la détection', 'error');
             }
         }
@@ -1230,8 +1347,15 @@
             const isRecording = btn.classList.contains('recording');
             
             try {
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
                 const command = isRecording ? 'stop_recording' : 'start_recording';
-                await mobileApp.api.sendCommand(mobileApp.currentTent, command, {});
+                await mobileApp.api.sendCommand(command, {
+                    duration: '300', // 5 minutes
+                    quality: 'medium'
+                });
                 
                 if (isRecording) {
                     btn.textContent = '🎥 Enregistrer';
@@ -1246,6 +1370,7 @@
                     'success'
                 );
             } catch (error) {
+                console.error('Failed to toggle recording:', error);
                 mobileApp.showNotification('Erreur lors de l\'enregistrement', 'error');
             }
         }
@@ -1265,42 +1390,71 @@
         async function activateComfortMode() {
             console.log('🌡️ Activating comfort mode...');
             try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'comfort_mode', {
-                    target_temp: 22,
-                    target_humidity: 50
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                await mobileApp.api.sendCommand('comfort_mode', {
+                    target_temperature: 22,
+                    target_humidity: 50,
+                    auto_adjust: true
                 });
+                
                 mobileApp.showNotification('Mode confort activé!', 'success');
             } catch (error) {
+                console.error('Failed to activate comfort mode:', error);
                 mobileApp.showNotification('Erreur lors de l\'activation du mode confort', 'error');
             }
         }
 
         async function refreshInteriorData() {
             console.log('🏠 Refreshing interior data...');
+            mobileApp.showLoading();
             await mobileApp.loadData();
         }
 
         async function refreshExteriorData() {
             console.log('🌍 Refreshing exterior data...');
+            mobileApp.showLoading();
             await mobileApp.loadData();
         }
 
         async function getWeatherForecast() {
             console.log('🌤️ Getting weather forecast...');
             try {
-                await mobileApp.api.getWeatherData(mobileApp.currentTent);
-                mobileApp.showNotification('Météo mise à jour!', 'success');
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                const weatherData = await mobileApp.api.getWeatherData();
+                
+                // Show weather info in a notification
+                mobileApp.showNotification(
+                    `Météo: ${weatherData.temperature}°C, ${weatherData.description}`, 
+                    'success'
+                );
             } catch (error) {
+                console.error('Failed to get weather:', error);
                 mobileApp.showNotification('Erreur lors de la récupération de la météo', 'error');
             }
         }
 
         async function runDiagnostic() {
-            console.log('🔧 Running diagnostic...');
+            console.log('🔧 Running system diagnostic...');
             try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'diagnostic', {});
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                await mobileApp.api.sendCommand('system_diagnostic', {
+                    full_check: true,
+                    include_sensors: true,
+                    include_connectivity: true
+                });
+                
                 mobileApp.showNotification('Diagnostic système lancé!', 'success');
             } catch (error) {
+                console.error('Failed to run diagnostic:', error);
                 mobileApp.showNotification('Erreur lors du diagnostic', 'error');
             }
         }
@@ -1308,17 +1462,74 @@
         async function optimizeSystem() {
             console.log('⚡ Optimizing system...');
             try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'optimize', {});
+                if (!mobileApp.currentTent) {
+                    throw new Error('No device selected');
+                }
+                
+                await mobileApp.api.sendCommand('optimize_system', {
+                    clear_cache: true,
+                    reduce_power: false,
+                    update_intervals: true
+                });
+                
                 mobileApp.showNotification('Système optimisé!', 'success');
             } catch (error) {
+                console.error('Failed to optimize system:', error);
                 mobileApp.showNotification('Erreur lors de l\'optimisation', 'error');
             }
         }
 
-        // 🚀 INITIALIZE MOBILE APP
+        // 🚀 INITIALIZE MOBILE APP WITH MONGODB
         document.addEventListener('DOMContentLoaded', () => {
             mobileApp = new SmartTentMobileApp();
+            
+            // Global reference for debugging
+            window.mobileApp = mobileApp;
+            
+            // Listen for API events
+            mobileApp.api.addEventListener('sensorData', (data) => {
+                console.log('📊 Real-time sensor data received:', data);
+            });
+            
+            // Handle visibility change (pause updates when tab is hidden)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    mobileApp.stopAutoUpdate();
+                    console.log('📱 Tab hidden - pausing updates');
+                } else {
+                    mobileApp.startAutoUpdate();
+                    console.log('📱 Tab visible - resuming updates');
+                }
+            });
+            
+            // Handle page unload
+            window.addEventListener('beforeunload', () => {
+                mobileApp.stopAutoUpdate();
+            });
         });
+
+        // 📱 PWA SERVICE WORKER REGISTRATION
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // 🔔 PUSH NOTIFICATIONS SETUP
+        if ('Notification' in window && 'serviceWorker' in navigator) {
+            // Request notification permission
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('🔔 Notification permission:', permission);
+                });
+            }
+        }
     </script>
 </body>
 </html>
