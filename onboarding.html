@@ -425,7 +425,9 @@
     <div class="onboarding-container">
         <!-- 🎭 SKIP BUTTON -->
         <button class="skip-btn" onclick="skipOnboarding()">
-            Passer l'introduction →
+            <a href="index.html" class="back-btn">
+                 passer l'introduction 
+            </a>
         </button>
 
         <!-- 🎬 SLIDES CONTAINER -->
@@ -706,7 +708,7 @@
                 // Update next button
                 if (this.currentSlide === this.totalSlides - 1) {
                     nextBtn.textContent = '🚀 Commencer';
-                    nextBtn.onclick = () => this.finishOnboarding();
+                    nextBtn.onclick = () => window.location.href = 'index.html';
                 } else {
                     nextBtn.textContent = 'Suivant →';
                     nextBtn.onclick = () => this.changeSlide(1);
