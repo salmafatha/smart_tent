@@ -8,8 +8,8 @@ const CACHE_API = `${CACHE_VERSION}-api`;
 // Fichiers à mettre en cache immédiatement (cache statique)
 const STATIC_FILES = [
   '/',
-  'index.html',
-  '/dashboard.html',
+  'sensor.html',
+  '/index.html',
   '/history.html', 
   '/map.html',
   '/settings.html',
