@@ -354,7 +354,7 @@ class SmartTentAPI {
       feelsLike: 26
     };
   }
-  
+  /**
    * HELPER FUNCTIONS for data transformation
    */
   getESP32SensorValue(esp32Data, sensorType) {
