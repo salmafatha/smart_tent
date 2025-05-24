@@ -292,7 +292,7 @@ class SmartTentAPI {
       }
       
       // WeatherAPI.com with your API key
-      const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=983555eb43804ce58f0162524252405&q=${latitude},${longitude}&lang=fr`;
+      const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=be080c4d1b5d4930813195518252405&q=${latitude},${longitude}&lang=fr`;
       
       console.log('🌤️ Fetching weather data...');
       
