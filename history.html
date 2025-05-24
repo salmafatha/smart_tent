@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Smart Tent - Historique</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="image/alllogo.png">
+    
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    
+    <style>
+        /* 🎨 SMART TENT THEME */
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #81C784;
+            --bg-green: #F1F8E9;
+            --warning-orange: #FF9800;
+            --danger-red: #F44336;
+            --info-blue: #2196F3;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --card-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 🏠 HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 📱 MAIN CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* 🎮 CONTROLS SECTION */
+        .controls-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .control-input {
+            padding: 10px 12px;
+            border: 2px solid var(--bg-green);
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--dark-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: #6C7B7D;
+        }
+
+        .btn-export {
+            background: var(--info-blue);
+        }
+
+        .btn-export:hover {
+            background: #1976D2;
+        }
+
+        /* 📊 CHART SECTIONS */
+        .chart-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 1rem;
+        }
+
+        .chart-container.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+        }
+
+        /* 📈 STATISTICS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-green);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* 🌡️ COMFORT INDEX */
+        .comfort-index {
+            background: linear-gradient(135deg, var(--light-green) 0%, var(--primary-green) 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .comfort-score {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .comfort-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* 🏃‍♂️ ACTIVITY TIMELINE */
+        .activity-timeline {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--bg-green);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-time {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            min-width: 60px;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-description {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* 🌙 DARK MODE */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-green: #1B2E20;
+                --text-dark: #E8F5E8;
+                --text-light: #A5D6A7;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0D1A0F 0%, #1B2E20 100%);
+            }
+            
+            .chart-section, .controls-section, .activity-timeline {
+                background: #2C5530;
+                color: var(--text-dark);
+            }
+            
+            .control-input {
+                background: #1B2E20;
+                color: var(--text-dark);
+                border-color: #3C6041;
+            }
+        }
+
+        /* 📱 MOBILE RESPONSIVE */
+        @media (max-width: 767px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* 🔄 LOADING ANIMATION */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 📊 CHART LEGENDS */
+        .custom-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 🏠 HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="index.html" class="back-btn">
+                    ← Retour
+                </a>
+                <h1>📊 Historique & Analytics</h1>
+            </div>
+            <div class="header-info">
+                <span id="tent-id">tente_v01</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 📱 MAIN CONTENT -->
+    <div class="container">
+        
+        <!-- 🎮 CONTROLS SECTION -->
+        <div class="controls-section">
+            <div class="controls-header">
+                <h2>🎛️ Contrôles d'analyse</h2>
+            </div>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label class="control-label">Capteur à analyser</label>
+                    <select class="control-input" id="sensor-select">
+                        <option value="temperature_interior">🌡️ Température Intérieure</option>
+                        <option value="temperature_exterior">🌡️ Température Extérieure</option>
+                        <option value="humidity_interior">💧 Humidité Intérieure</option>
+                        <option value="humidity_exterior">💧 Humidité Extérieure</option>
+                        <option value="gas_detection">💨 Niveau de Gaz</option>
+                        <option value="wind_speed">🌬️ Vitesse du Vent</option>
+                        <option value="battery_level">🔋 Niveau Batterie</option>
+                        <option value="signal_4g">📶 Signal 4G</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Période d'analyse</label>
+                    <select class="control-input" id="period-select">
+                        <option value="1">1 heure</option>
+                        <option value="6">6 heures</option>
+                        <option value="24" selected>24 heures</option>
+                        <option value="168">7 jours</option>
+                        <option value="720">30 jours</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Type de graphique</label>
+                    <select class="control-input" id="chart-type-select">
+                        <option value="line">📈 Ligne</option>
+                        <option value="bar">📊 Barres</option>
+                        <option value="area">📍 Aire</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Résolution</label>
+                    <select class="control-input" id="resolution-select">
+                        <option value="raw">Toutes les données</option>
+                        <option value="5min">Moyennes 5 min</option>
+                        <option value="1hour" selected>Moyennes 1 heure</option>
+                        <option value="1day">Moyennes journalières</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" onclick="updateChart()">
+                    🔄 Mettre à jour
+                </button>
+                <button class="btn btn-secondary" onclick="compareMultipleSensors()">
+                    📊 Comparer
+                </button>
+
+            </div>
+        </div>
+
+        <!-- 📊 MAIN CHART -->
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2 class="chart-title" id="chart-title">
+                    📈 Température Intérieure - 24 heures
+                </h2>
+                <div class="chart-info">
+                    <span id="data-points-count">0 points de données</span>
+                </div>
+            </div>
+            
+            <div class="chart-container" id="main-chart-container">
+                <canvas id="main-chart"></canvas>
+            </div>
+            
+            <!-- 📈 STATISTICS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-min">--</div>
+                    <div class="stat-label">Minimum</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-max">--</div>
+                    <div class="stat-label">Maximum</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-avg">--</div>
+                    <div class="stat-label">Moyenne</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-trend">--</div>
+                    <div class="stat-label">Tendance</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌡️ COMFORT INDEX -->
+        <div class="comfort-index" id="comfort-index">
+            <div class="comfort-score" id="comfort-score">85</div>
+            <div class="comfort-description" id="comfort-description">
+                Conditions excellentes pour le camping
+            </div>
+        </div>
+
+        <!-- 📊 COMPARISON CHART (Hidden by default) -->
+        <div class="chart-section" id="comparison-section" style="display: none;">
+            <div class="chart-header">
+                <h2 class="chart-title">📊 Comparaison Multi-Capteurs</h2>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+            
+            <div class="custom-legend" id="comparison-legend">
+                <!-- Legend items will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- 🏃‍♂️ ACTIVITY TIMELINE -->
+        <div class="activity-timeline">
+            <h2>🏃‍♂️ Activité Récente</h2>
+            <div id="activity-list">
+                <!-- Activity items will be added dynamically -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Include API -->
+    <script src="api.js"></script>
+    
+    <script>
+        // 📊 SMART TENT HISTORY & ANALYTICS
+        class SmartTentAnalytics {
+            constructor() {
+                this.api = window.smartTentAPI;
+                this.mainChart = null;
+                this.comparisonChart = null;
+                this.currentData = null;
+                this.sensorConfig = {
+                    temperature_interior: { 
+                        label: 'Température Intérieure', 
+                        unit: '°C', 
+                        color: '#FF5722',
+                        icon: '🌡️'
+                    },
+                    temperature_exterior: { 
+                        label: 'Température Extérieure', 
+                        unit: '°C', 
+                        color: '#2196F3',
+                        icon: '🌡️'
+                    },
+                    humidity_interior: { 
+                        label: 'Humidité Intérieure', 
+                        unit: '%', 
+                        color: '#00BCD4',
+                        icon: '💧'
+                    },
+                    humidity_exterior: { 
+                        label: 'Humidité Extérieure', 
+                        unit: '%', 
+                        color: '#009688',
+                        icon: '💧'
+                    },
+                    gas_detection: { 
+                        label: 'Niveau de Gaz', 
+                        unit: 'ppm', 
+                        color: '#F44336',
+                        icon: '💨'
+                    },
+                    wind_speed: { 
+                        label: 'Vitesse du Vent', 
+                        unit: 'km/h', 
+                        color: '#9C27B0',
+                        icon: '🌬️'
+                    },
+                    battery_level: { 
+                        label: 'Niveau Batterie', 
+                        unit: '%', 
+                        color: '#4CAF50',
+                        icon: '🔋'
+                    },
+                    signal_4g: { 
+                        label: 'Signal 4G', 
+                        unit: '%', 
+                        color: '#FF9800',
+                        icon: '📶'
+                    }
+                };
+                
+                this.init();
+            }
+
+            async init() {
+                console.log('📊 Initializing Smart Tent Analytics...');
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                // Load initial chart
+                await this.updateChart();
+                
+                // Update activity timeline
+                this.updateActivityTimeline();
+                
+                console.log('✅ Analytics initialized');
+            }
+
+            setupEventListeners() {
+                // Control change listeners
+                document.getElementById('sensor-select').addEventListener('change', () => this.updateChart());
+                document.getElementById('period-select').addEventListener('change', () => this.updateChart());
+                document.getElementById('chart-type-select').addEventListener('change', () => this.updateChart());
+                document.getElementById('resolution-select').addEventListener('change', () => this.updateChart());
+            }
+
+            async updateChart() {
+                const sensorType = document.getElementById('sensor-select').value;
+                const hours = parseInt(document.getElementById('period-select').value);
+                const chartType = document.getElementById('chart-type-select').value;
+                const resolution = document.getElementById('resolution-select').value;
+                
+                console.log(`📈 Updating chart: ${sensorType}, ${hours}h, ${chartType}`);
+                
+                // Show loading
+                this.showLoading();
+                
+                try {
+                    // Get historical data
+                    const data = await this.api.getHistoricalData(sensorType, hours);
+                    
+                    // Process data based on resolution
+                    const processedData = this.processDataByResolution(data, resolution);
+                    
+                    // Update chart
+                    this.renderMainChart(processedData, sensorType, chartType);
+                    
+                    // Update statistics
+                    this.updateStatistics(processedData, sensorType);
+                    
+                    // Update comfort index
+                    this.updateComfortIndex(processedData, sensorType);
+                    
+                    // Update chart title
+                    this.updateChartTitle(sensorType, hours);
+                    
+                } catch (error) {
+                    console.error('Failed to update chart:', error);
+                    this.showError('Erreur lors du chargement des données');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            processDataByResolution(data, resolution) {
+                if (!data || data.length === 0) return [];
+                
+                switch (resolution) {
+                    case 'raw':
+                        return data;
+                    case '5min':
+                        return this.aggregateData(data, 5 * 60 * 1000); // 5 minutes
+                    case '1hour':
+                        return this.aggregateData(data, 60 * 60 * 1000); // 1 hour
+                    case '1day':
+                        return this.aggregateData(data, 24 * 60 * 60 * 1000); // 1 day
+                    default:
+                        return data;
+                }
+            }
+
+            aggregateData(data, intervalMs) {
+                if (data.length === 0) return [];
+                
+                const aggregated = [];
+                const startTime = new Date(data[0].timestamp).getTime();
+                
+                for (let i = 0; i < data.length; i++) {
+                    const currentTime = new Date(data[i].timestamp).getTime();
+                    const intervalIndex = Math.floor((currentTime - startTime) / intervalMs);
+                    
+                    if (!aggregated[intervalIndex]) {
+                        aggregated[intervalIndex] = {
+                            values: [],
+                            timestamp: new Date(startTime + intervalIndex * intervalMs).toISOString()
+                        };
+                    }
+                    
+                    aggregated[intervalIndex].values.push(data[i].value);
+                }
+                
+                // Calculate averages
+                return aggregated.filter(item => item).map(item => ({
+                    timestamp: item.timestamp,
+                    value: item.values.reduce((a, b) => a + b, 0) / item.values.length
+                }));
+            }
+
+            renderMainChart(data, sensorType, chartType) {
+                const ctx = document.getElementById('main-chart').getContext('2d');
+                const config = this.sensorConfig[sensorType];
+                
+                // Destroy existing chart
+                if (this.mainChart) {
+                    this.mainChart.destroy();
+                }
+                
+                const chartData = {
+                    labels: data.map(item => new Date(item.timestamp)),
+                    datasets: [{
+                        label: config.label,
+                        data: data.map(item => item.value),
+                        borderColor: config.color,
+                        backgroundColor: chartType === 'area' 
+                            ? config.color + '33' 
+                            : config.color,
+                        borderWidth: 2,
+                        fill: chartType === 'area',
+                        tension: chartType === 'line' ? 0.3 : 0
+                    }]
+                };
+                
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    return `${config.label}: ${context.parsed.y.toFixed(1)}${config.unit}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                displayFormats: {
+                                    hour: 'HH:mm',
+                                    day: 'MM/dd'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Temps'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: `${config.label} (${config.unit})`
+                            },
+                            beginAtZero: sensorType.includes('battery') || sensorType.includes('signal')
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                };
+                
+                this.mainChart = new Chart(ctx, {
+                    type: chartType === 'area' ? 'line' : chartType,
+                    data: chartData,
+                    options: chartOptions
+                });
+                
+                this.currentData = data;
+                
+                // Update data points count
+                document.getElementById('data-points-count').textContent = `${data.length} points de données`;
+            }
+
+            updateStatistics(data, sensorType) {
+                if (!data || data.length === 0) {
+                    document.getElementById('stat-min').textContent = '--';
+                    document.getElementById('stat-max').textContent = '--';
+                    document.getElementById('stat-avg').textContent = '--';
+                    document.getElementById('stat-trend').textContent = '--';
+                    return;
+                }
+                
+                const config = this.sensorConfig[sensorType];
+                const values = data.map(item => item.value);
+                
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                
+                // Calculate trend
+                const trend = this.calculateTrend(data);
+                
+                document.getElementById('stat-min').textContent = `${min.toFixed(1)}${config.unit}`;
+                document.getElementById('stat-max').textContent = `${max.toFixed(1)}${config.unit}`;
+                document.getElementById('stat-avg').textContent = `${avg.toFixed(1)}${config.unit}`;
+                document.getElementById('stat-trend').textContent = trend;
+            }
+
+            calculateTrend(data) {
+                if (data.length < 2) return 'Stable';
+                
+                const firstHalf = data.slice(0, Math.floor(data.length / 2));
+                const secondHalf = data.slice(Math.floor(data.length / 2));
+                
+                const firstAvg = firstHalf.reduce((a, b) => a + b.value, 0) / firstHalf.length;
+                const secondAvg = secondHalf.reduce((a, b) => a + b.value, 0) / secondHalf.length;
+                
+                const change = ((secondAvg - firstAvg) / firstAvg) * 100;
+                
+                if (Math.abs(change) < 2) return '➡️ Stable';
+                if (change > 0) return `📈 +${change.toFixed(1)}%`;
+                return `📉 ${change.toFixed(1)}%`;
+            }
+
+            updateComfortIndex(data, sensorType) {
+                let score = 85; // Default good score
+                let description = 'Conditions excellentes pour le camping';
+                
+                if (sensorType.includes('temperature') && data.length > 0) {
+                    const latestTemp = data[data.length - 1].value;
+                    
+                    if (latestTemp >= 18 && latestTemp <= 26) {
+                        score = 95;
+                        description = 'Température parfaite pour le camping';
+                    } else if (latestTemp >= 15 && latestTemp <= 30) {
+                        score = 80;
+                        description = 'Température confortable';
+                    } else if (latestTemp >= 10 && latestTemp <= 35) {
+                        score = 60;
+                        description = 'Température acceptable, prenez des précautions';
+                    } else {
+                        score = 30;
+                        description = 'Température difficile, conditions extrêmes';
+                    }
+                } else if (sensorType === 'gas_detection' && data.length > 0) {
+                    const latestGas = data[data.length - 1].value;
+                    
+                    if (latestGas < 50) {
+                        score = 95;
+                        description = 'Air parfaitement sain';
+                    } else if (latestGas < 200) {
+                        score = 75;
+                        description = 'Qualité d\'air acceptable';
+                    } else if (latestGas < 300) {
+                        score = 40;
+                        description = 'Attention: niveau de gaz élevé';
+                    } else {
+                        score = 10;
+                        description = 'DANGER: niveau de gaz critique!';
+                    }
+                }
+                
+                document.getElementById('comfort-score').textContent = score;
+                document.getElementById('comfort-description').textContent = description;
+                
+                // Update comfort index color
+                const comfortIndex = document.getElementById('comfort-index');
+                comfortIndex.style.background = score > 80 
+                    ? 'linear-gradient(135deg, #81C784 0%, #4CAF50 100%)'
+                    : score > 60 
+                    ? 'linear-gradient(135deg, #FFB74D 0%, #FF9800 100%)'
+                    : 'linear-gradient(135deg, #E57373 0%, #F44336 100%)';
+            }
+
+            updateChartTitle(sensorType, hours) {
+                const config = this.sensorConfig[sensorType];
+                const periodText = hours === 1 ? '1 heure' 
+                    : hours < 24 ? `${hours} heures`
+                    : hours === 24 ? '24 heures'
+                    : hours === 168 ? '7 jours'
+                    : '30 jours';
+                
+                document.getElementById('chart-title').innerHTML = 
+                    `${config.icon} ${config.label} - ${periodText}`;
+            }
+
+            async compareMultipleSensors() {
+                console.log('📊 Comparing multiple sensors...');
+                
+                const comparisonSection = document.getElementById('comparison-section');
+                comparisonSection.style.display = 'block';
+                
+                // Get data for temperature and humidity comparison
+                const hours = parseInt(document.getElementById('period-select').value);
+                
+                try {
+                    const [tempData, humidityData, gasData] = await Promise.all([
+                        this.api.getHistoricalData('temperature_interior', hours),
+                        this.api.getHistoricalData('humidity_interior', hours),
+                        this.api.getHistoricalData('gas_detection', hours)
+                    ]);
+                    
+                    this.renderComparisonChart([
+                        { data: tempData, sensor: 'temperature_interior' },
+                        { data: humidityData, sensor: 'humidity_interior' },
+                        { data: gasData, sensor: 'gas_detection' }
+                    ]);
+                    
+                } catch (error) {
+                    console.error('Failed to load comparison data:', error);
+                }
+            }
+
+            renderComparisonChart(datasets) {
+                const ctx = document.getElementById('comparison-chart').getContext('2d');
+                
+                if (this.comparisonChart) {
+                    this.comparisonChart.destroy();
+                }
+                
+                const chartDatasets = datasets.map(dataset => {
+                    const config = this.sensorConfig[dataset.sensor];
+                    return {
+                        label: config.label,
+                        data: dataset.data.map(item => ({
+                            x: new Date(item.timestamp),
+                            y: item.value
+                        })),
+                        borderColor: config.color,
+                        backgroundColor: config.color + '33',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.3,
+                        yAxisID: dataset.sensor === 'gas_detection' ? 'y1' : 'y'
+                    };
+                });
+                
+                this.comparisonChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: chartDatasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    displayFormats: {
+                                        hour: 'HH:mm',
+                                        day: 'MM/dd'
+                                    }
+                                }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Température (°C) / Humidité (%)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Gaz (ppm)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Update custom legend
+                this.updateComparisonLegend(datasets);
+            }
+
+            updateComparisonLegend(datasets) {
+                const legendContainer = document.getElementById('comparison-legend');
+                legendContainer.innerHTML = '';
+                
+                datasets.forEach(dataset => {
+                    const config = this.sensorConfig[dataset.sensor];
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'legend-item';
+                    legendItem.innerHTML = `
+                        <div class="legend-color" style="background: ${config.color}"></div>
+                        <span>${config.icon} ${config.label}</span>
+                    `;
+                    legendContainer.appendChild(legendItem);
+                });
+            }
+
+            updateActivityTimeline() {
+                const activityList = document.getElementById('activity-list');
+                
+                // Sample activity data (replace with real data from API)
+                const activities = [
+                    {
+                        time: '14:30',
+                        icon: '🌡️',
+                        title: 'Température élevée détectée',
+                        description: '32°C enregistré à l\'extérieur',
+                        type: 'warning'
+                    },
+                    {
+                        time: '13:15',
+                        icon: '💨',
+                        title: 'Vent fort mesuré',
+                        description: 'Vitesse du vent: 25 km/h',
+                        type: 'info'
+                    },
+                    {
+                        time: '12:00',
+                        icon: '📸',
+                        title: 'Photo automatique prise',
+                        description: 'Surveillance périodique activée',
+                        type: 'success'
+                    },
+                    {
+                        time: '11:45',
+                        icon: '🚶',
+                        title: 'Mouvement détecté',
+                        description: 'Activité à l\'extérieur de la tente',
+                        type: 'warning'
+                    }
+                ];
+                
+                activityList.innerHTML = '';
+                
+                activities.forEach(activity => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    
+                    const iconColor = activity.type === 'warning' ? '#FF9800'
+                        : activity.type === 'success' ? '#4CAF50'
+                        : '#2196F3';
+                    
+                    item.innerHTML = `
+                        <div class="timeline-time">${activity.time}</div>
+                        <div class="timeline-icon" style="background: ${iconColor}; color: white;">
+                            ${activity.icon}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${activity.title}</div>
+                            <div class="timeline-description">${activity.description}</div>
+                        </div>
+                    `;
+                    
+                    activityList.appendChild(item);
+                });
+            }
+
+            showLoading() {
+                const container = document.getElementById('main-chart-container');
+                container.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement des données...</div>';
+            }
+
+            hideLoading() {
+                const container = document.getElementById('main-chart-container');
+                if (container.classList.contains('loading')) {
+                    container.innerHTML = '<canvas id="main-chart"></canvas>';
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('main-chart-container');
+                container.innerHTML = `<div class="loading">❌ ${message}</div>`;
+            }
+        }
+
+        // 🎮 GLOBAL FUNCTIONS
+        function updateChart() {
+            if (window.analytics) {
+                window.analytics.updateChart();
+            }
+        }
+
+        function compareMultipleSensors() {
+            if (window.analytics) {
+                window.analytics.compareMultipleSensors();
+            }
+        }
+
+        async function exportData(format) {
+            console.log(`📁 Exporting data as ${format}...`);
+            
+            if (!window.analytics || !window.analytics.currentData) {
+                alert('Aucune donnée à exporter');
+                return;
+            }
+            
+            const data = window.analytics.currentData;
+            const sensorType = document.getElementById('sensor-select').value;
+            const config = window.analytics.sensorConfig[sensorType];
+            
+            if (format === 'csv') {
+                exportCSV(data, config);
+            } else if (format === 'pdf') {
+                exportPDF(data, config);
+            }
+        }
+
+        function exportCSV(data, config) {
+            let csv = `Horodatage,${config.label} (${config.unit})\n`;
+            
+            data.forEach(item => {
+                const timestamp = new Date(item.timestamp).toLocaleString();
+                csv += `${timestamp},${item.value}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `smart-tent-${config.label.toLowerCase().replace(' ', '-')}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPDF(data, config) {
+            // For demo purposes, we'll just show an alert
+            // In a real implementation, you would use a library like jsPDF
+            alert('Fonctionnalité PDF en développement. Utilisez l\'export CSV pour le moment.');
+        }
+
+        // 🚀 INITIALIZE ANALYTICS
+        document.addEventListener('DOMContentLoaded', () => {
+            window.analytics = new SmartTentAnalytics();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "name": "Smart Tent - Surveillance Camping",
+  "short_name": "Smart Tent",
+  "description": "Surveillance intelligente pour votre tente de camping avec capteurs IoT",
+  "version": "1.0.0",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#4CAF50",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "categories": ["utilities", "lifestyle", "travel"],
+  "shortcuts": [
+    {
+      "name": "Tableau de bord",
+      "short_name": "Dashboard",
+      "description": "Accès rapide au tableau de bord principal",
+      "url": "/index.html",
+      "icons": [{ "src": "icons/dashboard-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Historique",
+      "short_name": "History", 
+      "description": "Voir l'historique des capteurs",
+      "url": "/history.html",
+      "icons": [{ "src": "icons/history-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Carte",
+      "short_name": "Map",
+      "description": "Localisation GPS de la tente", 
+      "url": "/map.html",
+      "icons": [{ "src": "icons/map-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Paramètres",
+      "short_name": "Settings",
+      "description": "Configuration et alertes",
+      "url": "/settings.html", 
+      "icons": [{ "src": "icons/settings-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-96.png", 
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128", 
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png", 
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png", 
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/dashboard-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshots/dashboard-desktop.png", 
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Smart Tent - Carte & GPS</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="image/alllogo.png">
+    
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <style>
+        /* 🎨 SMART TENT THEME */
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #81C784;
+            --bg-green: #F1F8E9;
+            --warning-orange: #FF9800;
+            --danger-red: #F44336;
+            --info-blue: #2196F3;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --card-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 🏠 HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .gps-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .gps-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .gps-dot.searching {
+            background: #FF9800;
+        }
+
+        .gps-dot.error {
+            background: #F44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* 🗺️ MAP CONTAINER */
+        .map-container {
+            position: relative;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+        }
+
+        #main-map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 🎮 MAP CONTROLS */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--bg-green);
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        /* 📊 INFO PANEL */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .info-panel.collapsed {
+            transform: translateY(calc(100% - 60px));
+        }
+
+        .panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--bg-green);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+
+        .info-panel.collapsed .toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        .panel-content {
+            padding: 1rem;
+        }
+
+        /* 📍 GPS INFO GRID */
+        .gps-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card {
+            background: var(--bg-green);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* 🌬️ WEATHER INFO */
+        .weather-info {
+            background: linear-gradient(135deg, var(--info-blue) 0%, #1976D2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .weather-temp {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .weather-desc {
+            opacity: 0.9;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .weather-detail {
+            font-size: 0.8rem;
+        }
+
+        .weather-value {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        /* 🎯 QUICK ACTIONS */
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: var(--dark-green);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary {
+            background: var(--text-light);
+        }
+
+        .action-btn.secondary:hover {
+            background: #6C7B7D;
+        }
+
+        /* 🔍 SEARCH BOX */
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 12px;
+            width: 300px;
+            display: none;
+        }
+
+        .search-container.active {
+            display: block;
+        }
+
+        .search-input {
+            width: 100%;
+            border: 2px solid var(--bg-green);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+        }
+
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+
+        .search-item {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .search-item:hover {
+            background: var(--bg-green);
+        }
+
+        /* 🎛️ LAYER CONTROL */
+        .layer-control {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 12px;
+            display: none;
+            min-width: 200px;
+        }
+
+        .layer-control.active {
+            display: block;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .layer-checkbox {
+            accent-color: var(--primary-green);
+        }
+
+        /* 📱 MOBILE RESPONSIVE */
+        @media (max-width: 767px) {
+            .map-controls {
+                right: 10px;
+                top: 10px;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .info-panel {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+            }
+            
+            .search-container {
+                left: 10px;
+                top: 10px;
+                width: calc(100% - 120px);
+            }
+            
+            .gps-info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .weather-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 🌙 DARK MODE */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-green: #1B2E20;
+                --text-dark: #E8F5E8;
+                --text-light: #A5D6A7;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0D1A0F 0%, #1B2E20 100%);
+            }
+            
+            .info-panel, .search-container, .layer-control {
+                background: #2C5530;
+                color: var(--text-dark);
+            }
+            
+            .control-btn {
+                background: #2C5530;
+                color: var(--text-dark);
+            }
+            
+            .info-card {
+                background: #1B2E20;
+            }
+        }
+
+        /* 🎯 CUSTOM MARKERS */
+        .tent-marker {
+            background: transparent !important;
+            border: none !important;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .user-marker {
+            background: var(--info-blue) !important;
+            border: 2px solid white !important;
+            border-radius: 50% !important;
+            width: 16px !important;
+            height: 16px !important;
+        }
+
+        .wind-arrow {
+            font-size: 20px;
+            color: var(--warning-orange);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* 🔄 LOADING OVERLAY */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            font-size: 1.1rem;
+            color: var(--primary-green);
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 🏠 HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="index.html" class="back-btn">
+                    ← Retour
+                </a>
+                <h1>🗺️ Carte & GPS</h1>
+            </div>
+            <div class="gps-status">
+                <div class="gps-dot" id="gps-status-dot"></div>
+                <span id="gps-status-text">GPS recherche...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🗺️ MAP CONTAINER -->
+    <div class="map-container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            Chargement de la carte...
+        </div>
+        
+        <!-- Main Map -->
+        <div id="main-map"></div>
+        
+        <!-- 🎮 MAP CONTROLS -->
+        <div class="map-controls">
+            <button class="control-btn" onclick="centerOnTent()" title="Centrer sur la tente">
+                🏕️
+            </button>
+            <button class="control-btn" onclick="centerOnUser()" title="Ma position">
+                📍
+            </button>
+            <button class="control-btn" onclick="toggleSearch()" title="Rechercher" id="search-btn">
+                🔍
+            </button>
+            <button class="control-btn" onclick="toggleLayers()" title="Couches" id="layers-btn">
+                🗂️
+            </button>
+            <button class="control-btn" onclick="toggleWeather()" title="Météo" id="weather-btn">
+                🌤️
+            </button>
+            <button class="control-btn" onclick="shareLocation()" title="Partager">
+                📤
+            </button>
+        </div>
+        
+        <!-- 🔍 SEARCH CONTAINER -->
+        <div class="search-container" id="search-container">
+            <input type="text" class="search-input" id="search-input" 
+                   placeholder="Rechercher un lieu..." 
+                   onkeyup="handleSearch(event)">
+            <div class="search-results" id="search-results"></div>
+        </div>
+        
+        <!-- 🎛️ LAYER CONTROL -->
+        <div class="layer-control" id="layer-control">
+            <div class="layer-item">
+                <input type="checkbox" class="layer-checkbox" id="weather-layer" onchange="toggleWeatherLayer()">
+                <label for="weather-layer">Météo</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" class="layer-checkbox" id="wind-layer" onchange="toggleWindLayer()">
+                <label for="wind-layer">Vent</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" class="layer-checkbox" id="satellite-layer" onchange="toggleSatellite()">
+                <label for="satellite-layer">Satellite</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" class="layer-checkbox" id="terrain-layer" onchange="toggleTerrain()">
+                <label for="terrain-layer">Terrain</label>
+            </div>
+        </div>
+        
+        <!-- 📊 INFO PANEL -->
+        <div class="info-panel" id="info-panel">
+            <div class="panel-header" onclick="togglePanel()">
+                <div class="panel-title">
+                    📍 Informations GPS
+                </div>
+                <button class="toggle-btn">▼</button>
+            </div>
+            
+            <div class="panel-content">
+                <!-- GPS Information -->
+                <div class="gps-info-grid">
+                    <div class="info-card">
+                        <div class="info-value" id="latitude-value">--</div>
+                        <div class="info-label">Latitude</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="longitude-value">--</div>
+                        <div class="info-label">Longitude</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="altitude-value">--</div>
+                        <div class="info-label">Altitude</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-value" id="accuracy-value">--</div>
+                        <div class="info-label">Précision</div>
+                    </div>
+                </div>
+                
+                <!-- Weather Information -->
+                <div class="weather-info" id="weather-info" style="display: none;">
+                    <div class="weather-main">
+                        <div>
+                            <div class="weather-temp" id="weather-temp">--°C</div>
+                            <div class="weather-desc" id="weather-desc">Chargement...</div>
+                        </div>
+                        <div id="weather-icon" style="font-size: 2rem;">🌤️</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-detail">
+                            <div class="weather-value" id="wind-speed">-- km/h</div>
+                            <div>Vent</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-value" id="humidity">-- %</div>
+                            <div>Humidité</div>
+                        </div>
+                        <div class="weather-detail">
+                            <div class="weather-value" id="pressure">-- hPa</div>
+                            <div>Pression</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="saveCurrentLocation()">
+                        💾 Sauvegarder position
+                    </button>
+                    <button class="action-btn secondary" onclick="getDirections()">
+                        🧭 Itinéraire
+                    </button>
+                    <button class="action-btn secondary" onclick="measureDistance()">
+                        📏 Mesurer
+                    </button>
+                    <button class="action-btn secondary" onclick="emergencyLocation()">
+                        🚨 Position d'urgence
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include API -->
+    <script src="api.js"></script>
+    
+    <script>
+        // 🗺️ SMART TENT MAP SYSTEM
+        class SmartTentMap {
+            constructor() {
+                this.api = window.smartTentAPI;
+                this.map = null;
+                this.tentMarker = null;
+                this.userMarker = null;
+                this.windMarkers = [];
+                this.weatherLayer = null;
+                this.isTracking = false;
+                this.watchId = null;
+                this.lastKnownPosition = null;
+                this.weatherData = null;
+                
+                // Map layers
+                this.baseLayers = {};
+                this.overlayLayers = {};
+                
+                this.init();
+            }
+
+            async init() {
+                console.log('🗺️ Initializing Smart Tent Map System...');
+                
+                try {
+                    // Initialize map
+                    await this.initMap();
+                    
+                    // Setup GPS tracking
+                    this.startGPSTracking();
+                    
+                    // Load tent position
+                    await this.loadTentPosition();
+                    
+                    // Setup weather data
+                    await this.loadWeatherData();
+                    
+                    // Setup event listeners
+                    this.setupEventListeners();
+                    
+                    console.log('✅ Map system initialized');
+                } catch (error) {
+                    console.error('❌ Map initialization failed:', error);
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async initMap() {
+                // Default position (Tunisia)
+                const defaultPosition = [36.4, 10.6];
+                
+                // Create map
+                this.map = L.map('main-map', {
+                    center: defaultPosition,
+                    zoom: 13,
+                    zoomControl: false
+                });
+                
+                // Add zoom control to bottom right
+                L.control.zoom({
+                    position: 'bottomright'
+                }).addTo(this.map);
+                
+                // Base layers
+                this.baseLayers = {
+                    street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap',
+                        maxZoom: 19
+                    }),
+                    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri',
+                        maxZoom: 19
+                    }),
+                    terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenTopoMap',
+                        maxZoom: 17
+                    })
+                };
+                
+                // Add default layer
+                this.baseLayers.street.addTo(this.map);
+                
+                // Map click handler for setting tent position
+                this.map.on('click', (e) => {
+                    this.setTentPosition(e.latlng.lat, e.latlng.lng);
+                });
+                
+                console.log('🗺️ Map initialized');
+            }
+
+            startGPSTracking() {
+                if (!navigator.geolocation) {
+                    console.error('Geolocation not supported');
+                    this.updateGPSStatus('error', 'GPS non supporté');
+                    return;
+                }
+                
+                this.updateGPSStatus('searching', 'GPS recherche...');
+                
+                // Options for high accuracy
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                
+                // Start watching position
+                this.watchId = navigator.geolocation.watchPosition(
+                    (position) => this.handleGPSSuccess(position),
+                    (error) => this.handleGPSError(error),
+                    options
+                );
+                
+                // Also get initial position
+                navigator.geolocation.getCurrentPosition(
+                    (position) => this.handleGPSSuccess(position),
+                    (error) => this.handleGPSError(error),
+                    options
+                );
+            }
+
+            handleGPSSuccess(position) {
+                const { latitude, longitude, altitude, accuracy } = position.coords;
+                
+                console.log('📍 GPS position updated:', { latitude, longitude, accuracy });
+                
+                this.lastKnownPosition = { latitude, longitude, altitude, accuracy };
+                
+                // Update GPS status
+                this.updateGPSStatus('active', 'GPS actif');
+                
+                // Update GPS info display
+                this.updateGPSInfo({
+                    latitude: latitude.toFixed(6),
+                    longitude: longitude.toFixed(6),
+                    altitude: altitude ? `${Math.round(altitude)}m` : '--',
+                    accuracy: `±${Math.round(accuracy)}m`
+                });
+                
+                // Update user marker
+                this.updateUserMarker(latitude, longitude);
+                
+                // If no tent position is set, suggest current location
+                if (!this.tentMarker) {
+                    this.suggestTentPosition(latitude, longitude);
+                }
+            }
+
+            handleGPSError(error) {
+                let message = 'Erreur GPS';
+                
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = 'Permission refusée';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Position indisponible';
+                        break;
+                    case error.TIMEOUT:
+                        message = 'GPS timeout';
+                        break;
+                }
+                
+                console.error('GPS Error:', error);
+                this.updateGPSStatus('error', message);
+            }
+
+            updateGPSStatus(status, text) {
+                const dot = document.getElementById('gps-status-dot');
+                const statusText = document.getElementById('gps-status-text');
+                
+                dot.className = `gps-dot ${status}`;
+                statusText.textContent = text;
+            }
+
+            updateGPSInfo(info) {
+                document.getElementById('latitude-value').textContent = info.latitude;
+                document.getElementById('longitude-value').textContent = info.longitude;
+                document.getElementById('altitude-value').textContent = info.altitude;
+                document.getElementById('accuracy-value').textContent = info.accuracy;
+            }
+
+            updateUserMarker(lat, lng) {
+                if (this.userMarker) {
+                    this.userMarker.setLatLng([lat, lng]);
+                } else {
+                    this.userMarker = L.circleMarker([lat, lng], {
+                        radius: 8,
+                        fillColor: '#2196F3',
+                        color: 'white',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(this.map);
+                    
+                    this.userMarker.bindPopup('📍 Votre position');
+                }
+            }
+
+            async loadTentPosition() {
+                try {
+                    // Try to get position from API first
+                    const data = await this.api.getAllSensorData();
+                    
+                    if (data.gps && data.gps.latitude && data.gps.longitude) {
+                        this.setTentPosition(data.gps.latitude, data.gps.longitude, false);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Could not load tent position from API:', error);
+                }
+                
+                // Fallback to localStorage
+                const savedPosition = localStorage.getItem('smart-tent-position');
+                if (savedPosition) {
+                    const { lat, lng } = JSON.parse(savedPosition);
+                    this.setTentPosition(lat, lng, false);
+                }
+            }
+
+            setTentPosition(lat, lng, save = true) {
+                console.log('🏕️ Setting tent position:', { lat, lng });
+                
+                if (this.tentMarker) {
+                    this.tentMarker.setLatLng([lat, lng]);
+                } else {
+                    this.tentMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'tent-marker',
+                            html: '🏕️',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        })
+                    }).addTo(this.map);
+                    
+                    this.tentMarker.bindPopup('🏕️ Votre tente Smart Tent');
+                }
+                
+                // Save position
+                if (save) {
+                    localStorage.setItem('smart-tent-position', JSON.stringify({ lat, lng }));
+                    
+                    // Also try to save to backend
+                    this.saveTentPositionToAPI(lat, lng);
+                }
+                
+                // Center map on tent
+                this.map.setView([lat, lng], 15);
+            }
+
+            async saveTentPositionToAPI(lat, lng) {
+                try {
+                    await this.api.sendCommand('raspberry', 'update_gps_position', {
+                        latitude: lat,
+                        longitude: lng,
+                        timestamp: new Date().toISOString()
+                    });
+                    console.log('✅ Tent position saved to API');
+                } catch (error) {
+                    console.warn('Failed to save position to API:', error);
+                }
+            }
+
+            suggestTentPosition(lat, lng) {
+                // Show popup suggesting to set tent position
+                const popup = L.popup()
+                    .setLatLng([lat, lng])
+                    .setContent(`
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 8px;">🏕️ Position de la tente</div>
+                            <div style="margin-bottom: 8px;">Définir ici comme position de votre tente?</div>
+                            <button onclick="mapInstance.setTentPosition(${lat}, ${lng})" 
+                                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                Oui, confirmer
+                            </button>
+                        </div>
+                    `)
+                    .openOn(this.map);
+            }
+
+            async loadWeatherData() {
+                if (!this.lastKnownPosition && !this.tentMarker) {
+                    console.log('No position available for weather data');
+                    return;
+                }
+                
+                const position = this.lastKnownPosition || 
+                    (this.tentMarker ? this.tentMarker.getLatLng() : null);
+                
+                if (!position) return;
+                
+                try {
+                    // In a real implementation, you would call a weather API
+                    // For demo, we'll simulate weather data
+                    this.weatherData = await this.getWeatherData(position.latitude || position.lat, position.longitude || position.lng);
+                    
+                    this.updateWeatherDisplay();
+                    
+                } catch (error) {
+                    console.error('Failed to load weather data:', error);
+                }
+            }
+
+            async getWeatherData(lat, lng) {
+                // Simulate weather API call
+                // In real implementation, use OpenWeatherMap or similar
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            temperature: Math.round(Math.random() * 15 + 15), // 15-30°C
+                            description: 'Ensoleillé',
+                            icon: '☀️',
+                            windSpeed: Math.round(Math.random() * 20 + 5), // 5-25 km/h
+                            windDirection: Math.round(Math.random() * 360), // 0-360°
+                            humidity: Math.round(Math.random() * 40 + 40), // 40-80%
+                            pressure: Math.round(Math.random() * 30 + 1000) // 1000-1030 hPa
+                        });
+                    }, 1000);
+                });
+            }
+
+            updateWeatherDisplay() {
+                if (!this.weatherData) return;
+                
+                const weatherInfo = document.getElementById('weather-info');
+                weatherInfo.style.display = 'block';
+                
+                document.getElementById('weather-temp').textContent = `${this.weatherData.temperature}°C`;
+                document.getElementById('weather-desc').textContent = this.weatherData.description;
+                document.getElementById('weather-icon').textContent = this.weatherData.icon;
+                document.getElementById('wind-speed').textContent = `${this.weatherData.windSpeed} km/h`;
+                document.getElementById('humidity').textContent = `${this.weatherData.humidity}%`;
+                document.getElementById('pressure').textContent = `${this.weatherData.pressure} hPa`;
+            }
+
+            setupEventListeners() {
+                // Panel toggle
+                window.togglePanel = () => {
+                    const panel = document.getElementById('info-panel');
+                    panel.classList.toggle('collapsed');
+                };
+                
+                // Close search and layers when clicking on map
+                this.map.on('click', () => {
+                    document.getElementById('search-container').classList.remove('active');
+                    document.getElementById('layer-control').classList.remove('active');
+                });
+            }
+
+            centerOnTent() {
+                if (this.tentMarker) {
+                    this.map.setView(this.tentMarker.getLatLng(), 16);
+                    this.tentMarker.openPopup();
+                } else {
+                    alert('Position de la tente non définie');
+                }
+            }
+
+            centerOnUser() {
+                if (this.userMarker) {
+                    this.map.setView(this.userMarker.getLatLng(), 16);
+                    this.userMarker.openPopup();
+                } else if (this.lastKnownPosition) {
+                    this.map.setView([this.lastKnownPosition.latitude, this.lastKnownPosition.longitude], 16);
+                } else {
+                    alert('Position utilisateur non disponible');
+                }
+            }
+
+            hideLoading() {
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
+
+            showLoading() {
+                document.getElementById('loading-overlay').classList.remove('hidden');
+            }
+        }
+
+        // 🎮 GLOBAL MAP FUNCTIONS
+        let mapInstance;
+
+        function centerOnTent() {
+            if (mapInstance) mapInstance.centerOnTent();
+        }
+
+        function centerOnUser() {
+            if (mapInstance) mapInstance.centerOnUser();
+        }
+
+        function toggleSearch() {
+            const container = document.getElementById('search-container');
+            const btn = document.getElementById('search-btn');
+            
+            container.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            if (container.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+                // Close layers
+                document.getElementById('layer-control').classList.remove('active');
+                document.getElementById('layers-btn').classList.remove('active');
+            }
+        }
+
+        function toggleLayers() {
+            const container = document.getElementById('layer-control');
+            const btn = document.getElementById('layers-btn');
+            
+            container.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            if (container.classList.contains('active')) {
+                // Close search
+                document.getElementById('search-container').classList.remove('active');
+                document.getElementById('search-btn').classList.remove('active');
+            }
+        }
+
+        function toggleWeather() {
+            const btn = document.getElementById('weather-btn');
+            btn.classList.toggle('active');
+            
+            if (btn.classList.contains('active')) {
+                // Show weather layer
+                console.log('🌤️ Weather layer activated');
+            } else {
+                // Hide weather layer
+                console.log('🌤️ Weather layer deactivated');
+            }
+        }
+
+        async function shareLocation() {
+            if (!mapInstance.lastKnownPosition && !mapInstance.tentMarker) {
+                alert('Aucune position disponible à partager');
+                return;
+            }
+            
+            const position = mapInstance.lastKnownPosition || mapInstance.tentMarker.getLatLng();
+            const lat = position.latitude || position.lat;
+            const lng = position.longitude || position.lng;
+            
+            const shareData = {
+                title: 'Ma position Smart Tent',
+                text: 'Voici où se trouve ma tente!',
+                url: `https://maps.google.com/?q=${lat},${lng}`
+            };
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (error) {
+                    console.log('Share cancelled');
+                }
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(shareData.url).then(() => {
+                    alert('Lien copié dans le presse-papiers!');
+                });
+            }
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value;
+                console.log('🔍 Searching for:', query);
+                
+                // In real implementation, use geocoding API
+                // For demo, show sample results
+                const results = document.getElementById('search-results');
+                results.innerHTML = `
+                    <div class="search-item" onclick="selectSearchResult(36.4, 10.6)">
+                        📍 ${query} - Résultat simulé
+                    </div>
+                `;
+            }
+        }
+
+        function selectSearchResult(lat, lng) {
+            mapInstance.map.setView([lat, lng], 15);
+            document.getElementById('search-container').classList.remove('active');
+            document.getElementById('search-btn').classList.remove('active');
+        }
+
+        // Layer toggle functions
+        function toggleWeatherLayer() {
+            console.log('🌤️ Weather layer toggled');
+        }
+
+        function toggleWindLayer() {
+            console.log('🌬️ Wind layer toggled');
+        }
+
+        function toggleSatellite() {
+            const checkbox = document.getElementById('satellite-layer');
+            if (checkbox.checked) {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.street);
+                mapInstance.baseLayers.satellite.addTo(mapInstance.map);
+            } else {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.satellite);
+                mapInstance.baseLayers.street.addTo(mapInstance.map);
+            }
+        }
+
+        function toggleTerrain() {
+            const checkbox = document.getElementById('terrain-layer');
+            if (checkbox.checked) {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.street);
+                mapInstance.baseLayers.terrain.addTo(mapInstance.map);
+            } else {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.terrain);
+                mapInstance.baseLayers.street.addTo(mapInstance.map);
+            }
+        }
+
+        // Quick action functions
+        function saveCurrentLocation() {
+            if (mapInstance.lastKnownPosition) {
+                const pos = mapInstance.lastKnownPosition;
+                mapInstance.setTentPosition(pos.latitude, pos.longitude);
+                alert('Position sauvegardée comme position de la tente!');
+            } else {
+                alert('Position actuelle non disponible');
+            }
+        }
+
+        function getDirections() {
+            if (mapInstance.tentMarker && mapInstance.userMarker) {
+                const tent = mapInstance.tentMarker.getLatLng();
+                const user = mapInstance.userMarker.getLatLng();
+                
+                const url = `https://www.google.com/maps/dir/${user.lat},${user.lng}/${tent.lat},${tent.lng}`;
+                window.open(url, '_blank');
+            } else {
+                alert('Positions de la tente et utilisateur requises');
+            }
+        }
+
+        function measureDistance() {
+            alert('Mode mesure activé. Cliquez sur deux points pour mesurer la distance.');
+            // In real implementation, enable distance measurement tool
+        }
+
+        function emergencyLocation() {
+            if (mapInstance.lastKnownPosition) {
+                const pos = mapInstance.lastKnownPosition;
+                const coords = `${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`;
+                
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(coords).then(() => {
+                        alert(`Coordonnées d'urgence copiées: ${coords}`);
+                    });
+                } else {
+                    alert(`Coordonnées d'urgence: ${coords}`);
+                }
+            } else {
+                alert('Position actuelle non disponible');
+            }
+        }
+
+        // 🚀 INITIALIZE MAP
+        document.addEventListener('DOMContentLoaded', () => {
+            mapInstance = new SmartTentMap();
+            // Make instance available globally for popup callbacks
+            window.mapInstance = mapInstance;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <!-- 📱 PWA META TAGS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="background-color" content="#4CAF50">
+    <meta name="display" content="standalone">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Smart Tent">
+    
+    <title>🏕️ Smart Tent - Gestion des Appareils</title>
+    
+    <!-- 🎯 PWA ICONS & MANIFEST -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="image/alllogo.png">
+    <link rel="apple-touch-icon" href="image/alllogo.png">
+    
+    <style>
+        /* 🎨 ENHANCED SMART TENT THEME */
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #81C784;
+            --bg-green: #F1F8E9;
+            --warning-orange: #FF9800;
+            --danger-red: #F44336;
+            --info-blue: #2196F3;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --card-shadow: 0 8px 32px rgba(46, 125, 50, 0.15);
+            --border-radius: 16px;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+            overflow-x: hidden;
+        }
+
+        /* 🏠 MODERN HEADER */
+        .hero-header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="tent" patternUnits="userSpaceOnUse" width="20" height="20"><text x="10" y="15" text-anchor="middle" fill="rgba(255,255,255,0.1)" font-size="12">🏕️</text></pattern></defs><rect width="100" height="100" fill="url(%23tent)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 📱 CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* 🎯 PROJECT INFO SECTION */
+        .project-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+        }
+
+        .section-title {
+            color: var(--primary-green);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title::before {
+            content: '🏕️';
+            font-size: 2.5rem;
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ✨ FEATURES GRID */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(46, 125, 50, 0.2);
+            border-color: var(--light-green);
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: featureFloat 4s ease-in-out infinite;
+        }
+
+        .feature-card:nth-child(2) .feature-icon { animation-delay: 1s; }
+        .feature-card:nth-child(3) .feature-icon { animation-delay: 2s; }
+        .feature-card:nth-child(4) .feature-icon { animation-delay: 3s; }
+
+        @keyframes featureFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* 🔧 DEVICE MANAGEMENT SECTION */
+        .devices-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .devices-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--info-blue), var(--primary-green));
+        }
+
+        .devices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .devices-title {
+            color: var(--primary-green);
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .devices-title::before {
+            content: '🔧';
+            font-size: 2rem;
+        }
+
+        .add-device-btn {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .add-device-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+        }
+
+        .add-device-btn::before {
+            content: '➕';
+            font-size: 1.2rem;
+        }
+
+        /* 📱 DEVICE CARDS */
+        .devices-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .device-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .device-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(46, 125, 50, 0.2);
+            border-color: var(--light-green);
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .device-info {
+            flex: 1;
+        }
+
+        .device-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .device-name::before {
+            content: '🏕️';
+            font-size: 1.6rem;
+        }
+
+        .device-id {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+            background: var(--bg-green);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            animation: statusPulse 2s infinite;
+        }
+
+        .device-status.online {
+            background: rgba(76, 175, 80, 0.15);
+            color: var(--dark-green);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .device-status.offline {
+            background: rgba(244, 67, 54, 0.15);
+            color: #C62828;
+            border: 2px solid rgba(244, 67, 54, 0.3);
+            animation: none;
+        }
+
+        .device-status::before {
+            content: '●';
+            font-size: 1.2rem;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .device-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .device-btn {
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            flex: 1;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .device-btn.primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .device-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .device-btn.secondary {
+            background: rgba(117, 117, 117, 0.1);
+            color: var(--text-light);
+            border: 2px solid rgba(117, 117, 117, 0.2);
+        }
+
+        .device-btn.secondary:hover {
+            background: rgba(117, 117, 117, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .device-btn.danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger-red);
+            border: 2px solid rgba(244, 67, 54, 0.2);
+        }
+
+        .device-btn.danger:hover {
+            background: var(--danger-red);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* 🚫 NO DEVICES STATE */
+        .no-devices {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: var(--border-radius);
+            border: 2px dashed #dee2e6;
+            margin: 2rem 0;
+        }
+
+        .no-devices-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .no-devices-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .no-devices-text {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* 🎭 MODALS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            animation: modalShow 0.3s ease;
+        }
+
+        @keyframes modalShow {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-green);
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .modal-close {
+            background: rgba(244, 67, 54, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--danger-red);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--danger-red);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .modal-btn.secondary {
+            background: #f8f9fa;
+            color: var(--text-light);
+            border: 2px solid #e1e5e9;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .modal-btn.danger {
+            background: var(--danger-red);
+            color: white;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+        }
+
+        .modal-btn.danger:hover {
+            background: #D32F2F;
+            transform: translateY(-2px);
+        }
+
+        /* 🔔 NOTIFICATIONS */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--danger-red);
+        }
+
+        .notification.success {
+            background: var(--primary-green);
+        }
+
+        /* 📱 MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .project-section,
+            .devices-section {
+                padding: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .devices-list {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .devices-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .device-actions {
+                flex-direction: column;
+            }
+
+            .device-btn {
+                flex: none;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-btn {
+                width: 100%;
+            }
+        }
+
+        /* 🌙 DARK MODE */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-green: #1B2E20;
+                --text-dark: #E8F5E8;
+                --text-light: #A5D6A7;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0D1A0F 0%, #1B2E20 100%);
+            }
+            
+            .project-section,
+            .devices-section,
+            .device-card,
+            .modal-content {
+                background: #2C5530;
+                color: var(--text-dark);
+            }
+            
+            .form-input {
+                background: #1B2E20;
+                border-color: #3C6041;
+                color: var(--text-dark);
+            }
+        }
+
+        /* 🎯 LOADING STATES */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 🏠 HERO HEADER -->
+    <header class="hero-header">
+        <div class="logo-container">
+            <img src="image/logo.png" alt="Smart Tent Logo">
+            <div>
+                <h1 class="hero-title">Smart Tent</h1>
+                <p class="hero-subtitle">La solution intelligente pour un camping confortable et sécurisé</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 🎯 PROJECT DESCRIPTION -->
+        <section class="project-section">
+            <h2 class="section-title">Smart tent</h2>
+            <p class="project-description">
+                Smart Tent est un système IoT avancé qui transforme l'expérience de camping traditionnel en un environnement connecté, sécurisé et intelligent. Notre solution combine des capteurs de pointe, une connectivité 4G robuste, et une interface utilisateur intuitive pour offrir une surveillance complète de votre campement, même dans les zones les plus reculées.
+            </p>
+            <p class="project-description">
+                
+            </p>
+        </section>
+
+        <!-- ✨ FEATURES GRID -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🏕️</span>
+                <h3 class="feature-title">Surveillance de la température</h3>
+                <p class="feature-description">Surveillance sécuritaire pendant les sorties</p>
+                <p class="feature-description">Alerts météo et conditions dangereuses</p>
+                <p class="feature-description">Tranquillité d'esprit pour familles</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">🏢</span>
+                <h3 class="feature-title">Camping Commercial</h3>
+                <p class="feature-description">Monitoring multi-tentes simultané</p>
+                <p class="feature-description">Gestion centralisée des installations</p>
+                <p class="feature-description">Service client premium avec données temps réel</p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">⛑️</span>
+                <h3 class="feature-title">Situations d'Urgence</h3>
+                <p class="feature-description">Soyez alerté instantanément en cas de détection de gaz potentiellement dangereux avec notifications push.</p>
+            </div>
+            
+        </div>
+
+        <!-- 🔧 DEVICE MANAGEMENT -->
+        <section class="devices-section">
+            <div class="devices-header">
+                <h2 class="devices-title">Mes Appareils Smart Tent</h2>
+                <button id="add-device-btn" class="add-device-btn">Ajouter un appareil</button>
+            </div>
+            
+            <div id="devices-list" class="devices-list">
+                <!-- Les appareils seront insérés ici dynamiquement -->
+            </div>
+        </section>
+    </div>
+
+    <!-- 🎭 MODAL: ADD DEVICE -->
+    <div id="add-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Ajouter un appareil</h3>
+                <button class="modal-close" id="close-add-modal">&times;</button>
+            </div>
+            
+            <form id="add-device-form">
+                <div class="form-group">
+                    <label for="device-name" class="form-label">Nom de l'appareil</label>
+                    <input type="text" id="device-name" class="form-input" placeholder="Ex: Tente Principale" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="device-id" class="form-label">ID du Raspberry Pi</label>
+                    <input type="text" id="device-id" class="form-input" placeholder="tent_001, tent_002..." required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" id="cancel-add">Annuler</button>
+                    <button type="submit" class="modal-btn primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🎭 MODAL: EDIT DEVICE -->
+    <div id="edit-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Modifier l'appareil</h3>
+                <button class="modal-close" id="close-edit-modal">&times;</button>
+            </div>
+            
+            <form id="edit-device-form">
+                <input type="hidden" id="edit-device-index">
+                
+                <div class="form-group">
+                    <label for="edit-device-name" class="form-label">Nom de l'appareil</label>
+                    <input type="text" id="edit-device-name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-device-id" class="form-label">ID du Raspberry Pi</label>
+                    <input type="text" id="edit-device-id" class="form-input" required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" id="cancel-edit">Annuler</button>
+                    <button type="submit" class="modal-btn primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🎭 MODAL: DELETE DEVICE -->
+    <div id="delete-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🗑️ Supprimer l'appareil</h3>
+                <button class="modal-close" id="close-delete-modal">&times;</button>
+            </div>
+            
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                Êtes-vous sûr de vouloir supprimer cet appareil ? Cette action est <strong>irréversible</strong>.
+            </p>
+            <div style="background: var(--bg-green); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--warning-orange);">
+                <strong id="delete-device-name"></strong>
+            </div>
+            
+            <input type="hidden" id="delete-device-index">
+            
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" id="cancel-delete">Annuler</button>
+                <button type="button" class="modal-btn danger" id="confirm-delete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔔 NOTIFICATION -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // 🏕️ ENHANCED SMART TENT DEVICE MANAGER
+        class SmartTentDeviceManager {
+            constructor() {
+                this.devices = [];
+                this.init();
+            }
+
+            init() {
+                console.log('🏕️ Initializing Smart Tent Device Manager...');
+                
+                // Load saved devices
+                this.loadDevices();
+                
+                // Render device list
+                this.renderDeviceList();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                console.log('✅ Device manager initialized');
+            }
+
+            loadDevices() {
+                const savedDevices = localStorage.getItem('smartTentDevices');
+                if (savedDevices) {
+                    this.devices = JSON.parse(savedDevices);
+                }
+            }
+
+            saveDevices() {
+                localStorage.setItem('smartTentDevices', JSON.stringify(this.devices));
+            }
+
+            renderDeviceList() {
+                const container = document.getElementById('devices-list');
+                
+                if (this.devices.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-devices">
+                            <div class="no-devices-icon">🏕️</div>
+                            <h3 class="no-devices-title">Aucun appareil configuré</h3>
+                            <p class="no-devices-text">Ajoutez votre premier appareil Smart Tent pour commencer le monitoring</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                
+                this.devices.forEach((device, index) => {
+                    // Simulate online/offline status (replace with real status check)
+                    const isOnline = Math.random() > 0.3;
+                    const statusClass = isOnline ? 'online' : 'offline';
+                    const statusText = isOnline ? 'En ligne' : 'Hors ligne';
+                    
+                    html += `
+                        <div class="device-card" data-index="${index}">
+                            <div class="device-header">
+                                <div class="device-info">
+                                    <h3 class="device-name">${device.name}</h3>
+                                    <div class="device-id">ID: ${device.id}</div>
+                                </div>
+                                <div class="device-status ${statusClass}">
+                                    ${statusText}
+                                </div>
+                            </div>
+                            
+                            <div class="device-actions">
+                                <button class="device-btn primary connect-btn" data-index="${index}">
+                                    🚀 Connecter
+                                </button>
+                                <button class="device-btn secondary edit-btn" data-index="${index}">
+                                    ✏️ Modifier
+                                </button>
+                                <button class="device-btn danger delete-btn" data-index="${index}">
+                                    🗑️ Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                // Add event listeners to buttons
+                this.attachDeviceListeners();
+            }
+
+            attachDeviceListeners() {
+                // Connect buttons
+                document.querySelectorAll('.connect-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.connectToDevice(index);
+                    });
+                });
+                
+                // Edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.openEditModal(index);
+                    });
+                });
+                
+                // Delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.openDeleteModal(index);
+                    });
+                });
+            }
+
+            connectToDevice(index) {
+                const device = this.devices[index];
+                
+                // Store selected device
+                localStorage.setItem('selectedTent', device.id);
+                localStorage.setItem('activeDevice', JSON.stringify(device));
+                
+                // Show loading notification
+                this.showNotification('Connexion en cours...', 'success');
+                
+                // Simulate connection delay
+                setTimeout(() => {
+                    // Redirect to dashboard
+                    window.location.href = 'index.html';
+                }, 1500);
+            }
+
+            setupEventListeners() {
+                // Add device button
+                document.getElementById('add-device-btn').addEventListener('click', () => {
+                    this.openAddModal();
+                });
+                
+                // Add device modal
+                this.setupAddModal();
+                this.setupEditModal();
+                this.setupDeleteModal();
+                
+                // Close modals when clicking outside
+                this.setupModalCloseEvents();
+            }
+
+            setupAddModal() {
+                const modal = document.getElementById('add-device-modal');
+                const form = document.getElementById('add-device-form');
+                
+                document.getElementById('close-add-modal').addEventListener('click', () => {
+                    this.closeModal('add-device-modal');
+                });
+                
+                document.getElementById('cancel-add').addEventListener('click', () => {
+                    this.closeModal('add-device-modal');
+                });
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const name = document.getElementById('device-name').value.trim();
+                    const id = document.getElementById('device-id').value.trim();
+                    
+                    if (name && id) {
+                        // Check if ID already exists
+                        if (this.devices.some(device => device.id === id)) {
+                            this.showNotification('Cet ID existe déjà!', 'error');
+                            return;
+                        }
+                        
+                        // Add new device
+                        this.devices.push({ name, id });
+                        this.saveDevices();
+                        this.renderDeviceList();
+                        
+                        // Close modal and show success
+                        this.closeModal('add-device-modal');
+                        form.reset();
+                        this.showNotification('Appareil ajouté avec succès!', 'success');
+                    }
+                });
+            }
+
+            setupEditModal() {
+                const modal = document.getElementById('edit-device-modal');
+                const form = document.getElementById('edit-device-form');
+                
+                document.getElementById('close-edit-modal').addEventListener('click', () => {
+                    this.closeModal('edit-device-modal');
+                });
+                
+                document.getElementById('cancel-edit').addEventListener('click', () => {
+                    this.closeModal('edit-device-modal');
+                });
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const index = document.getElementById('edit-device-index').value;
+                    const name = document.getElementById('edit-device-name').value.trim();
+                    const id = document.getElementById('edit-device-id').value.trim();
+                    
+                    if (name && id && index !== null) {
+                        // Check if ID already exists (excluding current device)
+                        if (this.devices.some((device, i) => device.id === id && i != index)) {
+                            this.showNotification('Cet ID existe déjà!', 'error');
+                            return;
+                        }
+                        
+                        // Update device
+                        this.devices[index] = { name, id };
+                        this.saveDevices();
+                        this.renderDeviceList();
+                        
+                        // Close modal and show success
+                        this.closeModal('edit-device-modal');
+                        this.showNotification('Appareil modifié avec succès!', 'success');
+                    }
+                });
+            }
+
+            setupDeleteModal() {
+                document.getElementById('close-delete-modal').addEventListener('click', () => {
+                    this.closeModal('delete-device-modal');
+                });
+                
+                document.getElementById('cancel-delete').addEventListener('click', () => {
+                    this.closeModal('delete-device-modal');
+                });
+                
+                document.getElementById('confirm-delete').addEventListener('click', () => {
+                    const index = document.getElementById('delete-device-index').value;
+                    
+                    if (index !== null) {
+                        // Remove device
+                        const deviceName = this.devices[index].name;
+                        this.devices.splice(index, 1);
+                        this.saveDevices();
+                        this.renderDeviceList();
+                        
+                        // Close modal and show success
+                        this.closeModal('delete-device-modal');
+                        this.showNotification(`"${deviceName}" supprimé avec succès!`, 'success');
+                    }
+                });
+            }
+
+            setupModalCloseEvents() {
+                // Close modals when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        e.target.classList.remove('show');
+                    }
+                });
+                
+                // Close modals with Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.modal.show').forEach(modal => {
+                            modal.classList.remove('show');
+                        });
+                    }
+                });
+            }
+
+            openAddModal() {
+                this.openModal('add-device-modal');
+            }
+
+            openEditModal(index) {
+                const device = this.devices[index];
+                
+                document.getElementById('edit-device-index').value = index;
+                document.getElementById('edit-device-name').value = device.name;
+                document.getElementById('edit-device-id').value = device.id;
+                
+                this.openModal('edit-device-modal');
+            }
+
+            openDeleteModal(index) {
+                const device = this.devices[index];
+                
+                document.getElementById('delete-device-index').value = index;
+                document.getElementById('delete-device-name').textContent = device.name;
+                
+                this.openModal('delete-device-modal');
+            }
+
+            openModal(modalId) {
+                document.getElementById(modalId).classList.add('show');
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // 🚀 INITIALIZE DEVICE MANAGER
+        document.addEventListener('DOMContentLoaded', () => {
+            const deviceManager = new SmartTentDeviceManager();
+        });
+
+        // 📱 PWA SERVICE WORKER REGISTRATION
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
