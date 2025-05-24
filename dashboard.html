@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>🏕️ Découvrir Smart Tent</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="image/alllogo.png">
+    
+    <!-- ✅ MAIN CSS INTEGRATION -->
+    <link rel="stylesheet" href="main.css">
+    
+    <style>
+        /* Onboarding specific styles on top of main.css */
+        body {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .onboarding-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slides-container {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            height: 80vh;
+            max-height: 600px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 3rem 2rem;
+            transform: translateX(100%);
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            color: var(--text-dark);
+        }
+
+        .slide.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-1 { background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); }
+        .slide-2 { background: linear-gradient(135deg, #E3F2FD 0%, #F0F7FF 100%); }
+        .slide-3 { background: linear-gradient(135deg, #FFF3E0 0%, #FFF8F0 100%); }
+        .slide-4 { background: linear-gradient(135deg, #FFEBEE 0%, #FFF5F5 100%); }
+        .slide-5 { background: linear-gradient(135deg, #F3E5F5 0%, #FAF0FB 100%); }
+        .slide-6 { 
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%); 
+            color: white; 
+        }
+
+        .slide-icon {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            animation: slideInUp 0.8s ease 0.2s both;
+        }
+
+        .slide-6 .slide-title {
+            color: white;
+        }
+
+        .slide-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: var(--text-light);
+            max-width: 600px;
+            line-height: 1.6;
+            animation: slideInUp 0.8s ease 0.4s both;
+        }
+
+        .slide-6 .slide-subtitle {
+            color: rgba(255,255,255,0.9);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+            max-width: 700px;
+            animation: slideInUp 0.8s ease 0.6s both;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.8);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-normal);
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nav-btn.primary {
+            background: var(--primary-green);
+            border-color: var(--dark-green);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--dark-green);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+        }
+
+        .progress-dot.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        .interactive-demo {
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px dashed var(--primary-green);
+            animation: slideInUp 0.8s ease 0.6s both;
+        }
+
+        .demo-screen {
+            background: #000;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            color: var(--primary-green);
+            font-family: var(--font-mono);
+        }
+
+        .demo-value {
+            text-align: center;
+        }
+
+        .demo-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            animation: numberFlicker 2s infinite;
+        }
+
+        @keyframes numberFlicker {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0.7; }
+        }
+
+        .skip-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all var(--transition-normal);
+            z-index: 10;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: floatAround 10s infinite linear;
+        }
+
+        @keyframes floatAround {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        /* Dark mode toggle for onboarding */
+        .onboarding-dark-toggle {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all var(--transition-normal);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .onboarding-dark-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .slides-container {
+                width: 95%;
+                height: 85vh;
+            }
+
+            .slide {
+                padding: 2rem 1.5rem;
+            }
+
+            .slide-title {
+                font-size: 2rem;
+            }
+
+            .slide-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .slide-icon {
+                font-size: 4rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .navigation {
+                bottom: 1rem;
+                gap: 1rem;
+            }
+
+            .nav-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .skip-btn, .onboarding-dark-toggle {
+                position: relative;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-container">
+        <!-- 🌙 DARK MODE TOGGLE -->
+        <button class="onboarding-dark-toggle" onclick="toggleDarkMode()">
+            <span class="icon sun-icon">☀️</span>
+            <span class="icon moon-icon">🌙</span>
+            <span>Mode</span>
+        </button>
+
+        <!-- 🎭 SKIP BUTTON -->
+        <button class="skip-btn" onclick="skipOnboarding()">
+            Passer l'introduction →
+        </button>
+
+        <!-- 🎬 SLIDES CONTAINER -->
+        <div class="slides-container">
+            <!-- 🏕️ SLIDE 1: WELCOME -->
+            <div class="slide slide-1 active">
+                <div class="slide-icon">🏕️</div>
+                <h1 class="slide-title">Bienvenue dans Smart Tent</h1>
+                <p class="slide-subtitle">
+                    Découvrez la révolution du camping intelligent avec notre système IoT portable qui transforme votre tente en environnement connecté et sécurisé.
+                </p>
+                <div class="floating-elements">
+                    <div class="floating-icon" style="left: 10%; animation-delay: 0s;">🌟</div>
+                    <div class="floating-icon" style="left: 80%; animation-delay: 2s;">⚡</div>
+                    <div class="floating-icon" style="left: 50%; animation-delay: 4s;">🚀</div>
+                </div>
+            </div>
+
+            <!-- ✨ SLIDE 2: FEATURES -->
+            <div class="slide slide-2">
+                <div class="slide-icon">⚡</div>
+                <h1 class="slide-title">Fonctionnalités Intelligentes</h1>
+                <p class="slide-subtitle">
+                    Un écosystème complet de capteurs et d'intelligence artificielle pour votre confort et sécurité
+                </p>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon">🌡️</span>
+                        <div class="feature-title">Climat Intelligent</div>
+                        <div class="feature-description">Surveillance température et humidité en temps réel</div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        <div class="feature-title">App Mobile</div>
+                        <div class="feature-description">Interface intuitive accessible partout</div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔋</span>
+                        <div class="feature-title">Autonomie Solaire</div>
+                        <div class="feature-description">Énergie renouvelable pour indépendance totale</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 SLIDE 3: MONITORING -->
+            <div class="slide slide-3">
+                <div class="slide-icon">📊</div>
+                <h1 class="slide-title">Surveillance Temps Réel</h1>
+                <p class="slide-subtitle">
+                    Gardez un œil sur toutes les conditions de votre campement, même à distance
+                </p>
+                
+                <div class="interactive-demo">
+                    <div class="demo-screen">
+                        <div class="demo-values">
+                            <div class="demo-value">
+                                <div class="demo-label">Température</div>
+                                <div class="demo-number" id="demo-temp">24°C</div>
+                            </div>
+                            <div class="demo-value">
+                                <div class="demo-label">Humidité</div>
+                                <div class="demo-number" id="demo-humidity">62%</div>
+                            </div>
+                            <div class="demo-value">
+                                <div class="demo-label">Gaz</div>
+                                <div class="demo-number" id="demo-gas">Safe</div>
+                            </div>
+                            <div class="demo-value">
+                                <div class="demo-label">Signal 4G</div>
+                                <div class="demo-number" id="demo-signal">●●●○</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+                        📡 Données mises à jour toutes les 2 secondes
+                    </p>
+                </div>
+            </div>
+
+            <!-- 🛡️ SLIDE 4: SECURITY -->
+            <div class="slide slide-4">
+                <div class="slide-icon">🛡️</div>
+                <h1 class="slide-title">Sécurité Avancée</h1>
+                <p class="slide-subtitle">
+                    Protection multi-niveaux pour votre tranquillité d'esprit lors de vos aventures
+                </p>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon">🚨</span>
+                        <div class="feature-title">Détection Gaz</div>
+                        <div class="feature-description">Alertes instantanées CO et gaz dangereux</div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">👁️</span>
+                        <div class="feature-title">Surveillance Vidéo</div>
+                        <div class="feature-description">Monitoring périmètre avec détection mouvement</div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📍</span>
+                        <div class="feature-title">Localisation GPS</div>
+                        <div class="feature-description">Position précise pour secours d'urgence</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🏕️ SLIDE 5: MULTI-TENT -->
+            <div class="slide slide-5">
+                <div class="slide-icon">🏕️</div>
+                <h1 class="slide-title">Gestion Multi-Tentes</h1>
+                <p class="slide-subtitle">
+                    Surveillez plusieurs campements simultanément - Parfait pour groupes scouts et expéditions
+                </p>
+                
+                <div class="interactive-demo">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                        <div style="background: rgba(76, 175, 80, 0.1); padding: 1rem; border-radius: 8px; border: 2px solid var(--primary-green);">
+                            <div style="font-weight: 600; color: var(--primary-green);">🏕️ Tente Principale</div>
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                                ✅ En ligne<br>
+                                🌡️ 24°C<br>
+                                🛡️ Sécurisée
+                            </div>
+                        </div>
+                        <div style="background: rgba(33, 150, 243, 0.1); padding: 1rem; border-radius: 8px; border: 2px solid var(--info-blue);">
+                            <div style="font-weight: 600; color: var(--info-blue);">🏕️ Tente Scouts</div>
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                                ✅ En ligne<br>
+                                🌡️ 22°C<br>
+                                👁️ Surveillée
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-light); font-size: 0.9rem; text-align: center;">
+                        Basculez instantanément entre vos différents campements
+                    </p>
+                </div>
+            </div>
+
+            <!-- 🚀 SLIDE 6: READY -->
+            <div class="slide slide-6">
+                <div class="slide-icon">🚀</div>
+                <h1 class="slide-title">Prêt pour l'Aventure !</h1>
+                <p class="slide-subtitle">
+                    Votre système Smart Tent est prêt à transformer votre expérience de camping. Commencez dès maintenant !
+                </p>
+                
+                <div style="margin: 2rem 0;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; backdrop-filter: blur(10px);">
+                        <h3 style="margin-bottom: 1rem;">⚡ Installation Express</h3>
+                        <p style="opacity: 0.9;">✅ 5-10 minutes maximum<br>
+                        ✅ Configuration automatique<br>
+                        ✅ Support tous âges<br>
+                        ✅ Autonomie illimitée</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🎮 NAVIGATION -->
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>
+                ← Précédent
+            </button>
+            
+            <div class="progress-dots" id="progressDots">
+                <!-- Dots will be generated by JavaScript -->
+            </div>
+            
+            <button class="nav-btn primary" id="nextBtn" onclick="changeSlide(1)">
+                Suivant →
+            </button>
+        </div>
+    </div>
+
+    <!-- 🌙 DARK MODE FUNCTIONALITY -->
+    <script>
+        class DarkModeManager {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                const savedTheme = localStorage.getItem('smart-tent-theme');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+                
+                this.setTheme(initialTheme);
+                
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    if (!savedTheme) {
+                        this.setTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+                
+                console.log('🌙 Dark mode initialized');
+            }
+            
+            setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('smart-tent-theme', theme);
+                
+                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeColorMeta) {
+                    themeColorMeta.content = theme === 'dark' ? '#1B2E20' : '#4CAF50';
+                }
+                
+                this.updateToggleButton(theme);
+                
+                window.dispatchEvent(new CustomEvent('themeChanged', { 
+                    detail: { theme } 
+                }));
+                
+                console.log(`🌙 Theme set to: ${theme}`);
+            }
+            
+            toggle() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+                
+                this.showThemeChangeEffect();
+            }
+            
+            updateToggleButton(theme) {
+                const button = document.querySelector('.onboarding-dark-toggle');
+                if (button) {
+                    const textSpan = button.querySelector('span:last-child');
+                    if (textSpan) {
+                        textSpan.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
+                    }
+                }
+            }
+            
+            showThemeChangeEffect() {
+                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+                setTimeout(() => {
+                    document.body.style.transition = '';
+                }, 300);
+            }
+        }
+
+        const darkModeManager = new DarkModeManager();
+
+        function toggleDarkMode() {
+            darkModeManager.toggle();
+        }
+
+        window.darkModeManager = darkModeManager;
+    </script>
+    
+    <script>
+        // 🎬 ONBOARDING MANAGER
+        class SmartTentOnboarding {
+            constructor() {
+                this.currentSlide = 0;
+                this.totalSlides = 6;
+                this.isAnimating = false;
+                this.demoInterval = null;
+                
+                this.init();
+            }
+
+            init() {
+                console.log('🎬 Initializing Smart Tent Onboarding...');
+                
+                this.generateProgressDots();
+                this.updateNavigation();
+                this.startDemoAnimation();
+                this.setupKeyboardNavigation();
+                
+                console.log('✅ Onboarding initialized');
+            }
+
+            generateProgressDots() {
+                const dotsContainer = document.getElementById('progressDots');
+                dotsContainer.innerHTML = '';
+                
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = `progress-dot ${i === 0 ? 'active' : ''}`;
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            changeSlide(direction) {
+                if (this.isAnimating) return;
+                
+                const newSlide = this.currentSlide + direction;
+                
+                if (newSlide < 0 || newSlide >= this.totalSlides) return;
+                
+                this.goToSlide(newSlide);
+            }
+
+            goToSlide(slideIndex) {
+                if (this.isAnimating || slideIndex === this.currentSlide) return;
+                
+                this.isAnimating = true;
+                
+                const currentSlideEl = document.querySelector('.slide.active');
+                const nextSlideEl = document.querySelectorAll('.slide')[slideIndex];
+                
+                currentSlideEl.classList.remove('active');
+                currentSlideEl.classList.add('prev');
+                
+                nextSlideEl.classList.add('active');
+                nextSlideEl.classList.remove('prev');
+                
+                this.currentSlide = slideIndex;
+                
+                this.updateNavigation();
+                this.updateProgressDots();
+                
+                if (slideIndex === this.totalSlides - 1) {
+                    setTimeout(() => this.showConfetti(), 500);
+                }
+                
+                setTimeout(() => {
+                    this.isAnimating = false;
+                    document.querySelectorAll('.slide.prev').forEach(slide => {
+                        slide.classList.remove('prev');
+                    });
+                }, 600);
+            }
+
+            updateNavigation() {
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                
+                prevBtn.disabled = this.currentSlide === 0;
+                
+                if (this.currentSlide === this.totalSlides - 1) {
+                    nextBtn.textContent = '🚀 Commencer';
+                    nextBtn.onclick = () => this.finishOnboarding();
+                } else {
+                    nextBtn.textContent = 'Suivant →';
+                    nextBtn.onclick = () => this.changeSlide(1);
+                }
+            }
+
+            updateProgressDots() {
+                const dots = document.querySelectorAll('.progress-dot');
+                dots.forEach((dot, index) => {
+                    if (index === this.currentSlide) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            startDemoAnimation() {
+                // Clear existing interval
+                if (this.demoInterval) {
+                    clearInterval(this.demoInterval);
+                }
+                
+                // Animate demo values on slide 3
+                this.demoInterval = setInterval(() => {
+                    if (this.currentSlide === 2) { // Slide 3 (0-indexed)
+                        const tempEl = document.getElementById('demo-temp');
+                        const humidityEl = document.getElementById('demo-humidity');
+                        const gasEl = document.getElementById('demo-gas');
+                        const signalEl = document.getElementById('demo-signal');
+                        
+                        if (tempEl) {
+                            const temp = Math.floor(Math.random() * 5) + 22;
+                            tempEl.textContent = `${temp}°C`;
+                        }
+                        
+                        if (humidityEl) {
+                            const humidity = Math.floor(Math.random() * 10) + 58;
+                            humidityEl.textContent = `${humidity}%`;
+                        }
+                        
+                        if (gasEl) {
+                            const gases = ['Safe', 'OK', 'Good'];
+                            gasEl.textContent = gases[Math.floor(Math.random() * gases.length)];
+                        }
+                        
+                        if (signalEl) {
+                            const signals = ['●●●●', '●●●○', '●●○○', '●●●○'];
+                            signalEl.textContent = signals[Math.floor(Math.random() * signals.length)];
+                        }
+                    }
+                }, 2000);
+            }
+
+            setupKeyboardNavigation() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') {
+                        this.changeSlide(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        this.changeSlide(1);
+                    } else if (e.key === 'Escape') {
+                        this.skipOnboarding();
+                    }
+                });
+            }
+
+            showConfetti() {
+                // Create confetti container if it doesn't exist
+                let confettiContainer = document.getElementById('confetti');
+                if (!confettiContainer) {
+                    confettiContainer = document.createElement('div');
+                    confettiContainer.id = 'confetti';
+                    confettiContainer.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        pointer-events: none;
+                        z-index: 100;
+                    `;
+                    document.body.appendChild(confettiContainer);
+                }
+                
+                const colors = ['#4CAF50', '#81C784', '#66BB6A', '#A5D6A7'];
+                
+                for (let i = 0; i < 50; i++) {
+                    const confettiPiece = document.createElement('div');
+                    confettiPiece.style.cssText = `
+                        position: absolute;
+                        width: 10px;
+                        height: 10px;
+                        background: ${colors[Math.floor(Math.random() * colors.length)]};
+                        left: ${Math.random() * 100}%;
+                        animation: confettiFall ${Math.random() * 2 + 2}s ease-out forwards;
+                        animation-delay: ${Math.random() * 2}s;
+                    `;
+                    
+                    confettiContainer.appendChild(confettiPiece);
+                    
+                    setTimeout(() => {
+                        confettiPiece.remove();
+                    }, 5000);
+                }
+            }
+
+            finishOnboarding() {
+                localStorage.setItem('smartTentOnboardingCompleted', 'true');
+                
+                // Clear demo interval
+                if (this.demoInterval) {
+                    clearInterval(this.demoInterval);
+                }
+                
+                window.location.href = 'dashboard.html';
+            }
+
+            skipOnboarding() {
+                // Clear demo interval
+                if (this.demoInterval) {
+                    clearInterval(this.demoInterval);
+                }
+                
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Global functions
+        let onboarding;
+
+        function changeSlide(direction) {
+            onboarding.changeSlide(direction);
+        }
+
+        function skipOnboarding() {
+            onboarding.skipOnboarding();
+        }
+
+        // CSS animation for confetti
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes confettiFall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize onboarding
+        document.addEventListener('DOMContentLoaded', () => {
+            onboarding = new SmartTentOnboarding();
+        });
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

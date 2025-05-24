@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Smart Tent - Carte & GPS</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="image/alllogo.png">
+    
+    <!-- ✅ MAIN CSS INTEGRATION -->
+    <link rel="stylesheet" href="main.css">
+    
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <style>
+        /* Map specific styles */
+        .map-container {
+            position: relative;
+            height: calc(100vh - 150px);
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        #main-map {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-lg);
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: var(--bg-primary);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            color: var(--text-dark);
+        }
+
+        .control-btn:hover {
+            background: var(--bg-accent);
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            transition: transform var(--transition-normal);
+        }
+
+        .info-panel.collapsed {
+            transform: translateY(calc(100% - 60px));
+        }
+
+        .panel-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--bg-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .panel-content {
+            padding: var(--space-lg);
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: transform var(--transition-normal);
+        }
+
+        .info-panel.collapsed .toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 12px;
+            width: 300px;
+            display: none;
+        }
+
+        .search-container.active {
+            display: block;
+        }
+
+        .search-input {
+            width: 100%;
+            border: 2px solid var(--bg-accent);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            background: var(--bg-secondary);
+            color: var(--text-dark);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+        }
+
+        .layer-control {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 12px;
+            display: none;
+            min-width: 200px;
+        }
+
+        .layer-control.active {
+            display: block;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .weather-info {
+            background: linear-gradient(135deg, var(--info-blue) 0%, #1976D2 100%);
+            color: white;
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin: var(--space-md) 0;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .weather-temp {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            text-align: center;
+        }
+
+        .weather-detail {
+            font-size: 0.8rem;
+        }
+
+        .weather-value {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            font-size: 1.1rem;
+            color: var(--primary-green);
+            border-radius: var(--radius-lg);
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            .map-controls {
+                right: 10px;
+                top: 10px;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .info-panel {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+            }
+            
+            .search-container {
+                left: 10px;
+                top: 10px;
+                width: calc(100% - 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 🏠 HEADER with dark mode toggle -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <a href="index.html" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: var(--space-sm);">
+                    ← Retour
+                </a>
+                <h1>🗺️ Carte & GPS</h1>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+                    <span class="icon sun-icon">☀️</span>
+                    <span class="icon moon-icon">🌙</span>
+                    <span>Mode</span>
+                </button>
+                
+                <div class="connection-status">
+                    <div id="gps-status-dot" class="status-dot"></div>
+                    <span id="gps-status-text">GPS recherche...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 🗺️ MAP CONTAINER -->
+        <section>
+            <div class="map-container">
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner"></div>
+                    Chargement de la carte...
+                </div>
+                
+                <!-- Main Map -->
+                <div id="main-map"></div>
+                
+                <!-- 🎮 MAP CONTROLS -->
+                <div class="map-controls">
+                    <button class="control-btn" onclick="centerOnTent()" title="Centrer sur la tente">
+                        🏕️
+                    </button>
+                    <button class="control-btn" onclick="centerOnUser()" title="Ma position">
+                        📍
+                    </button>
+                    <button class="control-btn" onclick="toggleSearch()" title="Rechercher" id="search-btn">
+                        🔍
+                    </button>
+                    <button class="control-btn" onclick="toggleLayers()" title="Couches" id="layers-btn">
+                        🗂️
+                    </button>
+                    <button class="control-btn" onclick="toggleWeather()" title="Météo" id="weather-btn">
+                        🌤️
+                    </button>
+                    <button class="control-btn" onclick="shareLocation()" title="Partager">
+                        📤
+                    </button>
+                </div>
+                
+                <!-- 🔍 SEARCH CONTAINER -->
+                <div class="search-container" id="search-container">
+                    <input type="text" class="search-input" id="search-input" 
+                           placeholder="Rechercher un lieu..." 
+                           onkeyup="handleSearch(event)">
+                    <div id="search-results" style="max-height: 200px; overflow-y: auto; margin-top: 8px;"></div>
+                </div>
+                
+                <!-- 🎛️ LAYER CONTROL -->
+                <div class="layer-control" id="layer-control">
+                    <div class="layer-item">
+                        <input type="checkbox" id="weather-layer" onchange="toggleWeatherLayer()" style="accent-color: var(--primary-green);">
+                        <label for="weather-layer">Météo</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="wind-layer" onchange="toggleWindLayer()" style="accent-color: var(--primary-green);">
+                        <label for="wind-layer">Vent</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="satellite-layer" onchange="toggleSatellite()" style="accent-color: var(--primary-green);">
+                        <label for="satellite-layer">Satellite</label>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" id="terrain-layer" onchange="toggleTerrain()" style="accent-color: var(--primary-green);">
+                        <label for="terrain-layer">Terrain</label>
+                    </div>
+                </div>
+                
+                <!-- 📊 INFO PANEL -->
+                <div class="info-panel" id="info-panel">
+                    <div class="panel-header" onclick="togglePanel()">
+                        <h3 style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            📍 Informations GPS
+                        </h3>
+                        <button class="toggle-btn">▼</button>
+                    </div>
+                    
+                    <div class="panel-content">
+                        <!-- GPS Information -->
+                        <div class="sensor-grid">
+                            <div class="sensor-card" data-type="signal">
+                                <div class="sensor-value" id="latitude-value">--</div>
+                                <div class="sensor-title">Latitude</div>
+                            </div>
+                            <div class="sensor-card" data-type="signal">
+                                <div class="sensor-value" id="longitude-value">--</div>
+                                <div class="sensor-title">Longitude</div>
+                            </div>
+                            <div class="sensor-card" data-type="signal">
+                                <div class="sensor-value" id="altitude-value">--</div>
+                                <div class="sensor-title">Altitude</div>
+                            </div>
+                            <div class="sensor-card" data-type="signal">
+                                <div class="sensor-value" id="accuracy-value">--</div>
+                                <div class="sensor-title">Précision</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weather Information -->
+                        <div class="weather-info" id="weather-info" style="display: none;">
+                            <div class="weather-main">
+                                <div>
+                                    <div class="weather-temp" id="weather-temp">--°C</div>
+                                    <div id="weather-desc" style="opacity: 0.9;">Chargement...</div>
+                                </div>
+                                <div id="weather-icon" style="font-size: 2rem;">🌤️</div>
+                            </div>
+                            <div class="weather-details">
+                                <div class="weather-detail">
+                                    <div class="weather-value" id="wind-speed">-- km/h</div>
+                                    <div>Vent</div>
+                                </div>
+                                <div class="weather-detail">
+                                    <div class="weather-value" id="humidity">-- %</div>
+                                    <div>Humidité</div>
+                                </div>
+                                <div class="weather-detail">
+                                    <div class="weather-value" id="pressure">-- hPa</div>
+                                    <div>Pression</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="button-group" style="margin-top: 1rem;">
+                            <button class="btn" onclick="saveCurrentLocation()">
+                                💾 Sauvegarder position
+                            </button>
+                            <button class="btn btn-secondary" onclick="getDirections()">
+                                🧭 Itinéraire
+                            </button>
+                            <button class="btn btn-secondary" onclick="measureDistance()">
+                                📏 Mesurer
+                            </button>
+                            <button class="btn btn-danger" onclick="emergencyLocation()">
+                                🚨 Position d'urgence
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Include API -->
+    <script src="api.js"></script>
+    
+    <!-- 🌙 DARK MODE FUNCTIONALITY -->
+    <script>
+        class DarkModeManager {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                const savedTheme = localStorage.getItem('smart-tent-theme');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+                
+                this.setTheme(initialTheme);
+                
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    if (!savedTheme) {
+                        this.setTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+                
+                console.log('🌙 Dark mode initialized');
+            }
+            
+            setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('smart-tent-theme', theme);
+                
+                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeColorMeta) {
+                    themeColorMeta.content = theme === 'dark' ? '#1B2E20' : '#4CAF50';
+                }
+                
+                this.updateToggleButton(theme);
+                
+                window.dispatchEvent(new CustomEvent('themeChanged', { 
+                    detail: { theme } 
+                }));
+                
+                console.log(`🌙 Theme set to: ${theme}`);
+            }
+            
+            toggle() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+                
+                this.showThemeChangeEffect();
+            }
+            
+            updateToggleButton(theme) {
+                const button = document.querySelector('.dark-mode-toggle');
+                if (button) {
+                    const textSpan = button.querySelector('span:last-child');
+                    if (textSpan) {
+                        textSpan.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
+                    }
+                }
+            }
+            
+            showThemeChangeEffect() {
+                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+                setTimeout(() => {
+                    document.body.style.transition = '';
+                }, 300);
+            }
+        }
+
+        const darkModeManager = new DarkModeManager();
+
+        function toggleDarkMode() {
+            darkModeManager.toggle();
+        }
+
+        window.darkModeManager = darkModeManager;
+    </script>
+    
+    <script>
+        // 🗺️ SMART TENT MAP SYSTEM
+        class SmartTentMap {
+            constructor() {
+                this.api = window.smartTentAPI;
+                this.map = null;
+                this.tentMarker = null;
+                this.userMarker = null;
+                this.isTracking = false;
+                this.watchId = null;
+                this.lastKnownPosition = null;
+                this.weatherData = null;
+                this.baseLayers = {};
+                
+                this.init();
+            }
+
+            async init() {
+                console.log('🗺️ Initializing Smart Tent Map System...');
+                
+                try {
+                    await this.initMap();
+                    this.startGPSTracking();
+                    await this.loadTentPosition();
+                    await this.loadWeatherData();
+                    this.setupEventListeners();
+                    
+                    console.log('✅ Map system initialized');
+                } catch (error) {
+                    console.error('❌ Map initialization failed:', error);
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async initMap() {
+                // Default position (Tunisia)
+                const defaultPosition = [36.4, 10.6];
+                
+                this.map = L.map('main-map', {
+                    center: defaultPosition,
+                    zoom: 13,
+                    zoomControl: false
+                });
+                
+                L.control.zoom({
+                    position: 'bottomright'
+                }).addTo(this.map);
+                
+                this.baseLayers = {
+                    street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap',
+                        maxZoom: 19
+                    }),
+                    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© Esri',
+                        maxZoom: 19
+                    }),
+                    terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenTopoMap',
+                        maxZoom: 17
+                    })
+                };
+                
+                this.baseLayers.street.addTo(this.map);
+                
+                this.map.on('click', (e) => {
+                    this.setTentPosition(e.latlng.lat, e.latlng.lng);
+                });
+                
+                console.log('🗺️ Map initialized');
+            }
+
+            startGPSTracking() {
+                if (!navigator.geolocation) {
+                    console.error('Geolocation not supported');
+                    this.updateGPSStatus('error', 'GPS non supporté');
+                    return;
+                }
+                
+                this.updateGPSStatus('searching', 'GPS recherche...');
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                };
+                
+                this.watchId = navigator.geolocation.watchPosition(
+                    (position) => this.handleGPSSuccess(position),
+                    (error) => this.handleGPSError(error),
+                    options
+                );
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => this.handleGPSSuccess(position),
+                    (error) => this.handleGPSError(error),
+                    options
+                );
+            }
+
+            handleGPSSuccess(position) {
+                const { latitude, longitude, altitude, accuracy } = position.coords;
+                
+                console.log('📍 GPS position updated:', { latitude, longitude, accuracy });
+                
+                this.lastKnownPosition = { latitude, longitude, altitude, accuracy };
+                
+                this.updateGPSStatus('active', 'GPS actif');
+                
+                this.updateGPSInfo({
+                    latitude: latitude.toFixed(6),
+                    longitude: longitude.toFixed(6),
+                    altitude: altitude ? `${Math.round(altitude)}m` : '--',
+                    accuracy: `±${Math.round(accuracy)}m`
+                });
+                
+                this.updateUserMarker(latitude, longitude);
+                
+                if (!this.tentMarker) {
+                    this.suggestTentPosition(latitude, longitude);
+                }
+            }
+
+            handleGPSError(error) {
+                let message = 'Erreur GPS';
+                
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = 'Permission refusée';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Position indisponible';
+                        break;
+                    case error.TIMEOUT:
+                        message = 'GPS timeout';
+                        break;
+                }
+                
+                console.error('GPS Error:', error);
+                this.updateGPSStatus('error', message);
+            }
+
+            updateGPSStatus(status, text) {
+                const dot = document.getElementById('gps-status-dot');
+                const statusText = document.getElementById('gps-status-text');
+                
+                if (dot) {
+                    dot.className = `status-dot ${status}`;
+                }
+                if (statusText) {
+                    statusText.textContent = text;
+                }
+            }
+
+            updateGPSInfo(info) {
+                document.getElementById('latitude-value').textContent = info.latitude;
+                document.getElementById('longitude-value').textContent = info.longitude;
+                document.getElementById('altitude-value').textContent = info.altitude;
+                document.getElementById('accuracy-value').textContent = info.accuracy;
+            }
+
+            updateUserMarker(lat, lng) {
+                if (this.userMarker) {
+                    this.userMarker.setLatLng([lat, lng]);
+                } else {
+                    this.userMarker = L.circleMarker([lat, lng], {
+                        radius: 8,
+                        fillColor: '#2196F3',
+                        color: 'white',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(this.map);
+                    
+                    this.userMarker.bindPopup('📍 Votre position');
+                }
+            }
+
+            async loadTentPosition() {
+                const savedPosition = localStorage.getItem('smart-tent-position');
+                if (savedPosition) {
+                    const { lat, lng } = JSON.parse(savedPosition);
+                    this.setTentPosition(lat, lng, false);
+                }
+            }
+
+            setTentPosition(lat, lng, save = true) {
+                console.log('🏕️ Setting tent position:', { lat, lng });
+                
+                if (this.tentMarker) {
+                    this.tentMarker.setLatLng([lat, lng]);
+                } else {
+                    this.tentMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            className: 'tent-marker',
+                            html: '🏕️',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        })
+                    }).addTo(this.map);
+                    
+                    this.tentMarker.bindPopup('🏕️ Votre tente Smart Tent');
+                }
+                
+                if (save) {
+                    localStorage.setItem('smart-tent-position', JSON.stringify({ lat, lng }));
+                }
+                
+                this.map.setView([lat, lng], 15);
+            }
+
+            suggestTentPosition(lat, lng) {
+                const popup = L.popup()
+                    .setLatLng([lat, lng])
+                    .setContent(`
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 8px;">🏕️ Position de la tente</div>
+                            <div style="margin-bottom: 8px;">Définir ici comme position de votre tente?</div>
+                            <button onclick="mapInstance.setTentPosition(${lat}, ${lng})" 
+                                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                Oui, confirmer
+                            </button>
+                        </div>
+                    `)
+                    .openOn(this.map);
+            }
+
+            async loadWeatherData() {
+                if (!this.lastKnownPosition && !this.tentMarker) {
+                    console.log('No position available for weather data');
+                    return;
+                }
+                
+                const position = this.lastKnownPosition || 
+                    (this.tentMarker ? this.tentMarker.getLatLng() : null);
+                
+                if (!position) return;
+                
+                try {
+                    this.weatherData = await this.getWeatherData(position.latitude || position.lat, position.longitude || position.lng);
+                    this.updateWeatherDisplay();
+                } catch (error) {
+                    console.error('Failed to load weather data:', error);
+                }
+            }
+
+            async getWeatherData(lat, lng) {
+                // Simulate weather API call
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            temperature: Math.round(Math.random() * 15 + 15),
+                            description: 'Ensoleillé',
+                            icon: '☀️',
+                            windSpeed: Math.round(Math.random() * 20 + 5),
+                            windDirection: Math.round(Math.random() * 360),
+                            humidity: Math.round(Math.random() * 40 + 40),
+                            pressure: Math.round(Math.random() * 30 + 1000)
+                        });
+                    }, 1000);
+                });
+            }
+
+            updateWeatherDisplay() {
+                if (!this.weatherData) return;
+                
+                const weatherInfo = document.getElementById('weather-info');
+                weatherInfo.style.display = 'block';
+                
+                document.getElementById('weather-temp').textContent = `${this.weatherData.temperature}°C`;
+                document.getElementById('weather-desc').textContent = this.weatherData.description;
+                document.getElementById('weather-icon').textContent = this.weatherData.icon;
+                document.getElementById('wind-speed').textContent = `${this.weatherData.windSpeed} km/h`;
+                document.getElementById('humidity').textContent = `${this.weatherData.humidity}%`;
+                document.getElementById('pressure').textContent = `${this.weatherData.pressure} hPa`;
+            }
+
+            setupEventListeners() {
+                this.map.on('click', () => {
+                    document.getElementById('search-container').classList.remove('active');
+                    document.getElementById('layer-control').classList.remove('active');
+                });
+            }
+
+            centerOnTent() {
+                if (this.tentMarker) {
+                    this.map.setView(this.tentMarker.getLatLng(), 16);
+                    this.tentMarker.openPopup();
+                } else {
+                    alert('Position de la tente non définie');
+                }
+            }
+
+            centerOnUser() {
+                if (this.userMarker) {
+                    this.map.setView(this.userMarker.getLatLng(), 16);
+                    this.userMarker.openPopup();
+                } else if (this.lastKnownPosition) {
+                    this.map.setView([this.lastKnownPosition.latitude, this.lastKnownPosition.longitude], 16);
+                } else {
+                    alert('Position utilisateur non disponible');
+                }
+            }
+
+            hideLoading() {
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
+
+            showLoading() {
+                document.getElementById('loading-overlay').classList.remove('hidden');
+            }
+        }
+
+        // Global map functions
+        let mapInstance;
+
+        function centerOnTent() {
+            if (mapInstance) mapInstance.centerOnTent();
+        }
+
+        function centerOnUser() {
+            if (mapInstance) mapInstance.centerOnUser();
+        }
+
+        function toggleSearch() {
+            const container = document.getElementById('search-container');
+            const btn = document.getElementById('search-btn');
+            
+            container.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            if (container.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+                document.getElementById('layer-control').classList.remove('active');
+                document.getElementById('layers-btn').classList.remove('active');
+            }
+        }
+
+        function toggleLayers() {
+            const container = document.getElementById('layer-control');
+            const btn = document.getElementById('layers-btn');
+            
+            container.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            if (container.classList.contains('active')) {
+                document.getElementById('search-container').classList.remove('active');
+                document.getElementById('search-btn').classList.remove('active');
+            }
+        }
+
+        function toggleWeather() {
+            const btn = document.getElementById('weather-btn');
+            btn.classList.toggle('active');
+            
+            if (btn.classList.contains('active')) {
+                console.log('🌤️ Weather layer activated');
+                if (mapInstance) {
+                    mapInstance.loadWeatherData();
+                }
+            } else {
+                console.log('🌤️ Weather layer deactivated');
+                document.getElementById('weather-info').style.display = 'none';
+            }
+        }
+
+        async function shareLocation() {
+            if (!mapInstance.lastKnownPosition && !mapInstance.tentMarker) {
+                alert('Aucune position disponible à partager');
+                return;
+            }
+            
+            const position = mapInstance.lastKnownPosition || mapInstance.tentMarker.getLatLng();
+            const lat = position.latitude || position.lat;
+            const lng = position.longitude || position.lng;
+            
+            const shareData = {
+                title: 'Ma position Smart Tent',
+                text: 'Voici où se trouve ma tente!',
+                url: `https://maps.google.com/?q=${lat},${lng}`
+            };
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (error) {
+                    console.log('Share cancelled');
+                }
+            } else {
+                navigator.clipboard.writeText(shareData.url).then(() => {
+                    alert('Lien copié dans le presse-papiers!');
+                });
+            }
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value;
+                console.log('🔍 Searching for:', query);
+                
+                const results = document.getElementById('search-results');
+                results.innerHTML = `
+                    <div style="padding: 8px; cursor: pointer; border-radius: 4px; font-size: 0.9rem;" onclick="selectSearchResult(36.4, 10.6)" onmouseover="this.style.background='var(--bg-accent)'" onmouseout="this.style.background='transparent'">
+                        📍 ${query} - Résultat simulé
+                    </div>
+                `;
+            }
+        }
+
+        function selectSearchResult(lat, lng) {
+            mapInstance.map.setView([lat, lng], 15);
+            document.getElementById('search-container').classList.remove('active');
+            document.getElementById('search-btn').classList.remove('active');
+        }
+
+        function togglePanel() {
+            const panel = document.getElementById('info-panel');
+            panel.classList.toggle('collapsed');
+        }
+
+        // Layer toggle functions
+        function toggleWeatherLayer() {
+            console.log('🌤️ Weather layer toggled');
+        }
+
+        function toggleWindLayer() {
+            console.log('🌬️ Wind layer toggled');
+        }
+
+        function toggleSatellite() {
+            const checkbox = document.getElementById('satellite-layer');
+            if (checkbox.checked) {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.street);
+                mapInstance.baseLayers.satellite.addTo(mapInstance.map);
+            } else {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.satellite);
+                mapInstance.baseLayers.street.addTo(mapInstance.map);
+            }
+        }
+
+        function toggleTerrain() {
+            const checkbox = document.getElementById('terrain-layer');
+            if (checkbox.checked) {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.street);
+                mapInstance.baseLayers.terrain.addTo(mapInstance.map);
+            } else {
+                mapInstance.map.removeLayer(mapInstance.baseLayers.terrain);
+                mapInstance.baseLayers.street.addTo(mapInstance.map);
+            }
+        }
+
+        // Quick action functions
+        function saveCurrentLocation() {
+            if (mapInstance.lastKnownPosition) {
+                const pos = mapInstance.lastKnownPosition;
+                mapInstance.setTentPosition(pos.latitude, pos.longitude);
+                alert('Position sauvegardée comme position de la tente!');
+            } else {
+                alert('Position actuelle non disponible');
+            }
+        }
+
+        function getDirections() {
+            if (mapInstance.tentMarker && mapInstance.userMarker) {
+                const tent = mapInstance.tentMarker.getLatLng();
+                const user = mapInstance.userMarker.getLatLng();
+                
+                const url = `https://www.google.com/maps/dir/${user.lat},${user.lng}/${tent.lat},${tent.lng}`;
+                window.open(url, '_blank');
+            } else {
+                alert('Positions de la tente et utilisateur requises');
+            }
+        }
+
+        function measureDistance() {
+            alert('Mode mesure activé. Cliquez sur deux points pour mesurer la distance.');
+        }
+
+        function emergencyLocation() {
+            if (mapInstance.lastKnownPosition) {
+                const pos = mapInstance.lastKnownPosition;
+                const coords = `${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`;
+                
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(coords).then(() => {
+                        alert(`Coordonnées d'urgence copiées: ${coords}`);
+                    });
+                } else {
+                    alert(`Coordonnées d'urgence: ${coords}`);
+                }
+            } else {
+                alert('Position actuelle non disponible');
+            }
+        }
+
+        // Initialize map
+        document.addEventListener('DOMContentLoaded', () => {
+            mapInstance = new SmartTentMap();
+            window.mapInstance = mapInstance;
+        });
+    </script>
+</body>
+</html>
