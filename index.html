@@ -2,907 +2,1244 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 📱 PWA META TAGS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4CAF50">
-    <title>🏕️ Découvrir Smart Tent</title>
+    <meta name="background-color" content="#4CAF50">
+    <meta name="display" content="standalone">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Smart Tent">
+    
+    <title>🏕️ Smart Tent - Gestion des Appareils</title>
+    
+    <!-- 🎯 PWA ICONS & MANIFEST -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="image/alllogo.png">
-    
-    <!-- ✅ MAIN CSS INTEGRATION -->
-    <link rel="stylesheet" href="main.css">
+    <link rel="apple-touch-icon" href="image/alllogo.png">
     
     <style>
-        /* Onboarding specific styles on top of main.css */
+        /* 🎨 ENHANCED SMART TENT THEME */
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #81C784;
+            --bg-green: #F1F8E9;
+            --warning-orange: #FF9800;
+            --danger-red: #F44336;
+            --info-blue: #2196F3;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --card-shadow: 0 8px 32px rgba(46, 125, 50, 0.15);
+            --border-radius: 16px;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+            overflow-x: hidden;
+        }
+
+        /* 🏠 MODERN HEADER */
+        .hero-header {
             background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
             color: white;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        .onboarding-container {
+            padding: 3rem 1rem;
+            text-align: center;
             position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .slides-container {
-            position: relative;
-            width: 90%;
-            max-width: 900px;
-            height: 80vh;
-            max-height: 600px;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
             overflow: hidden;
-            background: var(--bg-primary);
         }
 
-        .slide {
+        .hero-header::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="tent" patternUnits="userSpaceOnUse" width="20" height="20"><text x="10" y="15" text-anchor="middle" fill="rgba(255,255,255,0.1)" font-size="12">🏕️</text></pattern></defs><rect width="100" height="100" fill="url(%23tent)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 2;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 3rem 2rem;
-            transform: translateX(100%);
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
-            color: var(--text-dark);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .slide.active {
-            transform: translateX(0);
-            opacity: 1;
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            animation: logoFloat 3s ease-in-out infinite;
         }
 
-        .slide.prev {
-            transform: translateX(-100%);
-        }
-
-        .slide-1 { background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); }
-        .slide-2 { background: linear-gradient(135deg, #E3F2FD 0%, #F0F7FF 100%); }
-        .slide-3 { background: linear-gradient(135deg, #FFF3E0 0%, #FFF8F0 100%); }
-        .slide-4 { background: linear-gradient(135deg, #FFEBEE 0%, #FFF5F5 100%); }
-        .slide-5 { background: linear-gradient(135deg, #F3E5F5 0%, #FAF0FB 100%); }
-        .slide-6 { 
-            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%); 
-            color: white; 
-        }
-
-        .slide-icon {
-            font-size: 5rem;
-            margin-bottom: 2rem;
-            animation: floatIcon 3s ease-in-out infinite;
-        }
-
-        @keyframes floatIcon {
+        @keyframes logoFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
 
-        .slide-title {
-            font-size: 2.5rem;
+        .hero-title {
+            font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--text-dark);
-            animation: slideInUp 0.8s ease 0.2s both;
-        }
-
-        .slide-6 .slide-title {
-            color: white;
-        }
-
-        .slide-subtitle {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            color: var(--text-light);
-            max-width: 600px;
-            line-height: 1.6;
-            animation: slideInUp 0.8s ease 0.4s both;
-        }
-
-        .slide-6 .slide-subtitle {
-            color: rgba(255,255,255,0.9);
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-            max-width: 700px;
-            animation: slideInUp 0.8s ease 0.6s both;
-        }
-
-        .feature-item {
-            background: rgba(255,255,255,0.8);
-            padding: 1.5rem;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-md);
-            transition: transform var(--transition-normal);
-        }
-
-        .feature-item:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
             margin-bottom: 1rem;
-            display: block;
+            position: relative;
+            z-index: 2;
         }
 
-        .feature-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
 
-        .feature-description {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            line-height: 1.4;
+        /* 📱 CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
         }
 
-        .navigation {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            z-index: 10;
-        }
-
-        .nav-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all var(--transition-normal);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .nav-btn.primary {
-            background: var(--primary-green);
-            border-color: var(--dark-green);
-            box-shadow: var(--shadow-md);
-        }
-
-        .nav-btn.primary:hover {
-            background: var(--dark-green);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .progress-dots {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .progress-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.4);
-            transition: all var(--transition-normal);
-            cursor: pointer;
-        }
-
-        .progress-dot.active {
+        /* 🎯 PROJECT INFO SECTION */
+        .project-section {
             background: white;
-            transform: scale(1.3);
-        }
-
-        .interactive-demo {
-            background: rgba(76, 175, 80, 0.1);
-            border-radius: var(--radius-md);
-            padding: 2rem;
-            margin: 2rem 0;
-            border: 2px dashed var(--primary-green);
-            animation: slideInUp 0.8s ease 0.6s both;
-        }
-
-        .demo-screen {
-            background: #000;
-            border-radius: var(--radius-md);
-            padding: 1rem;
-            margin: 1rem 0;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--card-shadow);
             position: relative;
             overflow: hidden;
         }
 
-        .demo-values {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 1rem;
+        .project-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+        }
+
+        .section-title {
             color: var(--primary-green);
-            font-family: var(--font-mono);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .demo-value {
+        .section-title::before {
+            content: '🏕️';
+            font-size: 2.5rem;
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ✨ FEATURES GRID */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
             text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
         }
 
-        .demo-label {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            margin-bottom: 0.5rem;
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(46, 125, 50, 0.2);
+            border-color: var(--light-green);
         }
 
-        .demo-number {
-            font-size: 1.2rem;
-            font-weight: bold;
-            animation: numberFlicker 2s infinite;
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: featureFloat 4s ease-in-out infinite;
         }
 
-        @keyframes numberFlicker {
-            0%, 90%, 100% { opacity: 1; }
-            95% { opacity: 0.7; }
+        .feature-card:nth-child(2) .feature-icon { animation-delay: 1s; }
+        .feature-card:nth-child(3) .feature-icon { animation-delay: 2s; }
+        .feature-card:nth-child(4) .feature-icon { animation-delay: 3s; }
+
+        @keyframes featureFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
         }
 
-        .skip-btn {
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* 🔧 DEVICE MANAGEMENT SECTION */
+        .devices-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .devices-section::before {
+            content: '';
             position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--info-blue), var(--primary-green));
+        }
+
+        .devices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .devices-title {
+            color: var(--primary-green);
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .devices-title::before {
+            content: '🔧';
+            font-size: 2rem;
+        }
+
+        .add-device-btn {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all var(--transition-normal);
-            z-index: 10;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
         }
 
-        .skip-btn:hover {
-            background: rgba(255,255,255,0.3);
+        .add-device-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
         }
 
-        .floating-elements {
+        .add-device-btn::before {
+            content: '➕';
+            font-size: 1.2rem;
+        }
+
+        /* 📱 DEVICE CARDS */
+        .devices-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .device-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .device-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(46, 125, 50, 0.2);
+            border-color: var(--light-green);
+        }
+
+        .device-card::before {
+            content: '';
             position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .device-info {
+            flex: 1;
+        }
+
+        .device-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .device-name::before {
+            content: '🏕️';
+            font-size: 1.6rem;
+        }
+
+        .device-id {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+            background: var(--bg-green);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            animation: statusPulse 2s infinite;
+        }
+
+        .device-status.online {
+            background: rgba(76, 175, 80, 0.15);
+            color: var(--dark-green);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .device-status.offline {
+            background: rgba(244, 67, 54, 0.15);
+            color: #C62828;
+            border: 2px solid rgba(244, 67, 54, 0.3);
+            animation: none;
+        }
+
+        .device-status::before {
+            content: '●';
+            font-size: 1.2rem;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .device-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .device-btn {
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            flex: 1;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .device-btn.primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .device-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        .device-btn.secondary {
+            background: rgba(117, 117, 117, 0.1);
+            color: var(--text-light);
+            border: 2px solid rgba(117, 117, 117, 0.2);
+        }
+
+        .device-btn.secondary:hover {
+            background: rgba(117, 117, 117, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .device-btn.danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger-red);
+            border: 2px solid rgba(244, 67, 54, 0.2);
+        }
+
+        .device-btn.danger:hover {
+            background: var(--danger-red);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* 🚫 NO DEVICES STATE */
+        .no-devices {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: var(--border-radius);
+            border: 2px dashed #dee2e6;
+            margin: 2rem 0;
+        }
+
+        .no-devices-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .no-devices-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .no-devices-text {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* 🎭 MODALS */
+        .modal {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            overflow: hidden;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
         }
 
-        .floating-icon {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.1;
-            animation: floatAround 10s infinite linear;
+        .modal.show {
+            display: flex;
+            animation: modalShow 0.3s ease;
         }
 
-        @keyframes floatAround {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-            }
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-            }
+        @keyframes modalShow {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        /* Dark mode toggle for onboarding */
-        .onboarding-dark-toggle {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all var(--transition-normal);
-            z-index: 10;
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-green);
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-green);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.8rem;
         }
 
-        .onboarding-dark-toggle:hover {
-            background: rgba(255,255,255,0.3);
+        .modal-close {
+            background: rgba(244, 67, 54, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--danger-red);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        .modal-close:hover {
+            background: var(--danger-red);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .modal-btn.secondary {
+            background: #f8f9fa;
+            color: var(--text-light);
+            border: 2px solid #e1e5e9;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .modal-btn.danger {
+            background: var(--danger-red);
+            color: white;
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+        }
+
+        .modal-btn.danger:hover {
+            background: #D32F2F;
+            transform: translateY(-2px);
+        }
+
+        /* 🔔 NOTIFICATIONS */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--danger-red);
+        }
+
+        .notification.success {
+            background: var(--primary-green);
+        }
+
+        /* 📱 MOBILE RESPONSIVE */
         @media (max-width: 768px) {
-            .slides-container {
-                width: 95%;
-                height: 85vh;
+            .hero-title {
+                font-size: 2.2rem;
             }
 
-            .slide {
-                padding: 2rem 1.5rem;
-            }
-
-            .slide-title {
-                font-size: 2rem;
-            }
-
-            .slide-subtitle {
+            .hero-subtitle {
                 font-size: 1.1rem;
             }
 
-            .slide-icon {
-                font-size: 4rem;
-                margin-bottom: 1.5rem;
+            .container {
+                padding: 1rem;
+            }
+
+            .project-section,
+            .devices-section {
+                padding: 1.5rem;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 1.5rem;
             }
 
-            .navigation {
-                bottom: 1rem;
-                gap: 1rem;
+            .devices-list {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
-            .nav-btn {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.9rem;
+            .devices-header {
+                flex-direction: column;
+                align-items: stretch;
             }
 
-            .skip-btn, .onboarding-dark-toggle {
-                position: relative;
+            .device-actions {
+                flex-direction: column;
+            }
+
+            .device-btn {
+                flex: none;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
                 margin: 1rem;
             }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-btn {
+                width: 100%;
+            }
+        }
+
+        /* 🌙 DARK MODE */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-green: #1B2E20;
+                --text-dark: #E8F5E8;
+                --text-light: #A5D6A7;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0D1A0F 0%, #1B2E20 100%);
+            }
+            
+            .project-section,
+            .devices-section,
+            .device-card,
+            .modal-content {
+                background: #2C5530;
+                color: var(--text-dark);
+            }
+            
+            .form-input {
+                background: #1B2E20;
+                border-color: #3C6041;
+                color: var(--text-dark);
+            }
+        }
+
+        /* 🎯 LOADING STATES */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="onboarding-container">
-        <!-- 🌙 DARK MODE TOGGLE -->
-        <button class="onboarding-dark-toggle" onclick="toggleDarkMode()">
-            <span class="icon sun-icon">☀️</span>
-            <span class="icon moon-icon">🌙</span>
-            <span>Mode</span>
-        </button>
-
-        <!-- 🎭 SKIP BUTTON -->
-        <button class="skip-btn" onclick="skipOnboarding()">
-            Passer l'introduction →
-        </button>
-
-        <!-- 🎬 SLIDES CONTAINER -->
-        <div class="slides-container">
-            <!-- 🏕️ SLIDE 1: WELCOME -->
-            <div class="slide slide-1 active">
-                <div class="slide-icon">🏕️</div>
-                <h1 class="slide-title">Bienvenue dans Smart Tent</h1>
-                <p class="slide-subtitle">
-                    Découvrez la révolution du camping intelligent avec notre système IoT portable qui transforme votre tente en environnement connecté et sécurisé.
-                </p>
-                <div class="floating-elements">
-                    <div class="floating-icon" style="left: 10%; animation-delay: 0s;">🌟</div>
-                    <div class="floating-icon" style="left: 80%; animation-delay: 2s;">⚡</div>
-                    <div class="floating-icon" style="left: 50%; animation-delay: 4s;">🚀</div>
-                </div>
+    <!-- 🏠 HERO HEADER -->
+    <header class="hero-header">
+        <div class="logo-container">
+            <img src="image/logo.png" alt="Smart Tent Logo">
+            <div>
+                <h1 class="hero-title">Smart Tent</h1>
+                <p class="hero-subtitle">La solution intelligente pour un camping confortable et sécurisé</p>
             </div>
+        </div>
+    </header>
 
-            <!-- ✨ SLIDE 2: FEATURES -->
-            <div class="slide slide-2">
-                <div class="slide-icon">⚡</div>
-                <h1 class="slide-title">Fonctionnalités Intelligentes</h1>
-                <p class="slide-subtitle">
-                    Un écosystème complet de capteurs et d'intelligence artificielle pour votre confort et sécurité
-                </p>
-                
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <span class="feature-icon">🌡️</span>
-                        <div class="feature-title">Climat Intelligent</div>
-                        <div class="feature-description">Surveillance température et humidité en temps réel</div>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">📱</span>
-                        <div class="feature-title">App Mobile</div>
-                        <div class="feature-description">Interface intuitive accessible partout</div>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">🔋</span>
-                        <div class="feature-title">Autonomie Solaire</div>
-                        <div class="feature-description">Énergie renouvelable pour indépendance totale</div>
-                    </div>
-                </div>
+    <div class="container">
+        <!-- 🎯 PROJECT DESCRIPTION -->
+        <section class="project-section">
+            <h2 class="section-title">Notre Projet</h2>
+            <p class="project-description">
+                Smart Tent est une solution innovante qui transforme votre expérience de camping grâce à des capteurs intelligents connectés à votre tente. Surveillez en temps réel la température, l'humidité, la qualité de l'air et bien plus encore, même lorsque vous êtes loin de votre campement.
+            </p>
+            <p class="project-description">
+                Grâce à notre application Progressive Web App (PWA), accédez à vos données même sans connexion internet et recevez des alertes importantes directement sur votre appareil.
+            </p>
+        </section>
+
+        <!-- ✨ FEATURES GRID -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🌡️</span>
+                <h3 class="feature-title">Surveillance de la température</h3>
+                <p class="feature-description">Gardez un œil sur la température à l'intérieur et à l'extérieur de votre tente avec des alertes personnalisables.</p>
             </div>
-
-            <!-- 📊 SLIDE 3: MONITORING -->
-            <div class="slide slide-3">
-                <div class="slide-icon">📊</div>
-                <h1 class="slide-title">Surveillance Temps Réel</h1>
-                <p class="slide-subtitle">
-                    Gardez un œil sur toutes les conditions de votre campement, même à distance
-                </p>
-                
-                <div class="interactive-demo">
-                    <div class="demo-screen">
-                        <div class="demo-values">
-                            <div class="demo-value">
-                                <div class="demo-label">Température</div>
-                                <div class="demo-number" id="demo-temp">24°C</div>
-                            </div>
-                            <div class="demo-value">
-                                <div class="demo-label">Humidité</div>
-                                <div class="demo-number" id="demo-humidity">62%</div>
-                            </div>
-                            <div class="demo-value">
-                                <div class="demo-label">Gaz</div>
-                                <div class="demo-number" id="demo-gas">Safe</div>
-                            </div>
-                            <div class="demo-value">
-                                <div class="demo-label">Signal 4G</div>
-                                <div class="demo-number" id="demo-signal">●●●○</div>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 1rem; text-align: center;">
-                        📡 Données mises à jour toutes les 2 secondes
-                    </p>
-                </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">💧</span>
+                <h3 class="feature-title">Contrôle de l'humidité</h3>
+                <p class="feature-description">Évitez la condensation et gardez vos affaires au sec grâce au monitoring intelligent de l'humidité.</p>
             </div>
-
-            <!-- 🛡️ SLIDE 4: SECURITY -->
-            <div class="slide slide-4">
-                <div class="slide-icon">🛡️</div>
-                <h1 class="slide-title">Sécurité Avancée</h1>
-                <p class="slide-subtitle">
-                    Protection multi-niveaux pour votre tranquillité d'esprit lors de vos aventures
-                </p>
-                
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <span class="feature-icon">🚨</span>
-                        <div class="feature-title">Détection Gaz</div>
-                        <div class="feature-description">Alertes instantanées CO et gaz dangereux</div>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">👁️</span>
-                        <div class="feature-title">Surveillance Vidéo</div>
-                        <div class="feature-description">Monitoring périmètre avec détection mouvement</div>
-                    </div>
-                    <div class="feature-item">
-                        <span class="feature-icon">📍</span>
-                        <div class="feature-title">Localisation GPS</div>
-                        <div class="feature-description">Position précise pour secours d'urgence</div>
-                    </div>
-                </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">🌬️</span>
+                <h3 class="feature-title">Détection des gaz</h3>
+                <p class="feature-description">Soyez alerté instantanément en cas de détection de gaz potentiellement dangereux avec notifications push.</p>
             </div>
-
-            <!-- 🏕️ SLIDE 5: MULTI-TENT -->
-            <div class="slide slide-5">
-                <div class="slide-icon">🏕️</div>
-                <h1 class="slide-title">Gestion Multi-Tentes</h1>
-                <p class="slide-subtitle">
-                    Surveillez plusieurs campements simultanément - Parfait pour groupes scouts et expéditions
-                </p>
-                
-                <div class="interactive-demo">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0;">
-                        <div style="background: rgba(76, 175, 80, 0.1); padding: 1rem; border-radius: 8px; border: 2px solid var(--primary-green);">
-                            <div style="font-weight: 600; color: var(--primary-green);">🏕️ Tente Principale</div>
-                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
-                                ✅ En ligne<br>
-                                🌡️ 24°C<br>
-                                🛡️ Sécurisée
-                            </div>
-                        </div>
-                        <div style="background: rgba(33, 150, 243, 0.1); padding: 1rem; border-radius: 8px; border: 2px solid var(--info-blue);">
-                            <div style="font-weight: 600; color: var(--info-blue);">🏕️ Tente Scouts</div>
-                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
-                                ✅ En ligne<br>
-                                🌡️ 22°C<br>
-                                👁️ Surveillée
-                            </div>
-                        </div>
-                    </div>
-                    <p style="color: var(--text-light); font-size: 0.9rem; text-align: center;">
-                        Basculez instantanément entre vos différents campements
-                    </p>
-                </div>
-            </div>
-
-            <!-- 🚀 SLIDE 6: READY -->
-            <div class="slide slide-6">
-                <div class="slide-icon">🚀</div>
-                <h1 class="slide-title">Prêt pour l'Aventure !</h1>
-                <p class="slide-subtitle">
-                    Votre système Smart Tent est prêt à transformer votre expérience de camping. Commencez dès maintenant !
-                </p>
-                
-                <div style="margin: 2rem 0;">
-                    <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; backdrop-filter: blur(10px);">
-                        <h3 style="margin-bottom: 1rem;">⚡ Installation Express</h3>
-                        <p style="opacity: 0.9;">✅ 5-10 minutes maximum<br>
-                        ✅ Configuration automatique<br>
-                        ✅ Support tous âges<br>
-                        ✅ Autonomie illimitée</p>
-                    </div>
-                </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">📱</span>
+                <h3 class="feature-title">Application hors ligne</h3>
+                <p class="feature-description">Accédez à vos données même sans connexion réseau grâce à la technologie PWA avancée.</p>
             </div>
         </div>
 
-        <!-- 🎮 NAVIGATION -->
-        <div class="navigation">
-            <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>
-                ← Précédent
-            </button>
-            
-            <div class="progress-dots" id="progressDots">
-                <!-- Dots will be generated by JavaScript -->
+        <!-- 🔧 DEVICE MANAGEMENT -->
+        <section class="devices-section">
+            <div class="devices-header">
+                <h2 class="devices-title">Mes Appareils Smart Tent</h2>
+                <button id="add-device-btn" class="add-device-btn">Ajouter un appareil</button>
             </div>
             
-            <button class="nav-btn primary" id="nextBtn" onclick="changeSlide(1)">
-                Suivant →
-            </button>
+            <div id="devices-list" class="devices-list">
+                <!-- Les appareils seront insérés ici dynamiquement -->
+            </div>
+        </section>
+    </div>
+
+    <!-- 🎭 MODAL: ADD DEVICE -->
+    <div id="add-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Ajouter un appareil</h3>
+                <button class="modal-close" id="close-add-modal">&times;</button>
+            </div>
+            
+            <form id="add-device-form">
+                <div class="form-group">
+                    <label for="device-name" class="form-label">Nom de l'appareil</label>
+                    <input type="text" id="device-name" class="form-input" placeholder="Ex: Tente Principale" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="device-id" class="form-label">ID du Raspberry Pi</label>
+                    <input type="text" id="device-id" class="form-input" placeholder="tent_001, tent_002..." required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" id="cancel-add">Annuler</button>
+                    <button type="submit" class="modal-btn primary">Ajouter</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- 🌙 DARK MODE FUNCTIONALITY -->
+    <!-- 🎭 MODAL: EDIT DEVICE -->
+    <div id="edit-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Modifier l'appareil</h3>
+                <button class="modal-close" id="close-edit-modal">&times;</button>
+            </div>
+            
+            <form id="edit-device-form">
+                <input type="hidden" id="edit-device-index">
+                
+                <div class="form-group">
+                    <label for="edit-device-name" class="form-label">Nom de l'appareil</label>
+                    <input type="text" id="edit-device-name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-device-id" class="form-label">ID du Raspberry Pi</label>
+                    <input type="text" id="edit-device-id" class="form-input" required>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" id="cancel-edit">Annuler</button>
+                    <button type="submit" class="modal-btn primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🎭 MODAL: DELETE DEVICE -->
+    <div id="delete-device-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🗑️ Supprimer l'appareil</h3>
+                <button class="modal-close" id="close-delete-modal">&times;</button>
+            </div>
+            
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                Êtes-vous sûr de vouloir supprimer cet appareil ? Cette action est <strong>irréversible</strong>.
+            </p>
+            <div style="background: var(--bg-green); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--warning-orange);">
+                <strong id="delete-device-name"></strong>
+            </div>
+            
+            <input type="hidden" id="delete-device-index">
+            
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" id="cancel-delete">Annuler</button>
+                <button type="button" class="modal-btn danger" id="confirm-delete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔔 NOTIFICATION -->
+    <div id="notification" class="notification"></div>
+
     <script>
-        class DarkModeManager {
+        // 🏕️ ENHANCED SMART TENT DEVICE MANAGER
+        class SmartTentDeviceManager {
             constructor() {
+                this.devices = [];
                 this.init();
             }
-            
+
             init() {
-                const savedTheme = localStorage.getItem('smart-tent-theme');
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+                console.log('🏕️ Initializing Smart Tent Device Manager...');
                 
-                this.setTheme(initialTheme);
+                // Load saved devices
+                this.loadDevices();
                 
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                    if (!savedTheme) {
-                        this.setTheme(e.matches ? 'dark' : 'light');
-                    }
+                // Render device list
+                this.renderDeviceList();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                console.log('✅ Device manager initialized');
+            }
+
+            loadDevices() {
+                const savedDevices = localStorage.getItem('smartTentDevices');
+                if (savedDevices) {
+                    this.devices = JSON.parse(savedDevices);
+                }
+            }
+
+            saveDevices() {
+                localStorage.setItem('smartTentDevices', JSON.stringify(this.devices));
+            }
+
+            renderDeviceList() {
+                const container = document.getElementById('devices-list');
+                
+                if (this.devices.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-devices">
+                            <div class="no-devices-icon">🏕️</div>
+                            <h3 class="no-devices-title">Aucun appareil configuré</h3>
+                            <p class="no-devices-text">Ajoutez votre premier appareil Smart Tent pour commencer le monitoring</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                
+                this.devices.forEach((device, index) => {
+                    // Simulate online/offline status (replace with real status check)
+                    const isOnline = Math.random() > 0.3;
+                    const statusClass = isOnline ? 'online' : 'offline';
+                    const statusText = isOnline ? 'En ligne' : 'Hors ligne';
+                    
+                    html += `
+                        <div class="device-card" data-index="${index}">
+                            <div class="device-header">
+                                <div class="device-info">
+                                    <h3 class="device-name">${device.name}</h3>
+                                    <div class="device-id">ID: ${device.id}</div>
+                                </div>
+                                <div class="device-status ${statusClass}">
+                                    ${statusText}
+                                </div>
+                            </div>
+                            
+                            <div class="device-actions">
+                                <button class="device-btn primary connect-btn" data-index="${index}">
+                                    🚀 Connecter
+                                </button>
+                                <button class="device-btn secondary edit-btn" data-index="${index}">
+                                    ✏️ Modifier
+                                </button>
+                                <button class="device-btn danger delete-btn" data-index="${index}">
+                                    🗑️ Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    `;
                 });
                 
-                console.log('🌙 Dark mode initialized');
-            }
-            
-            setTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('smart-tent-theme', theme);
+                container.innerHTML = html;
                 
-                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-                if (themeColorMeta) {
-                    themeColorMeta.content = theme === 'dark' ? '#1B2E20' : '#4CAF50';
-                }
-                
-                this.updateToggleButton(theme);
-                
-                window.dispatchEvent(new CustomEvent('themeChanged', { 
-                    detail: { theme } 
-                }));
-                
-                console.log(`🌙 Theme set to: ${theme}`);
-            }
-            
-            toggle() {
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                this.setTheme(newTheme);
-                
-                this.showThemeChangeEffect();
-            }
-            
-            updateToggleButton(theme) {
-                const button = document.querySelector('.onboarding-dark-toggle');
-                if (button) {
-                    const textSpan = button.querySelector('span:last-child');
-                    if (textSpan) {
-                        textSpan.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
-                    }
-                }
-            }
-            
-            showThemeChangeEffect() {
-                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-                setTimeout(() => {
-                    document.body.style.transition = '';
-                }, 300);
-            }
-        }
-
-        const darkModeManager = new DarkModeManager();
-
-        function toggleDarkMode() {
-            darkModeManager.toggle();
-        }
-
-        window.darkModeManager = darkModeManager;
-    </script>
-    
-    <script>
-        // 🎬 ONBOARDING MANAGER
-        class SmartTentOnboarding {
-            constructor() {
-                this.currentSlide = 0;
-                this.totalSlides = 6;
-                this.isAnimating = false;
-                this.demoInterval = null;
-                
-                this.init();
+                // Add event listeners to buttons
+                this.attachDeviceListeners();
             }
 
-            init() {
-                console.log('🎬 Initializing Smart Tent Onboarding...');
-                
-                this.generateProgressDots();
-                this.updateNavigation();
-                this.startDemoAnimation();
-                this.setupKeyboardNavigation();
-                
-                console.log('✅ Onboarding initialized');
-            }
-
-            generateProgressDots() {
-                const dotsContainer = document.getElementById('progressDots');
-                dotsContainer.innerHTML = '';
-                
-                for (let i = 0; i < this.totalSlides; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = `progress-dot ${i === 0 ? 'active' : ''}`;
-                    dot.addEventListener('click', () => this.goToSlide(i));
-                    dotsContainer.appendChild(dot);
-                }
-            }
-
-            changeSlide(direction) {
-                if (this.isAnimating) return;
-                
-                const newSlide = this.currentSlide + direction;
-                
-                if (newSlide < 0 || newSlide >= this.totalSlides) return;
-                
-                this.goToSlide(newSlide);
-            }
-
-            goToSlide(slideIndex) {
-                if (this.isAnimating || slideIndex === this.currentSlide) return;
-                
-                this.isAnimating = true;
-                
-                const currentSlideEl = document.querySelector('.slide.active');
-                const nextSlideEl = document.querySelectorAll('.slide')[slideIndex];
-                
-                currentSlideEl.classList.remove('active');
-                currentSlideEl.classList.add('prev');
-                
-                nextSlideEl.classList.add('active');
-                nextSlideEl.classList.remove('prev');
-                
-                this.currentSlide = slideIndex;
-                
-                this.updateNavigation();
-                this.updateProgressDots();
-                
-                if (slideIndex === this.totalSlides - 1) {
-                    setTimeout(() => this.showConfetti(), 500);
-                }
-                
-                setTimeout(() => {
-                    this.isAnimating = false;
-                    document.querySelectorAll('.slide.prev').forEach(slide => {
-                        slide.classList.remove('prev');
+            attachDeviceListeners() {
+                // Connect buttons
+                document.querySelectorAll('.connect-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.connectToDevice(index);
                     });
-                }, 600);
+                });
+                
+                // Edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.openEditModal(index);
+                    });
+                });
+                
+                // Delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        this.openDeleteModal(index);
+                    });
+                });
             }
 
-            updateNavigation() {
-                const prevBtn = document.getElementById('prevBtn');
-                const nextBtn = document.getElementById('nextBtn');
+            connectToDevice(index) {
+                const device = this.devices[index];
                 
-                prevBtn.disabled = this.currentSlide === 0;
+                // Store selected device
+                localStorage.setItem('selectedTent', device.id);
+                localStorage.setItem('activeDevice', JSON.stringify(device));
                 
-                if (this.currentSlide === this.totalSlides - 1) {
-                    nextBtn.textContent = '🚀 Commencer';
-                    nextBtn.onclick = () => this.finishOnboarding();
-                } else {
-                    nextBtn.textContent = 'Suivant →';
-                    nextBtn.onclick = () => this.changeSlide(1);
-                }
+                // Show loading notification
+                this.showNotification('Connexion en cours...', 'success');
+                
+                // Simulate connection delay
+                setTimeout(() => {
+                    // Redirect to dashboard
+                    window.location.href = 'sensor.html';
+                }, 1500);
             }
 
-            updateProgressDots() {
-                const dots = document.querySelectorAll('.progress-dot');
-                dots.forEach((dot, index) => {
-                    if (index === this.currentSlide) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
+            setupEventListeners() {
+                // Add device button
+                document.getElementById('add-device-btn').addEventListener('click', () => {
+                    this.openAddModal();
+                });
+                
+                // Add device modal
+                this.setupAddModal();
+                this.setupEditModal();
+                this.setupDeleteModal();
+                
+                // Close modals when clicking outside
+                this.setupModalCloseEvents();
+            }
+
+            setupAddModal() {
+                const modal = document.getElementById('add-device-modal');
+                const form = document.getElementById('add-device-form');
+                
+                document.getElementById('close-add-modal').addEventListener('click', () => {
+                    this.closeModal('add-device-modal');
+                });
+                
+                document.getElementById('cancel-add').addEventListener('click', () => {
+                    this.closeModal('add-device-modal');
+                });
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const name = document.getElementById('device-name').value.trim();
+                    const id = document.getElementById('device-id').value.trim();
+                    
+                    if (name && id) {
+                        // Check if ID already exists
+                        if (this.devices.some(device => device.id === id)) {
+                            this.showNotification('Cet ID existe déjà!', 'error');
+                            return;
+                        }
+                        
+                        // Add new device
+                        this.devices.push({ name, id });
+                        this.saveDevices();
+                        this.renderDeviceList();
+                        
+                        // Close modal and show success
+                        this.closeModal('add-device-modal');
+                        form.reset();
+                        this.showNotification('Appareil ajouté avec succès!', 'success');
                     }
                 });
             }
 
-            startDemoAnimation() {
-                // Clear existing interval
-                if (this.demoInterval) {
-                    clearInterval(this.demoInterval);
-                }
+            setupEditModal() {
+                const modal = document.getElementById('edit-device-modal');
+                const form = document.getElementById('edit-device-form');
                 
-                // Animate demo values on slide 3
-                this.demoInterval = setInterval(() => {
-                    if (this.currentSlide === 2) { // Slide 3 (0-indexed)
-                        const tempEl = document.getElementById('demo-temp');
-                        const humidityEl = document.getElementById('demo-humidity');
-                        const gasEl = document.getElementById('demo-gas');
-                        const signalEl = document.getElementById('demo-signal');
-                        
-                        if (tempEl) {
-                            const temp = Math.floor(Math.random() * 5) + 22;
-                            tempEl.textContent = `${temp}°C`;
+                document.getElementById('close-edit-modal').addEventListener('click', () => {
+                    this.closeModal('edit-device-modal');
+                });
+                
+                document.getElementById('cancel-edit').addEventListener('click', () => {
+                    this.closeModal('edit-device-modal');
+                });
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const index = document.getElementById('edit-device-index').value;
+                    const name = document.getElementById('edit-device-name').value.trim();
+                    const id = document.getElementById('edit-device-id').value.trim();
+                    
+                    if (name && id && index !== null) {
+                        // Check if ID already exists (excluding current device)
+                        if (this.devices.some((device, i) => device.id === id && i != index)) {
+                            this.showNotification('Cet ID existe déjà!', 'error');
+                            return;
                         }
                         
-                        if (humidityEl) {
-                            const humidity = Math.floor(Math.random() * 10) + 58;
-                            humidityEl.textContent = `${humidity}%`;
-                        }
+                        // Update device
+                        this.devices[index] = { name, id };
+                        this.saveDevices();
+                        this.renderDeviceList();
                         
-                        if (gasEl) {
-                            const gases = ['Safe', 'OK', 'Good'];
-                            gasEl.textContent = gases[Math.floor(Math.random() * gases.length)];
-                        }
-                        
-                        if (signalEl) {
-                            const signals = ['●●●●', '●●●○', '●●○○', '●●●○'];
-                            signalEl.textContent = signals[Math.floor(Math.random() * signals.length)];
-                        }
+                        // Close modal and show success
+                        this.closeModal('edit-device-modal');
+                        this.showNotification('Appareil modifié avec succès!', 'success');
                     }
-                }, 2000);
+                });
             }
 
-            setupKeyboardNavigation() {
+            setupDeleteModal() {
+                document.getElementById('close-delete-modal').addEventListener('click', () => {
+                    this.closeModal('delete-device-modal');
+                });
+                
+                document.getElementById('cancel-delete').addEventListener('click', () => {
+                    this.closeModal('delete-device-modal');
+                });
+                
+                document.getElementById('confirm-delete').addEventListener('click', () => {
+                    const index = document.getElementById('delete-device-index').value;
+                    
+                    if (index !== null) {
+                        // Remove device
+                        const deviceName = this.devices[index].name;
+                        this.devices.splice(index, 1);
+                        this.saveDevices();
+                        this.renderDeviceList();
+                        
+                        // Close modal and show success
+                        this.closeModal('delete-device-modal');
+                        this.showNotification(`"${deviceName}" supprimé avec succès!`, 'success');
+                    }
+                });
+            }
+
+            setupModalCloseEvents() {
+                // Close modals when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        e.target.classList.remove('show');
+                    }
+                });
+                
+                // Close modals with Escape key
                 document.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft') {
-                        this.changeSlide(-1);
-                    } else if (e.key === 'ArrowRight') {
-                        this.changeSlide(1);
-                    } else if (e.key === 'Escape') {
-                        this.skipOnboarding();
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.modal.show').forEach(modal => {
+                            modal.classList.remove('show');
+                        });
                     }
                 });
             }
 
-            showConfetti() {
-                // Create confetti container if it doesn't exist
-                let confettiContainer = document.getElementById('confetti');
-                if (!confettiContainer) {
-                    confettiContainer = document.createElement('div');
-                    confettiContainer.id = 'confetti';
-                    confettiContainer.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        pointer-events: none;
-                        z-index: 100;
-                    `;
-                    document.body.appendChild(confettiContainer);
-                }
-                
-                const colors = ['#4CAF50', '#81C784', '#66BB6A', '#A5D6A7'];
-                
-                for (let i = 0; i < 50; i++) {
-                    const confettiPiece = document.createElement('div');
-                    confettiPiece.style.cssText = `
-                        position: absolute;
-                        width: 10px;
-                        height: 10px;
-                        background: ${colors[Math.floor(Math.random() * colors.length)]};
-                        left: ${Math.random() * 100}%;
-                        animation: confettiFall ${Math.random() * 2 + 2}s ease-out forwards;
-                        animation-delay: ${Math.random() * 2}s;
-                    `;
-                    
-                    confettiContainer.appendChild(confettiPiece);
-                    
-                    setTimeout(() => {
-                        confettiPiece.remove();
-                    }, 5000);
-                }
+            openAddModal() {
+                this.openModal('add-device-modal');
             }
 
-            finishOnboarding() {
-                localStorage.setItem('smartTentOnboardingCompleted', 'true');
+            openEditModal(index) {
+                const device = this.devices[index];
                 
-                // Clear demo interval
-                if (this.demoInterval) {
-                    clearInterval(this.demoInterval);
-                }
+                document.getElementById('edit-device-index').value = index;
+                document.getElementById('edit-device-name').value = device.name;
+                document.getElementById('edit-device-id').value = device.id;
                 
-                window.location.href = 'sensor.html';
+                this.openModal('edit-device-modal');
             }
 
-            skipOnboarding() {
-                // Clear demo interval
-                if (this.demoInterval) {
-                    clearInterval(this.demoInterval);
-                }
+            openDeleteModal(index) {
+                const device = this.devices[index];
                 
-                window.location.href = 'dashboard.html';
+                document.getElementById('delete-device-index').value = index;
+                document.getElementById('delete-device-name').textContent = device.name;
+                
+                this.openModal('delete-device-modal');
+            }
+
+            openModal(modalId) {
+                document.getElementById(modalId).classList.add('show');
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
             }
         }
 
-        // Global functions
-        let onboarding;
-
-        function changeSlide(direction) {
-            onboarding.changeSlide(direction);
-        }
-
-        function skipOnboarding() {
-            onboarding.skipOnboarding();
-        }
-
-        // CSS animation for confetti
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes confettiFall {
-                0% {
-                    transform: translateY(-100vh) rotate(0deg);
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateY(100vh) rotate(720deg);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Initialize onboarding
+        // 🚀 INITIALIZE DEVICE MANAGER
         document.addEventListener('DOMContentLoaded', () => {
-            onboarding = new SmartTentOnboarding();
+            const deviceManager = new SmartTentDeviceManager();
         });
 
-        // PWA Service Worker Registration
+        // 📱 PWA SERVICE WORKER REGISTRATION
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
