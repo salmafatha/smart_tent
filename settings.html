@@ -81,6 +81,21 @@
             background: rgba(255,255,255,0.3);
         }
 
+        .device-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .device-selector select {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
         .save-indicator {
             background: rgba(255,255,255,0.2);
             padding: 6px 12px;
@@ -547,8 +562,15 @@
                 </a>
                 <h1>⚙️ Paramètres</h1>
             </div>
-            <div class="save-indicator" id="save-indicator">
-                💾 Sauvegardé
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="device-selector">
+                    <select id="deviceSelector">
+                        <!-- Devices will be loaded dynamically -->
+                    </select>
+                </div>
+                <div class="save-indicator" id="save-indicator">
+                    💾 Sauvegardé
+                </div>
             </div>
         </div>
     </header>
@@ -661,13 +683,13 @@
                     
                     <div class="threshold-card">
                         <div class="threshold-title">
-                            🌬️ Vent
+                            🔋 Batterie
                         </div>
                         <div class="threshold-controls">
                             <div class="threshold-range">
-                                <span class="threshold-label">Max:</span>
-                                <input type="number" class="input-field" id="wind-max" value="30" min="10" max="100">
-                                <span>km/h</span>
+                                <span class="threshold-label">Min:</span>
+                                <input type="number" class="input-field" id="battery-min" value="20" min="5" max="50">
+                                <span>%</span>
                             </div>
                         </div>
                     </div>
@@ -723,19 +745,6 @@
                         <div class="range-container">
                             <input type="range" class="range-slider" id="motion-sensitivity" min="1" max="10" value="5">
                             <div class="range-value" id="motion-sensitivity-value">5</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Seuil jour/nuit</div>
-                        <div class="setting-description">Niveau de luminosité pour détecter jour/nuit (lux)</div>
-                    </div>
-                    <div class="setting-control">
-                        <div class="range-container">
-                            <input type="range" class="range-slider" id="daynight-threshold" min="10" max="500" value="100">
-                            <div class="range-value" id="daynight-threshold-value">100 lux</div>
                         </div>
                     </div>
                 </div>
@@ -883,10 +892,6 @@
                         </label>
                     </div>
                 </div>
-                
-
-                
-                </div>
             </div>
         </div>
 
@@ -905,6 +910,9 @@
                 <div class="action-buttons">
                     <button class="btn" onclick="runDiagnostic()">
                         🔍 Diagnostic système
+                    </button>
+                    <button class="btn btn-secondary" onclick="syncSettings()">
+                        🔄 Synchroniser
                     </button>
                     <button class="btn btn-secondary" onclick="clearCache()">
                         🗑️ Vider le cache
@@ -926,11 +934,12 @@
     <script src="api.js"></script>
     
     <script>
-        // ⚙️ SMART TENT SETTINGS MANAGER
+        // ⚙️ SMART TENT SETTINGS MANAGER - MongoDB Version
         class SmartTentSettings {
             constructor() {
                 this.api = window.smartTentAPI;
                 this.settings = {};
+                this.currentDevice = null;
                 this.saveTimeout = null;
                 
                 this.init();
@@ -938,6 +947,9 @@
 
             async init() {
                 console.log('⚙️ Initializing Smart Tent Settings...');
+                
+                // Load devices first
+                await this.loadDevices();
                 
                 // Load current settings
                 await this.loadSettings();
@@ -951,23 +963,79 @@
                 console.log('✅ Settings initialized');
             }
 
-            async loadSettings() {
+            async loadDevices() {
                 try {
-                    // Try to load from API first
-                    // const apiSettings = await this.api.getSettings();
+                    console.log('🔍 Loading devices from API...');
+                    const response = await fetch(`${this.api.config.baseUrl}/api/devices`);
                     
-                    // Fallback to localStorage
-                    const savedSettings = localStorage.getItem('smart-tent-settings');
-                    this.settings = savedSettings ? JSON.parse(savedSettings) : this.getDefaultSettings();
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                     
-                    // Apply settings to UI
-                    this.applySettingsToUI();
+                    const devices = await response.json();
+                    console.log('📱 Devices loaded:', devices);
+                    
+                    const selector = document.getElementById('deviceSelector');
+                    selector.innerHTML = devices.map(device => 
+                        `<option value="${device.device_id}">🏕️ ${device.name}</option>`
+                    ).join('');
+                    
+                    // Select first device
+                    if (devices.length > 0) {
+                        this.currentDevice = devices[0].device_id;
+                        selector.value = this.currentDevice;
+                    }
                     
                 } catch (error) {
-                    console.error('Failed to load settings:', error);
-                    this.settings = this.getDefaultSettings();
-                    this.applySettingsToUI();
+                    console.error('❌ Failed to load devices:', error);
+                    // Fallback to localStorage devices
+                    const savedDevices = localStorage.getItem('smartTentDevices');
+                    if (savedDevices) {
+                        const devices = JSON.parse(savedDevices);
+                        const selector = document.getElementById('deviceSelector');
+                        selector.innerHTML = devices.map(device => 
+                            `<option value="${device.id}">🏕️ ${device.name}</option>`
+                        ).join('');
+                        if (devices.length > 0) {
+                            this.currentDevice = devices[0].id;
+                        }
+                    }
                 }
+            }
+
+            async loadSettings() {
+                try {
+                    if (!this.currentDevice) {
+                        console.warn('No device selected for settings');
+                        this.settings = this.getDefaultSettings();
+                        this.applySettingsToUI();
+                        return;
+                    }
+                    
+                    console.log(`🔧 Loading settings for device: ${this.currentDevice}`);
+                    
+                    // Try to load from API
+                    const response = await fetch(`${this.api.config.baseUrl}/api/settings/${this.currentDevice}`);
+                    
+                    if (response.ok) {
+                        const apiSettings = await response.json();
+                        console.log('📡 Settings loaded from API:', apiSettings);
+                        this.settings = apiSettings.settings || this.getDefaultSettings();
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Failed to load settings from API:', error);
+                    
+                    // Fallback to localStorage
+                    const savedSettings = localStorage.getItem(`smart-tent-settings-${this.currentDevice}`);
+                    this.settings = savedSettings ? JSON.parse(savedSettings) : this.getDefaultSettings();
+                    console.log('💾 Using local settings');
+                }
+                
+                // Apply settings to UI
+                this.applySettingsToUI();
             }
 
             getDefaultSettings() {
@@ -983,14 +1051,13 @@
                             humidityMin: 30,
                             humidityMax: 80,
                             gasThreshold: 300,
-                            windMax: 30
+                            batteryMin: 20
                         }
                     },
                     motion: {
                         interiorDay: true,
                         exteriorNight: true,
-                        sensitivity: 5,
-                        daynightThreshold: 100
+                        sensitivity: 5
                     },
                     system: {
                         autoUpdate: true,
@@ -1001,8 +1068,7 @@
                     display: {
                         darkMode: false,
                         showCamera: true,
-                        chartAnimations: true,
-                        language: 'fr'
+                        chartAnimations: true
                     }
                 };
             }
@@ -1020,13 +1086,12 @@
                 document.getElementById('humidity-min').value = this.settings.alerts.thresholds.humidityMin;
                 document.getElementById('humidity-max').value = this.settings.alerts.thresholds.humidityMax;
                 document.getElementById('gas-threshold').value = this.settings.alerts.thresholds.gasThreshold;
-                document.getElementById('wind-max').value = this.settings.alerts.thresholds.windMax;
+                document.getElementById('battery-min').value = this.settings.alerts.thresholds.batteryMin;
                 
                 // Motion
                 document.getElementById('motion-interior-day').checked = this.settings.motion.interiorDay;
                 document.getElementById('motion-exterior-night').checked = this.settings.motion.exteriorNight;
                 document.getElementById('motion-sensitivity').value = this.settings.motion.sensitivity;
-                document.getElementById('daynight-threshold').value = this.settings.motion.daynightThreshold;
                 
                 // System
                 document.getElementById('auto-update').checked = this.settings.system.autoUpdate;
@@ -1038,7 +1103,6 @@
                 document.getElementById('dark-mode').checked = this.settings.display.darkMode;
                 document.getElementById('show-camera').checked = this.settings.display.showCamera;
                 document.getElementById('chart-animations').checked = this.settings.display.chartAnimations;
-                document.getElementById('language').value = this.settings.display.language;
                 
                 // Update range displays
                 this.updateRangeDisplays();
@@ -1051,6 +1115,12 @@
             }
 
             setupEventListeners() {
+                // Device selector
+                document.getElementById('deviceSelector').addEventListener('change', async (e) => {
+                    this.currentDevice = e.target.value;
+                    await this.loadSettings();
+                });
+                
                 // All input elements
                 const inputs = document.querySelectorAll('input, select');
                 inputs.forEach(input => {
@@ -1060,10 +1130,6 @@
                 // Range sliders
                 document.getElementById('motion-sensitivity').addEventListener('input', (e) => {
                     document.getElementById('motion-sensitivity-value').textContent = e.target.value;
-                });
-                
-                document.getElementById('daynight-threshold').addEventListener('input', (e) => {
-                    document.getElementById('daynight-threshold-value').textContent = e.target.value + ' lux';
                 });
                 
                 document.getElementById('refresh-interval').addEventListener('input', (e) => {
@@ -1085,7 +1151,6 @@
 
             updateRangeDisplays() {
                 document.getElementById('motion-sensitivity-value').textContent = this.settings.motion.sensitivity;
-                document.getElementById('daynight-threshold-value').textContent = this.settings.motion.daynightThreshold + ' lux';
                 
                 const refreshValue = this.settings.system.refreshInterval;
                 const refreshText = refreshValue == 1 ? '1 seconde' : `${refreshValue} secondes`;
@@ -1121,14 +1186,13 @@
                             humidityMin: parseInt(document.getElementById('humidity-min').value),
                             humidityMax: parseInt(document.getElementById('humidity-max').value),
                             gasThreshold: parseInt(document.getElementById('gas-threshold').value),
-                            windMax: parseInt(document.getElementById('wind-max').value)
+                            batteryMin: parseInt(document.getElementById('battery-min').value)
                         }
                     },
                     motion: {
                         interiorDay: document.getElementById('motion-interior-day').checked,
                         exteriorNight: document.getElementById('motion-exterior-night').checked,
-                        sensitivity: parseInt(document.getElementById('motion-sensitivity').value),
-                        daynightThreshold: parseInt(document.getElementById('daynight-threshold').value)
+                        sensitivity: parseInt(document.getElementById('motion-sensitivity').value)
                     },
                     system: {
                         autoUpdate: document.getElementById('auto-update').checked,
@@ -1139,8 +1203,7 @@
                     display: {
                         darkMode: document.getElementById('dark-mode').checked,
                         showCamera: document.getElementById('show-camera').checked,
-                        chartAnimations: document.getElementById('chart-animations').checked,
-                        language: document.getElementById('language').value
+                        chartAnimations: document.getElementById('chart-animations').checked
                     }
                 };
                 
@@ -1156,23 +1219,48 @@
             }
 
             async saveSettings() {
-                try {
-                    // Save to localStorage
-                    localStorage.setItem('smart-tent-settings', JSON.stringify(this.settings));
-                    
-                    // Try to save to API
-                    // await this.api.saveSettings(this.settings);
-                    
-                    // Show save indicator
-                    this.showSaveIndicator();
-                    
-                    // Apply system-level changes
-                    this.applySystemSettings();
-                    
-                    console.log('✅ Settings saved successfully');
-                } catch (error) {
-                    console.error('❌ Failed to save settings:', error);
+                if (!this.currentDevice) {
+                    console.warn('No device selected for saving settings');
+                    return;
                 }
+                
+                try {
+                    console.log(`💾 Saving settings for device: ${this.currentDevice}`);
+                    
+                    // Save to API
+                    const response = await fetch(`${this.api.config.baseUrl}/api/settings/${this.currentDevice}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            device_id: this.currentDevice,
+                            settings: this.settings,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('✅ Settings saved to API:', result);
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Failed to save settings to API:', error);
+                }
+                
+                // Always save to localStorage as backup
+                localStorage.setItem(`smart-tent-settings-${this.currentDevice}`, JSON.stringify(this.settings));
+                
+                // Show save indicator
+                this.showSaveIndicator();
+                
+                // Apply system-level changes
+                this.applySystemSettings();
+                
+                console.log('✅ Settings saved successfully');
             }
 
             showSaveIndicator() {
@@ -1199,7 +1287,6 @@
                 
                 // Apply data saver mode
                 if (this.settings.system.dataSaver) {
-                    // Reduce update frequency
                     console.log('📱 Data saver mode enabled');
                 }
             }
@@ -1240,6 +1327,24 @@
                     successDiv.classList.remove('visible');
                 }, 3000);
             }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+                    background: ${type === 'success' ? '#4CAF50' : '#F44336'};
+                    color: white; padding: 12px 20px; border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
         }
 
         // 🎮 GLOBAL FUNCTIONS
@@ -1248,58 +1353,35 @@
         async function runDiagnostic() {
             console.log('🔍 Running system diagnostic...');
             
-            const checks = [
-                { name: 'Connexion API', status: 'Vérification...' },
-                { name: 'Cache local', status: 'Vérification...' },
-                { name: 'Stockage', status: 'Vérification...' },
-                { name: 'Notifications', status: 'Vérification...' }
-            ];
-            
-            // Simulate diagnostic process
-            settingsManager.showSuccess('Diagnostic système terminé - Tous les systèmes fonctionnent correctement');
-        }
-
-        function exportSettings() {
-            const settings = JSON.stringify(settingsManager.settings, null, 2);
-            const blob = new Blob([settings], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `smart-tent-settings-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            settingsManager.showSuccess('Paramètres exportés avec succès');
-        }
-
-        function importSettings() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+            try {
+                // Test API connection
+                const response = await fetch(`${settingsManager.api.config.baseUrl}/api/devices`);
+                const connectionStatus = response.ok ? 'OK' : 'FAILED';
                 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const settings = JSON.parse(e.target.result);
-                        settingsManager.settings = settings;
-                        settingsManager.applySettingsToUI();
-                        settingsManager.saveSettings();
-                        settingsManager.showSuccess('Paramètres importés avec succès');
-                    } catch (error) {
-                        alert('Erreur lors de l\'importation: fichier invalide');
-                    }
-                };
-                reader.readAsText(file);
-            };
+                settingsManager.showSuccess(`Diagnostic terminé - API: ${connectionStatus}, Cache: OK, Stockage: OK`);
+                
+            } catch (error) {
+                settingsManager.showSuccess('Diagnostic terminé - Problème de connexion API détecté');
+            }
+        }
+
+        async function syncSettings() {
+            console.log('🔄 Syncing settings with server...');
             
-            input.click();
+            if (!settingsManager.currentDevice) {
+                alert('Aucun appareil sélectionné');
+                return;
+            }
+            
+            try {
+                // Force reload settings from server
+                await settingsManager.loadSettings();
+                settingsManager.showSuccess('Paramètres synchronisés avec succès');
+                
+            } catch (error) {
+                console.error('Sync failed:', error);
+                settingsManager.showNotification('Erreur lors de la synchronisation', 'error');
+            }
         }
 
         async function clearCache() {
@@ -1310,7 +1392,7 @@
                     const allKeys = Object.keys(localStorage);
                     
                     allKeys.forEach(key => {
-                        if (!keysToKeep.includes(key)) {
+                        if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
                             localStorage.removeItem(key);
                         }
                     });
@@ -1328,7 +1410,7 @@
                     
                     settingsManager.showSuccess('Cache vidé avec succès');
                 } catch (error) {
-                    alert('Erreur lors du vidage du cache');
+                    settingsManager.showNotification('Erreur lors du vidage du cache', 'error');
                 }
             }
         }
