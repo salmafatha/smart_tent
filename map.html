@@ -76,7 +76,7 @@
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
             z-index: 1000;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             transition: transform var(--transition-normal);
         }
@@ -168,6 +168,27 @@
             font-size: 0.9rem;
         }
 
+        .device-selector {
+            position: absolute;
+            top: 140px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--bg-primary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 12px;
+            min-width: 200px;
+        }
+
+        .device-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid var(--bg-accent);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-dark);
+        }
+
         .weather-info {
             background: linear-gradient(135deg, var(--info-blue) 0%, #1976D2 100%);
             color: white;
@@ -225,6 +246,33 @@
             display: none;
         }
 
+        .gps-status {
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.searching { background: #FF9800; }
+        .status-dot.active { background: #4CAF50; }
+        .status-dot.error { background: #F44336; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         @media (max-width: 767px) {
             .map-controls {
                 right: 10px;
@@ -248,11 +296,17 @@
                 top: 10px;
                 width: calc(100% - 120px);
             }
+
+            .device-selector {
+                right: 10px;
+                top: 120px;
+                min-width: 150px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 🏠 HEADER with dark mode toggle -->
+    <!-- 🏠 HEADER -->
     <header>
         <div class="header-content">
             <div class="logo">
@@ -263,9 +317,8 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 1rem;">
-                
-                <div class="connection-status">
-                    <div id="gps-status-dot" class="status-dot"></div>
+                <div class="gps-status" id="gps-status">
+                    <div class="status-dot searching" id="gps-status-dot"></div>
                     <span id="gps-status-text">GPS recherche...</span>
                 </div>
             </div>
@@ -284,6 +337,13 @@
                 
                 <!-- Main Map -->
                 <div id="main-map"></div>
+                
+                <!-- 📱 DEVICE SELECTOR -->
+                <div class="device-selector">
+                    <select id="device-select" class="device-select">
+                        <option value="">Chargement des appareils...</option>
+                    </select>
+                </div>
                 
                 <!-- 🎮 MAP CONTROLS -->
                 <div class="map-controls">
@@ -414,90 +474,15 @@
     <!-- Include API -->
     <script src="api.js"></script>
     
-    <!-- 🌙 DARK MODE FUNCTIONALITY -->
     <script>
-        class DarkModeManager {
-            constructor() {
-                this.init();
-            }
-            
-            init() {
-                const savedTheme = localStorage.getItem('smart-tent-theme');
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-                
-                this.setTheme(initialTheme);
-                
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                    if (!savedTheme) {
-                        this.setTheme(e.matches ? 'dark' : 'light');
-                    }
-                });
-                
-                console.log('🌙 Dark mode initialized');
-            }
-            
-            setTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('smart-tent-theme', theme);
-                
-                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-                if (themeColorMeta) {
-                    themeColorMeta.content = theme === 'dark' ? '#1B2E20' : '#4CAF50';
-                }
-                
-                this.updateToggleButton(theme);
-                
-                window.dispatchEvent(new CustomEvent('themeChanged', { 
-                    detail: { theme } 
-                }));
-                
-                console.log(`🌙 Theme set to: ${theme}`);
-            }
-            
-            toggle() {
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                this.setTheme(newTheme);
-                
-                this.showThemeChangeEffect();
-            }
-            
-            updateToggleButton(theme) {
-                const button = document.querySelector('.dark-mode-toggle');
-                if (button) {
-                    const textSpan = button.querySelector('span:last-child');
-                    if (textSpan) {
-                        textSpan.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
-                    }
-                }
-            }
-            
-            showThemeChangeEffect() {
-                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-                setTimeout(() => {
-                    document.body.style.transition = '';
-                }, 300);
-            }
-        }
-
-        const darkModeManager = new DarkModeManager();
-
-        function toggleDarkMode() {
-            darkModeManager.toggle();
-        }
-
-        window.darkModeManager = darkModeManager;
-    </script>
-    
-    <script>
-        // 🗺️ SMART TENT MAP SYSTEM
+        // 🗺️ SMART TENT MAP SYSTEM WITH MONGODB INTEGRATION
         class SmartTentMap {
             constructor() {
                 this.api = window.smartTentAPI;
                 this.map = null;
-                this.tentMarker = null;
+                this.tentMarkers = new Map(); // Store markers for multiple devices
                 this.userMarker = null;
+                this.currentDevice = null;
                 this.isTracking = false;
                 this.watchId = null;
                 this.lastKnownPosition = null;
@@ -508,12 +493,12 @@
             }
 
             async init() {
-                console.log('🗺️ Initializing Smart Tent Map System...');
+                console.log('🗺️ Initializing Smart Tent Map System with MongoDB...');
                 
                 try {
                     await this.initMap();
+                    await this.loadDevices();
                     this.startGPSTracking();
-                    await this.loadTentPosition();
                     await this.loadWeatherData();
                     this.setupEventListeners();
                     
@@ -557,10 +542,56 @@
                 this.baseLayers.street.addTo(this.map);
                 
                 this.map.on('click', (e) => {
-                    this.setTentPosition(e.latlng.lat, e.latlng.lng);
+                    if (this.currentDevice) {
+                        this.setTentPosition(e.latlng.lat, e.latlng.lng);
+                    }
                 });
                 
                 console.log('🗺️ Map initialized');
+            }
+
+            async loadDevices() {
+                try {
+                    const devices = await this.api.getDevices();
+                    const deviceSelect = document.getElementById('device-select');
+                    
+                    if (devices.length === 0) {
+                        deviceSelect.innerHTML = '<option value="">Aucun appareil trouvé</option>';
+                        return;
+                    }
+                    
+                    deviceSelect.innerHTML = devices.map(device => 
+                        `<option value="${device.id}">🏕️ ${device.name}</option>`
+                    ).join('');
+                    
+                    // Load tent positions for all devices
+                    for (const device of devices) {
+                        await this.loadTentPosition(device.id);
+                    }
+                    
+                    // Select current device
+                    const savedDevice = localStorage.getItem('selectedTent');
+                    if (savedDevice && devices.some(d => d.id === savedDevice)) {
+                        this.currentDevice = savedDevice;
+                        deviceSelect.value = savedDevice;
+                        this.api.setCurrentDevice(savedDevice);
+                    } else if (devices.length > 0) {
+                        this.currentDevice = devices[0].id;
+                        deviceSelect.value = this.currentDevice;
+                        this.api.setCurrentDevice(this.currentDevice);
+                    }
+                    
+                    // Center on current device
+                    if (this.currentDevice && this.tentMarkers.has(this.currentDevice)) {
+                        const marker = this.tentMarkers.get(this.currentDevice);
+                        this.map.setView(marker.getLatLng(), 15);
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to load devices:', error);
+                    document.getElementById('device-select').innerHTML = 
+                        '<option value="">Erreur de chargement</option>';
+                }
             }
 
             startGPSTracking() {
@@ -608,10 +639,6 @@
                 });
                 
                 this.updateUserMarker(latitude, longitude);
-                
-                if (!this.tentMarker) {
-                    this.suggestTentPosition(latitude, longitude);
-                }
             }
 
             handleGPSError(error) {
@@ -669,89 +696,90 @@
                 }
             }
 
-            async loadTentPosition() {
-                const savedPosition = localStorage.getItem('smart-tent-position');
-                if (savedPosition) {
-                    const { lat, lng } = JSON.parse(savedPosition);
-                    this.setTentPosition(lat, lng, false);
+            async loadTentPosition(deviceId) {
+                try {
+                    // Get GPS data from MongoDB for this device
+                    this.api.setCurrentDevice(deviceId);
+                    const sensorData = await this.api.getAllSensorData();
+                    
+                    if (sensorData && sensorData.gps && sensorData.gps.latitude && sensorData.gps.longitude) {
+                        const { latitude, longitude } = sensorData.gps;
+                        this.setTentPosition(latitude, longitude, deviceId, false);
+                    } else {
+                        // Fallback to localStorage
+                        const savedPosition = localStorage.getItem(`smart-tent-position-${deviceId}`);
+                        if (savedPosition) {
+                            const { lat, lng } = JSON.parse(savedPosition);
+                            this.setTentPosition(lat, lng, deviceId, false);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Failed to load tent position for ${deviceId}:`, error);
                 }
             }
 
-            setTentPosition(lat, lng, save = true) {
-                console.log('🏕️ Setting tent position:', { lat, lng });
+            setTentPosition(lat, lng, deviceId = null, save = true) {
+                const targetDevice = deviceId || this.currentDevice;
+                if (!targetDevice) return;
                 
-                if (this.tentMarker) {
-                    this.tentMarker.setLatLng([lat, lng]);
-                } else {
-                    this.tentMarker = L.marker([lat, lng], {
-                        icon: L.divIcon({
-                            className: 'tent-marker',
-                            html: '🏕️',
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 15]
-                        })
-                    }).addTo(this.map);
-                    
-                    this.tentMarker.bindPopup('IM HERE ✌🏻');
+                console.log('🏕️ Setting tent position for', targetDevice, ':', { lat, lng });
+                
+                // Remove existing marker for this device
+                if (this.tentMarkers.has(targetDevice)) {
+                    this.map.removeLayer(this.tentMarkers.get(targetDevice));
                 }
+                
+                // Create new marker
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'tent-marker',
+                        html: '🏕️',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(this.map);
+                
+                marker.bindPopup(`🏕️ ${targetDevice} - Position sauvegardée`);
+                this.tentMarkers.set(targetDevice, marker);
                 
                 if (save) {
-                    localStorage.setItem('smart-tent-position', JSON.stringify({ lat, lng }));
+                    localStorage.setItem(`smart-tent-position-${targetDevice}`, JSON.stringify({ lat, lng }));
+                    
+                    // Send position update to backend if this is current device
+                    if (targetDevice === this.currentDevice) {
+                        this.sendPositionUpdate(lat, lng);
+                    }
                 }
                 
+                // Center map on this position
                 this.map.setView([lat, lng], 15);
             }
 
-            suggestTentPosition(lat, lng) {
-                const popup = L.popup()
-                    .setLatLng([lat, lng])
-                    .setContent(`
-                        <div style="text-align: center; padding: 8px;">
-                            <div style="font-weight: bold; margin-bottom: 8px;">🏕️ Position de la tente</div>
-                            <div style="margin-bottom: 8px;">Définir ici comme position de votre tente?</div>
-                            <button onclick="mapInstance.setTentPosition(${lat}, ${lng})" 
-                                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                Oui, confirmer
-                            </button>
-                        </div>
-                    `)
-                    .openOn(this.map);
+            async sendPositionUpdate(lat, lng) {
+                try {
+                    await this.api.sendCommand('update_gps_position', {
+                        latitude: lat,
+                        longitude: lng,
+                        timestamp: new Date().toISOString()
+                    });
+                    console.log('✅ Position update sent to backend');
+                } catch (error) {
+                    console.error('Failed to send position update:', error);
+                }
             }
 
             async loadWeatherData() {
-                if (!this.lastKnownPosition && !this.tentMarker) {
-                    console.log('No position available for weather data');
+                if (!this.currentDevice) {
+                    console.log('No device selected for weather data');
                     return;
                 }
                 
-                const position = this.lastKnownPosition || 
-                    (this.tentMarker ? this.tentMarker.getLatLng() : null);
-                
-                if (!position) return;
-                
                 try {
-                    this.weatherData = await this.getWeatherData(position.latitude || position.lat, position.longitude || position.lng);
+                    this.weatherData = await this.api.getWeatherData();
                     this.updateWeatherDisplay();
                 } catch (error) {
                     console.error('Failed to load weather data:', error);
                 }
-            }
-
-            async getWeatherData(lat, lng) {
-                // Simulate weather API call
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({
-                            temperature: Math.round(Math.random() * 15 + 15),
-                            description: 'Ensoleillé',
-                            icon: '☀️',
-                            windSpeed: Math.round(Math.random() * 20 + 5),
-                            windDirection: Math.round(Math.random() * 360),
-                            humidity: Math.round(Math.random() * 40 + 40),
-                            pressure: Math.round(Math.random() * 30 + 1000)
-                        });
-                    }, 1000);
-                });
             }
 
             updateWeatherDisplay() {
@@ -762,13 +790,44 @@
                 
                 document.getElementById('weather-temp').textContent = `${this.weatherData.temperature}°C`;
                 document.getElementById('weather-desc').textContent = this.weatherData.description;
-                document.getElementById('weather-icon').textContent = this.weatherData.icon;
+                document.getElementById('weather-icon').textContent = this.getWeatherIcon(this.weatherData.description);
                 document.getElementById('wind-speed').textContent = `${this.weatherData.windSpeed} km/h`;
                 document.getElementById('humidity').textContent = `${this.weatherData.humidity}%`;
                 document.getElementById('pressure').textContent = `${this.weatherData.pressure} hPa`;
             }
 
+            getWeatherIcon(description) {
+                const icons = {
+                    'ensoleillé': '☀️',
+                    'nuageux': '☁️',
+                    'pluie': '🌧️',
+                    'orage': '⛈️',
+                    'neige': '❄️',
+                    'brouillard': '🌫️'
+                };
+                return icons[description.toLowerCase()] || '🌤️';
+            }
+
             setupEventListeners() {
+                // Device selection
+                document.getElementById('device-select').addEventListener('change', async (e) => {
+                    this.currentDevice = e.target.value;
+                    if (this.currentDevice) {
+                        this.api.setCurrentDevice(this.currentDevice);
+                        localStorage.setItem('selectedTent', this.currentDevice);
+                        
+                        // Center on selected device
+                        if (this.tentMarkers.has(this.currentDevice)) {
+                            const marker = this.tentMarkers.get(this.currentDevice);
+                            this.map.setView(marker.getLatLng(), 15);
+                            marker.openPopup();
+                        }
+                        
+                        await this.loadWeatherData();
+                    }
+                });
+
+                // Close panels when clicking on map
                 this.map.on('click', () => {
                     document.getElementById('search-container').classList.remove('active');
                     document.getElementById('layer-control').classList.remove('active');
@@ -776,11 +835,12 @@
             }
 
             centerOnTent() {
-                if (this.tentMarker) {
-                    this.map.setView(this.tentMarker.getLatLng(), 16);
-                    this.tentMarker.openPopup();
+                if (this.currentDevice && this.tentMarkers.has(this.currentDevice)) {
+                    const marker = this.tentMarkers.get(this.currentDevice);
+                    this.map.setView(marker.getLatLng(), 16);
+                    marker.openPopup();
                 } else {
-                    alert('Position de la tente non définie');
+                    alert('Position de la tente non définie pour cet appareil');
                 }
             }
 
@@ -858,19 +918,34 @@
         }
 
         async function shareLocation() {
-            if (!mapInstance.lastKnownPosition && !mapInstance.tentMarker) {
+            if (!mapInstance.currentDevice) {
+                alert('Aucun appareil sélectionné');
+                return;
+            }
+
+            let position = null;
+            
+            // Try to get tent position first
+            if (mapInstance.tentMarkers.has(mapInstance.currentDevice)) {
+                const marker = mapInstance.tentMarkers.get(mapInstance.currentDevice);
+                const latlng = marker.getLatLng();
+                position = { lat: latlng.lat, lng: latlng.lng };
+            } else if (mapInstance.lastKnownPosition) {
+                position = {
+                    lat: mapInstance.lastKnownPosition.latitude,
+                    lng: mapInstance.lastKnownPosition.longitude
+                };
+            }
+            
+            if (!position) {
                 alert('Aucune position disponible à partager');
                 return;
             }
             
-            const position = mapInstance.lastKnownPosition || mapInstance.tentMarker.getLatLng();
-            const lat = position.latitude || position.lat;
-            const lng = position.longitude || position.lng;
-            
             const shareData = {
                 title: 'Ma position Smart Tent',
-                text: 'Voici où se trouve ma tente!',
-                url: `https://maps.google.com/?q=${lat},${lng}`
+                text: `Position de ${mapInstance.currentDevice}`,
+                url: `https://maps.google.com/?q=${position.lat},${position.lng}`
             };
             
             if (navigator.share) {
@@ -943,19 +1018,31 @@
         }
 
         // Quick action functions
-        function saveCurrentLocation() {
+        async function saveCurrentLocation() {
+            if (!mapInstance.currentDevice) {
+                alert('Aucun appareil sélectionné');
+                return;
+            }
+
             if (mapInstance.lastKnownPosition) {
                 const pos = mapInstance.lastKnownPosition;
-                mapInstance.setTentPosition(pos.latitude, pos.longitude);
-                alert('Position sauvegardée comme position de la tente!');
+                mapInstance.setTentPosition(pos.latitude, pos.longitude, mapInstance.currentDevice);
+                alert(`Position sauvegardée pour ${mapInstance.currentDevice}!`);
             } else {
                 alert('Position actuelle non disponible');
             }
         }
 
         function getDirections() {
-            if (mapInstance.tentMarker && mapInstance.userMarker) {
-                const tent = mapInstance.tentMarker.getLatLng();
+            if (!mapInstance.currentDevice) {
+                alert('Aucun appareil sélectionné');
+                return;
+            }
+
+            const tentMarker = mapInstance.tentMarkers.get(mapInstance.currentDevice);
+            
+            if (tentMarker && mapInstance.userMarker) {
+                const tent = tentMarker.getLatLng();
                 const user = mapInstance.userMarker.getLatLng();
                 
                 const url = `https://www.google.com/maps/dir/${user.lat},${user.lng}/${tent.lat},${tent.lng}`;
@@ -967,22 +1054,94 @@
 
         function measureDistance() {
             alert('Mode mesure activé. Cliquez sur deux points pour mesurer la distance.');
+            
+            let clickCount = 0;
+            let firstPoint = null;
+            let measureLine = null;
+            
+            const measureHandler = (e) => {
+                clickCount++;
+                
+                if (clickCount === 1) {
+                    firstPoint = e.latlng;
+                    // Add first marker
+                    L.marker(firstPoint, {
+                        icon: L.divIcon({
+                            className: 'measure-marker',
+                            html: '📍',
+                            iconSize: [20, 20]
+                        })
+                    }).addTo(mapInstance.map);
+                } else if (clickCount === 2) {
+                    const secondPoint = e.latlng;
+                    
+                    // Add second marker
+                    L.marker(secondPoint, {
+                        icon: L.divIcon({
+                            className: 'measure-marker',
+                            html: '📍',
+                            iconSize: [20, 20]
+                        })
+                    }).addTo(mapInstance.map);
+                    
+                    // Draw line
+                    measureLine = L.polyline([firstPoint, secondPoint], {
+                        color: '#FF5722',
+                        weight: 3,
+                        opacity: 0.8
+                    }).addTo(mapInstance.map);
+                    
+                    // Calculate distance
+                    const distance = firstPoint.distanceTo(secondPoint);
+                    const distanceText = distance > 1000 
+                        ? `${(distance / 1000).toFixed(2)} km`
+                        : `${Math.round(distance)} m`;
+                    
+                    alert(`Distance mesurée: ${distanceText}`);
+                    
+                    // Remove event listener
+                    mapInstance.map.off('click', measureHandler);
+                    
+                    // Clean up after 10 seconds
+                    setTimeout(() => {
+                        if (measureLine) {
+                            mapInstance.map.removeLayer(measureLine);
+                        }
+                        // Remove markers (would need to track them properly in real implementation)
+                    }, 10000);
+                }
+            };
+            
+            mapInstance.map.on('click', measureHandler);
         }
 
         function emergencyLocation() {
-            if (mapInstance.lastKnownPosition) {
-                const pos = mapInstance.lastKnownPosition;
-                const coords = `${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`;
+            let position = null;
+            
+            // Try tent position first, then user position
+            if (mapInstance.currentDevice && mapInstance.tentMarkers.has(mapInstance.currentDevice)) {
+                const marker = mapInstance.tentMarkers.get(mapInstance.currentDevice);
+                const latlng = marker.getLatLng();
+                position = { lat: latlng.lat, lng: latlng.lng };
+            } else if (mapInstance.lastKnownPosition) {
+                position = {
+                    lat: mapInstance.lastKnownPosition.latitude,
+                    lng: mapInstance.lastKnownPosition.longitude
+                };
+            }
+            
+            if (position) {
+                const coords = `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`;
                 
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(coords).then(() => {
-                        alert(`Coordonnées d'urgence copiées: ${coords}`);
+                        alert(`🚨 COORDONNÉES D'URGENCE COPIÉES:\n${coords}\n\nPartagez ces coordonnées avec les secours si nécessaire.`);
                     });
                 } else {
-                    alert(`Coordonnées d'urgence: ${coords}`);
+                    alert(`🚨 COORDONNÉES D'URGENCE:\n${coords}\n\nNotez ces coordonnées pour les secours.`);
                 }
             } else {
-                alert('Position actuelle non disponible');
+                alert('Aucune position disponible pour l\'urgence');
             }
         }
 
@@ -991,6 +1150,19 @@
             mapInstance = new SmartTentMap();
             window.mapInstance = mapInstance;
         });
+
+        // 📱 PWA SERVICE WORKER REGISTRATION
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
