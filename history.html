@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
 <body>
-    <!-- 🏠 HEADER with dark mode toggle -->
+    <!-- 🏠 HEADER with device selector -->
     <header>
         <div class="header-content">
             <div class="logo">
@@ -27,7 +27,11 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 1rem;">
-                
+                <div class="device-selector">
+                    <select id="deviceSelector" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.85rem;">
+                        <!-- Devices will be loaded dynamically -->
+                    </select>
+                </div>
                 <div class="connection-status">
                     <span id="status-indicator" class="online"></span>
                     <span>En ligne</span>
@@ -45,14 +49,11 @@
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Capteur à analyser</label>
                     <select id="sensor-select" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 2px solid var(--bg-accent); background: var(--bg-secondary);">
-                        <option value="temperature_interior">🌡️ Température Intérieure</option>
-                        <option value="temperature_exterior">🌡️ Température Extérieure</option>
-                        <option value="humidity_interior">💧 Humidité Intérieure</option>
-                        <option value="humidity_exterior">💧 Humidité Extérieure</option>
+                        <option value="temperature">🌡️ Température</option>
+                        <option value="humidity">💧 Humidité</option>
                         <option value="gas_detection">💨 Niveau de Gaz</option>
-                        <option value="wind_speed">🌬️ Vitesse du Vent</option>
                         <option value="battery_level">🔋 Niveau Batterie</option>
-                        <option value="signal_4g">📶 Signal 4G</option>
+                        <option value="signal_strength">📶 Signal</option>
                     </select>
                 </div>
                 
@@ -94,13 +95,16 @@
                 <button class="btn btn-secondary" onclick="compareMultipleSensors()">
                     📊 Comparer
                 </button>
+                <button class="btn btn-secondary" onclick="exportData()">
+                    📥 Exporter
+                </button>
             </div>
         </section>
 
         <!-- 📊 MAIN CHART -->
         <section>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                <h2 id="chart-title" style="margin-bottom: 0;">📈 Température Intérieure - 24 heures</h2>
+                <h2 id="chart-title" style="margin-bottom: 0;">📈 Température - 24 heures</h2>
                 <div>
                     <span id="data-points-count">0 points de données</span>
                 </div>
@@ -158,39 +162,7 @@
         <section>
             <h2>🏃‍♂️ Activité Récente</h2>
             <div id="activity-list">
-                
-                <div class="alert-item warning">
-                    <div class="alert-content">
-                        <div class="alert-title">🌡️ Température élevée détectée</div>
-                        <div class="alert-message">32°C enregistré à l'extérieur</div>
-                    </div>
-                    <div class="alert-time">14:30</div>
-                </div>
-                
-                <div class="alert-item">
-                    <div class="alert-content">
-                        <div class="alert-title">💨 Vent fort mesuré</div>
-                        <div class="alert-message">Vitesse du vent: 25 km/h</div>
-                    </div>
-                    <div class="alert-time">13:15</div>
-                </div>
-                
-                <div class="alert-item">
-                    <div class="alert-content">
-                        <div class="alert-title">📸 Photo automatique prise</div>
-                        <div class="alert-message">Surveillance périodique activée</div>
-                    </div>
-                    <div class="alert-time">12:00</div>
-                </div>
-                
-                <div class="alert-item warning">
-                    <div class="alert-content">
-                        <div class="alert-title">🚶 Mouvement détecté</div>
-                        <div class="alert-message">Activité à l'extérieur de la tente</div>
-                    </div>
-                    <div class="alert-time">11:45</div>
-                </div>
-                
+                <!-- Activity items will be loaded from API -->
             </div>
         </section>
     </main>
@@ -198,113 +170,26 @@
     <!-- Include API -->
     <script src="api.js"></script>
     
-    <!-- 🌙 DARK MODE FUNCTIONALITY -->
     <script>
-        class DarkModeManager {
-            constructor() {
-                this.init();
-            }
-            
-            init() {
-                const savedTheme = localStorage.getItem('smart-tent-theme');
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-                
-                this.setTheme(initialTheme);
-                
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                    if (!savedTheme) {
-                        this.setTheme(e.matches ? 'dark' : 'light');
-                    }
-                });
-                
-                console.log('🌙 Dark mode initialized');
-            }
-            
-            setTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('smart-tent-theme', theme);
-                
-                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-                if (themeColorMeta) {
-                    themeColorMeta.content = theme === 'dark' ? '#1B2E20' : '#4CAF50';
-                }
-                
-                this.updateToggleButton(theme);
-                
-                window.dispatchEvent(new CustomEvent('themeChanged', { 
-                    detail: { theme } 
-                }));
-                
-                console.log(`🌙 Theme set to: ${theme}`);
-            }
-            
-            toggle() {
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                this.setTheme(newTheme);
-                
-                this.showThemeChangeEffect();
-            }
-            
-            updateToggleButton(theme) {
-                const button = document.querySelector('.dark-mode-toggle');
-                if (button) {
-                    const textSpan = button.querySelector('span:last-child');
-                    if (textSpan) {
-                        textSpan.textContent = theme === 'dark' ? 'Clair' : 'Sombre';
-                    }
-                }
-            }
-            
-            showThemeChangeEffect() {
-                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-                setTimeout(() => {
-                    document.body.style.transition = '';
-                }, 300);
-            }
-        }
-
-        const darkModeManager = new DarkModeManager();
-
-        function toggleDarkMode() {
-            darkModeManager.toggle();
-        }
-
-        window.darkModeManager = darkModeManager;
-    </script>
-    
-    <script>
-        // 📊 SMART TENT ANALYTICS
+        // 📊 SMART TENT ANALYTICS - MongoDB Version
         class SmartTentAnalytics {
             constructor() {
                 this.api = window.smartTentAPI;
                 this.mainChart = null;
                 this.comparisonChart = null;
                 this.currentData = null;
+                this.currentDevice = null;
                 this.sensorConfig = {
-                    temperature_interior: { 
-                        label: 'Température Intérieure', 
+                    temperature: { 
+                        label: 'Température', 
                         unit: '°C', 
                         color: '#FF5722',
                         icon: '🌡️'
                     },
-                    temperature_exterior: { 
-                        label: 'Température Extérieure', 
-                        unit: '°C', 
+                    humidity: { 
+                        label: 'Humidité', 
+                        unit: '%', 
                         color: '#2196F3',
-                        icon: '🌡️'
-                    },
-                    humidity_interior: { 
-                        label: 'Humidité Intérieure', 
-                        unit: '%', 
-                        color: '#00BCD4',
-                        icon: '💧'
-                    },
-                    humidity_exterior: { 
-                        label: 'Humidité Extérieure', 
-                        unit: '%', 
-                        color: '#009688',
                         icon: '💧'
                     },
                     gas_detection: { 
@@ -313,20 +198,14 @@
                         color: '#F44336',
                         icon: '💨'
                     },
-                    wind_speed: { 
-                        label: 'Vitesse du Vent', 
-                        unit: 'km/h', 
-                        color: '#9C27B0',
-                        icon: '🌬️'
-                    },
                     battery_level: { 
                         label: 'Niveau Batterie', 
                         unit: '%', 
                         color: '#4CAF50',
                         icon: '🔋'
                     },
-                    signal_4g: { 
-                        label: 'Signal 4G', 
+                    signal_strength: { 
+                        label: 'Signal', 
                         unit: '%', 
                         color: '#FF9800',
                         icon: '📶'
@@ -339,14 +218,60 @@
             async init() {
                 console.log('📊 Initializing Smart Tent Analytics...');
                 
+                await this.loadDevices();
                 this.setupEventListeners();
                 await this.updateChart();
-                this.updateActivityTimeline();
+                await this.updateActivityTimeline();
                 
                 console.log('✅ Analytics initialized');
             }
 
+            async loadDevices() {
+                try {
+                    console.log('🔍 Loading devices from API...');
+                    const response = await fetch(`${this.api.config.baseUrl}/api/devices`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const devices = await response.json();
+                    console.log('📱 Devices loaded:', devices);
+                    
+                    const selector = document.getElementById('deviceSelector');
+                    selector.innerHTML = devices.map(device => 
+                        `<option value="${device.device_id}">🏕️ ${device.name}</option>`
+                    ).join('');
+                    
+                    // Select first device
+                    if (devices.length > 0) {
+                        this.currentDevice = devices[0].device_id;
+                        selector.value = this.currentDevice;
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Failed to load devices:', error);
+                    // Fallback to localStorage devices
+                    const savedDevices = localStorage.getItem('smartTentDevices');
+                    if (savedDevices) {
+                        const devices = JSON.parse(savedDevices);
+                        const selector = document.getElementById('deviceSelector');
+                        selector.innerHTML = devices.map(device => 
+                            `<option value="${device.id}">🏕️ ${device.name}</option>`
+                        ).join('');
+                        if (devices.length > 0) {
+                            this.currentDevice = devices[0].id;
+                        }
+                    }
+                }
+            }
+
             setupEventListeners() {
+                document.getElementById('deviceSelector').addEventListener('change', (e) => {
+                    this.currentDevice = e.target.value;
+                    this.updateChart();
+                });
+                
                 document.getElementById('sensor-select').addEventListener('change', () => this.updateChart());
                 document.getElementById('period-select').addEventListener('change', () => this.updateChart());
                 document.getElementById('chart-type-select').addEventListener('change', () => this.updateChart());
@@ -354,15 +279,23 @@
             }
 
             async updateChart() {
+                if (!this.currentDevice) {
+                    console.warn('No device selected');
+                    return;
+                }
+
                 const sensorType = document.getElementById('sensor-select').value;
                 const hours = parseInt(document.getElementById('period-select').value);
                 const chartType = document.getElementById('chart-type-select').value;
                 const resolution = document.getElementById('resolution-select').value;
                 
-                console.log(`📈 Updating chart: ${sensorType}, ${hours}h, ${chartType}`);
+                console.log(`📈 Updating chart: ${sensorType}, ${hours}h, ${chartType} for device ${this.currentDevice}`);
                 
                 try {
-                    const data = await this.generateMockData(sensorType, hours);
+                    // Show loading
+                    this.showLoading();
+                    
+                    const data = await this.getHistoricalData(sensorType, hours);
                     const processedData = this.processDataByResolution(data, resolution);
                     
                     this.renderMainChart(processedData, sensorType, chartType);
@@ -372,50 +305,74 @@
                     
                 } catch (error) {
                     console.error('Failed to update chart:', error);
+                    this.showError('Erreur lors du chargement des données historiques');
+                } finally {
+                    this.hideLoading();
                 }
             }
 
-            async generateMockData(sensorType, hours) {
-                const dataPoints = Math.min(hours * 6, 100); // Max 100 points
-                const data = [];
-                const now = new Date();
-                
-                for (let i = 0; i < dataPoints; i++) {
-                    const timestamp = new Date(now.getTime() - (dataPoints - i) * (hours * 60 * 60 * 1000) / dataPoints);
-                    let value;
+            async getHistoricalData(sensorType, hours) {
+                try {
+                    const endTime = new Date();
+                    const startTime = new Date(endTime.getTime() - (hours * 60 * 60 * 1000));
                     
-                    switch (sensorType) {
-                        case 'temperature_interior':
-                        case 'temperature_exterior':
-                            value = 20 + Math.sin(i * 0.1) * 5 + Math.random() * 3;
-                            break;
-                        case 'humidity_interior':
-                        case 'humidity_exterior':
-                            value = 60 + Math.sin(i * 0.15) * 15 + Math.random() * 5;
-                            break;
-                        case 'gas_detection':
-                            value = 100 + Math.random() * 50;
-                            break;
-                        case 'wind_speed':
-                            value = 10 + Math.random() * 15;
-                            break;
-                        case 'battery_level':
-                            value = 100 - (i / dataPoints) * 20 + Math.random() * 5;
-                            break;
-                        case 'signal_4g':
-                            value = 70 + Math.sin(i * 0.2) * 20 + Math.random() * 10;
-                            break;
-                        default:
-                            value = Math.random() * 100;
+                    const url = `${this.api.config.baseUrl}/api/history/${this.currentDevice}?sensor=${sensorType}&start=${startTime.toISOString()}&end=${endTime.toISOString()}`;
+                    
+                    console.log('🔍 Fetching historical data:', url);
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     
-                    data.push({
-                        timestamp: timestamp.toISOString(),
-                        value: Math.max(0, value)
-                    });
+                    const result = await response.json();
+                    console.log('📊 Historical data received:', result);
+                    
+                    // Transform MongoDB data to chart format
+                    return this.transformHistoricalData(result, sensorType);
+                    
+                } catch (error) {
+                    console.error(`❌ Failed to get ${sensorType} history:`, error);
+                    // Return empty data on error
+                    return [];
+                }
+            }
+
+            transformHistoricalData(mongoData, sensorType) {
+                if (!mongoData || !Array.isArray(mongoData)) {
+                    return [];
                 }
                 
-                return data;
+                return mongoData.map(record => {
+                    let value = 0;
+                    
+                    // Extract value based on sensor type from MongoDB structure
+                    if (record.sensor_data) {
+                        switch (sensorType) {
+                            case 'temperature':
+                                value = record.sensor_data.temperature || 0;
+                                break;
+                            case 'humidity':
+                                value = record.sensor_data.humidity || 0;
+                                break;
+                            case 'gas_detection':
+                                value = record.sensor_data.gas_detection || 0;
+                                break;
+                            case 'battery_level':
+                                value = record.sensor_data.battery_level || 0;
+                                break;
+                            case 'signal_strength':
+                                value = record.sensor_data.signal_4g || 0;
+                                break;
+                        }
+                    }
+                    
+                    return {
+                        timestamp: record.timestamp || new Date().toISOString(),
+                        value: value
+                    };
+                }).filter(item => item.value !== undefined);
             }
 
             processDataByResolution(data, resolution) {
@@ -581,7 +538,7 @@
                 let score = 85;
                 let description = 'Conditions excellentes pour le camping';
                 
-                if (sensorType.includes('temperature') && data.length > 0) {
+                if (sensorType === 'temperature' && data.length > 0) {
                     const latestTemp = data[data.length - 1].value;
                     
                     if (latestTemp >= 18 && latestTemp <= 26) {
@@ -640,13 +597,13 @@
                 const hours = parseInt(document.getElementById('period-select').value);
                 
                 try {
-                    const tempData = await this.generateMockData('temperature_interior', hours);
-                    const humidityData = await this.generateMockData('humidity_interior', hours);
-                    const gasData = await this.generateMockData('gas_detection', hours);
+                    const tempData = await this.getHistoricalData('temperature', hours);
+                    const humidityData = await this.getHistoricalData('humidity', hours);
+                    const gasData = await this.getHistoricalData('gas_detection', hours);
                     
                     this.renderComparisonChart([
-                        { data: tempData, sensor: 'temperature_interior' },
-                        { data: humidityData, sensor: 'humidity_interior' },
+                        { data: tempData, sensor: 'temperature' },
+                        { data: humidityData, sensor: 'humidity' },
                         { data: gasData, sensor: 'gas_detection' }
                     ]);
                     
@@ -744,9 +701,125 @@
                 });
             }
 
-            updateActivityTimeline() {
-                // Activity timeline is already populated in HTML
-                console.log('Activity timeline updated');
+            async updateActivityTimeline() {
+                try {
+                    if (!this.currentDevice) return;
+                    
+                    const url = `${this.api.config.baseUrl}/api/alerts/${this.currentDevice}?hours=24`;
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const alerts = await response.json();
+                    
+                    const activityList = document.getElementById('activity-list');
+                    
+                    if (!alerts || alerts.length === 0) {
+                        activityList.innerHTML = '<div class="no-alerts">Aucune activité récente</div>';
+                        return;
+                    }
+                    
+                    activityList.innerHTML = alerts.map(alert => {
+                        const alertClass = alert.level === 'critical' ? 'critical' : 
+                                         alert.level === 'warning' ? 'warning' : '';
+                        const time = new Date(alert.timestamp).toLocaleTimeString('fr-FR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        
+                        return `
+                            <div class="alert-item ${alertClass}">
+                                <div class="alert-content">
+                                    <div class="alert-title">${alert.icon || '📡'} ${alert.title}</div>
+                                    <div class="alert-message">${alert.message}</div>
+                                </div>
+                                <div class="alert-time">${time}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                } catch (error) {
+                    console.error('❌ Failed to load activity timeline:', error);
+                    document.getElementById('activity-list').innerHTML = '<div class="no-alerts">Erreur lors du chargement des activités</div>';
+                }
+            }
+
+            async exportData() {
+                try {
+                    const sensorType = document.getElementById('sensor-select').value;
+                    const hours = parseInt(document.getElementById('period-select').value);
+                    
+                    const data = await this.getHistoricalData(sensorType, hours);
+                    
+                    const csvContent = this.convertToCSV(data, sensorType);
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    
+                    const fileName = `smart-tent-${sensorType}-${hours}h-${new Date().toISOString().split('T')[0]}.csv`;
+                    
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', fileName);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                    
+                    this.showNotification('Données exportées avec succès!', 'success');
+                    
+                } catch (error) {
+                    console.error('❌ Export failed:', error);
+                    this.showNotification('Erreur lors de l\'exportation', 'error');
+                }
+            }
+
+            convertToCSV(data, sensorType) {
+                const headers = ['Timestamp', `${this.sensorConfig[sensorType].label} (${this.sensorConfig[sensorType].unit})`];
+                const csvRows = [headers.join(',')];
+                
+                data.forEach(item => {
+                    const row = [
+                        new Date(item.timestamp).toISOString(),
+                        item.value.toFixed(2)
+                    ];
+                    csvRows.push(row.join(','));
+                });
+                
+                return csvRows.join('\n');
+            }
+
+            showLoading() {
+                document.getElementById('data-points-count').innerHTML = '<div class="loading"><div class="spinner"></div> Chargement...</div>';
+            }
+
+            hideLoading() {
+                // Will be updated by renderMainChart
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+                    background: ${type === 'success' ? '#4CAF50' : '#F44336'};
+                    color: white; padding: 12px 20px; border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
             }
         }
 
@@ -760,6 +833,12 @@
         function compareMultipleSensors() {
             if (window.analytics) {
                 window.analytics.compareMultipleSensors();
+            }
+        }
+
+        function exportData() {
+            if (window.analytics) {
+                window.analytics.exportData();
             }
         }
 
