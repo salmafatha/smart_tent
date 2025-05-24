@@ -277,6 +277,84 @@ class SmartTentAPI {
   }
 
   /**
+   * GET WEATHER DATA from WeatherAPI.com
+   * Uses GPS coordinates to fetch local weather
+   */
+  async getWeatherData(tentId) {
+    try {
+      // Get GPS coordinates first
+      const sensorData = await this.getAllSensorData();
+      const { latitude, longitude } = sensorData.gps;
+      
+      if (!latitude || !longitude) {
+        console.warn('No GPS coordinates, using mock weather data');
+        return this.getMockWeatherData();
+      }
+      
+      // WeatherAPI.com with your API key
+      const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=983555eb43804ce58f0162524252405&q=${latitude},${longitude}&lang=fr`;
+      
+      console.log('🌤️ Fetching weather data...');
+      
+      const response = await fetch(weatherAPI);
+      
+      if (!response.ok) {
+        throw new Error(`Weather API error: ${response.status}`);
+      }
+      
+      const weatherData = await response.json();
+      
+      const processedWeather = {
+        temperature: Math.round(weatherData.current.temp_c),
+        description: weatherData.current.condition.text,
+        humidity: weatherData.current.humidity,
+        pressure: weatherData.current.pressure_mb,
+        windSpeed: Math.round(weatherData.current.wind_kph),
+        windDirection: weatherData.current.wind_degree,
+        icon: weatherData.current.condition.icon,
+        location: weatherData.location.name,
+        country: weatherData.location.country,
+        lastUpdated: weatherData.current.last_updated,
+        feelsLike: Math.round(weatherData.current.feelslike_c)
+      };
+      
+      // Cache weather data
+      this.setCache('/weather', processedWeather);
+      
+      console.log('✅ Weather data retrieved:', processedWeather);
+      return processedWeather;
+      
+    } catch (error) {
+      console.error('❌ Failed to get weather data:', error);
+      
+      // Try cached weather data
+      const cached = this.getFromCache('/weather');
+      if (cached) {
+        console.log('📦 Using cached weather data');
+        return cached;
+      }
+      
+      // Fallback to mock data
+      return this.getMockWeatherData();
+    }
+  }
+
+  getMockWeatherData() {
+    return {
+      temperature: 24,
+      description: 'Ensoleillé',
+      humidity: 65,
+      pressure: 1013,
+      windSpeed: 12,
+      windDirection: 180,
+      icon: '//cdn.weatherapi.com/weather/64x64/day/116.png',
+      location: 'Camping',
+      country: 'Tunisia',
+      lastUpdated: new Date().toISOString(),
+      feelsLike: 26
+    };
+  }
+  
    * HELPER FUNCTIONS for data transformation
    */
   getESP32SensorValue(esp32Data, sensorType) {
