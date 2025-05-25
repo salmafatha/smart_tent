@@ -84,6 +84,10 @@
             background: rgba(76, 175, 80, 0.3);
         }
 
+        .status-indicator.offline {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
         .status-dot {
             width: 8px;
             height: 8px;
@@ -140,6 +144,22 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
+        .sensor-card.warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 2px solid var(--warning-orange);
+        }
+
+        .sensor-card.danger {
+            background: rgba(244, 67, 54, 0.1);
+            border: 2px solid var(--danger-red);
+            animation: alertPulse 1s infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
         .sensor-icon {
             font-size: 1.8rem;
             margin-bottom: 0.5rem;
@@ -150,6 +170,14 @@
             font-weight: 700;
             color: var(--primary-green);
             margin-bottom: 0.25rem;
+        }
+
+        .sensor-value.warning {
+            color: var(--warning-orange);
+        }
+
+        .sensor-value.danger {
+            color: var(--danger-red);
         }
 
         .sensor-label {
@@ -188,10 +216,13 @@
             cursor: pointer;
             transition: all 0.2s ease;
             margin: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .action-btn:hover {
             background: var(--dark-green);
+            transform: translateY(-1px);
         }
 
         .notification {
@@ -208,9 +239,53 @@
             animation: slideUp 0.5s ease;
         }
 
+        .notification.warning {
+            background: var(--warning-orange);
+        }
+
+        .notification.error {
+            background: var(--danger-red);
+        }
+
         @keyframes slideUp {
             from { transform: translateX(-50%) translateY(100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .weather-info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weather-temp {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .api-status {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-url {
+            font-family: monospace;
+            background: rgba(0,0,0,0.1);
+            padding: 0.5rem;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 0.5rem 0;
         }
     </style>
 </head>
@@ -227,13 +302,20 @@
             </div>
             <div class="status-indicator online" id="connectionStatus">
                 <div class="status-dot"></div>
-                En ligne
+                Connexion...
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
     <div class="container">
+        <!-- API STATUS -->
+        <div class="api-status" id="apiStatus">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">📡 État de l'API</div>
+            <div>URL: <span class="api-url" id="apiUrl">Chargement...</span></div>
+            <div id="apiStatusText">Test de connexion en cours...</div>
+        </div>
+
         <!-- CONDITIONS INTÉRIEURES -->
         <div class="dashboard-section">
             <div class="section-header">
@@ -242,19 +324,19 @@
             </div>
             
             <div class="sensor-grid">
-                <div class="sensor-card">
+                <div class="sensor-card" id="tempInteriorCard">
                     <div class="sensor-icon">🌡️</div>
                     <div class="sensor-value" id="tempInterior">--°C</div>
                     <div class="sensor-label">Température</div>
                 </div>
                 
-                <div class="sensor-card">
+                <div class="sensor-card" id="humidityInteriorCard">
                     <div class="sensor-icon">💧</div>
                     <div class="sensor-value" id="humidityInterior">--%</div>
                     <div class="sensor-label">Humidité</div>
                 </div>
                 
-                <div class="sensor-card">
+                <div class="sensor-card" id="gasSensorCard">
                     <div class="sensor-icon">💨</div>
                     <div class="sensor-value" id="gasSensor">-- ppm</div>
                     <div class="sensor-label">Gaz (MQ2)</div>
@@ -276,13 +358,13 @@
             </div>
             
             <div class="sensor-grid">
-                <div class="sensor-card">
+                <div class="sensor-card" id="tempExteriorCard">
                     <div class="sensor-icon">🌡️</div>
                     <div class="sensor-value" id="tempExterior">--°C</div>
                     <div class="sensor-label">Température</div>
                 </div>
                 
-                <div class="sensor-card">
+                <div class="sensor-card" id="humidityExteriorCard">
                     <div class="sensor-icon">💧</div>
                     <div class="sensor-value" id="humidityExterior">--%</div>
                     <div class="sensor-label">Humidité</div>
@@ -316,7 +398,7 @@
                     <div class="sensor-label">Signal 4G</div>
                 </div>
                 
-                <div class="sensor-card">
+                <div class="sensor-card" id="batteryCard">
                     <div class="sensor-icon">🔋</div>
                     <div class="sensor-value" id="battery">-- %</div>
                     <div class="sensor-label">Batterie</div>
@@ -336,6 +418,24 @@
             </div>
         </div>
 
+        <!-- MÉTÉO -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <span>🌤️</span>
+                <span>Météo Locale</span>
+            </div>
+            
+            <div class="weather-info" id="weatherInfo" style="display: none;">
+                <div class="weather-main">
+                    <div>
+                        <div class="weather-temp" id="weatherTemp">--°C</div>
+                        <div id="weatherDesc">Chargement...</div>
+                    </div>
+                    <div style="font-size: 2rem;" id="weatherIcon">🌤️</div>
+                </div>
+            </div>
+        </div>
+
         <!-- NAVIGATION -->
         <div class="dashboard-section">
             <div class="section-header">
@@ -345,9 +445,10 @@
             
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 <a href="history.html" class="action-btn">📊 Historique</a>
-                <a href="map.html" class="action-btn">🗺️ Carte</a>
+                <a href="map.html" class="action-btn">🗺️ Carte GPS</a>
                 <a href="settings.html" class="action-btn">⚙️ Paramètres</a>
                 <button class="action-btn" onclick="refreshData()">🔄 Actualiser</button>
+                <button class="action-btn" onclick="testAPI()">🧪 Test API</button>
             </div>
         </div>
     </div>
@@ -355,19 +456,50 @@
     <!-- SCRIPTS -->
     <script src="api.js"></script>
     <script>
-        // Simple Smart Tent App
+        // Safe Storage avec fallback
+        const SafeStorage = {
+            get: function(key, defaultValue = null) {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? JSON.parse(value) : defaultValue;
+                } catch (error) {
+                    console.warn('localStorage read failed:', error);
+                    return defaultValue;
+                }
+            },
+            
+            set: function(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch (error) {
+                    console.warn('localStorage write failed:', error);
+                    return false;
+                }
+            }
+        };
+
+        // Smart Tent App avec gestion sécurisée
         class SmartTentApp {
             constructor() {
                 this.updateInterval = null;
                 this.isOnline = navigator.onLine;
+                this.lastData = null;
+                this.apiUrl = 'https://2ae3-196-179-23-222.ngrok-free.app';
                 this.init();
             }
 
             async init() {
                 console.log('🏕️ Initializing Smart Tent...');
                 
+                // Show API URL
+                document.getElementById('apiUrl').textContent = this.apiUrl;
+                
                 // Wait for API to be ready
                 await this.waitForAPI();
+                
+                // Test API connection
+                await this.testConnection();
                 
                 // Load initial data
                 await this.loadData();
@@ -387,21 +519,72 @@
                 
                 if (window.smartTentAPI) {
                     this.api = window.smartTentAPI;
+                    console.log('✅ API loaded');
                 } else {
-                    console.warn('⚠️ API not found, using offline mode');
+                    console.warn('⚠️ API not found, using direct fetch');
+                }
+            }
+
+            async testConnection() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/api/realtime`, {
+                        headers: {
+                            'ngrok-skip-browser-warning': 'true'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('apiStatusText').innerHTML = 
+                            `✅ <strong>Connexion réussie!</strong> Raspberry Pi connecté.`;
+                        this.updateStatus(true);
+                        return true;
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('❌ API connection failed:', error);
+                    document.getElementById('apiStatusText').innerHTML = 
+                        `❌ <strong>Connexion échouée:</strong> ${error.message}`;
+                    this.updateStatus(false);
+                    return false;
                 }
             }
 
             async loadData() {
                 try {
+                    let data;
+                    
                     if (this.api) {
-                        console.log('📡 Loading data from API...');
-                        const data = await this.api.getAllSensorData();
+                        console.log('📡 Loading data via API...');
+                        data = await this.api.getAllSensorData();
+                    } else {
+                        console.log('📡 Loading data via direct fetch...');
+                        const response = await fetch(`${this.apiUrl}/api/realtime`, {
+                            headers: {
+                                'ngrok-skip-browser-warning': 'true'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            // Transform to expected format
+                            data = this.transformApiData(data);
+                        } else {
+                            throw new Error('API request failed');
+                        }
+                    }
+                    
+                    if (data) {
+                        this.lastData = data;
                         this.updateDisplay(data);
                         this.updateStatus(true);
-                    } else {
-                        this.showOfflineData();
+                        this.loadWeatherData();
+                        
+                        // Save data safely
+                        SafeStorage.set('smart-tent-last-data', data);
                     }
+                    
                 } catch (error) {
                     console.error('❌ Failed to load data:', error);
                     this.updateStatus(false);
@@ -409,29 +592,93 @@
                 }
             }
 
+            transformApiData(apiData) {
+                if (!apiData.success) return null;
+                
+                const { sensor_data, gps_data, esp32_data } = apiData;
+                
+                return {
+                    interior: {
+                        temperature: sensor_data?.temperature || 0,
+                        humidity: sensor_data?.humidity || 0,
+                        gasLevel: sensor_data?.gas_detection || 0,
+                        motion: sensor_data?.motion_interior || false
+                    },
+                    exterior: {
+                        temperature: sensor_data?.temperature_exterior || sensor_data?.temperature || 0,
+                        humidity: sensor_data?.humidity_exterior || sensor_data?.humidity || 0,
+                        windSpeed: this.getESP32Value(esp32_data, 'wind_speed') || 0,
+                        motion: sensor_data?.motion_exterior || false
+                    },
+                    system: {
+                        signal4G: sensor_data?.signal_4g || 75,
+                        batteryLevel: sensor_data?.battery_level || 85,
+                        deviceTemperature: sensor_data?.device_temperature || 35
+                    },
+                    gps: {
+                        latitude: gps_data?.latitude || 36.4,
+                        longitude: gps_data?.longitude || 10.6
+                    }
+                };
+            }
+
+            getESP32Value(esp32Data, sensorType) {
+                if (!esp32Data) return null;
+                for (const deviceId in esp32Data) {
+                    const device = esp32Data[deviceId];
+                    if (device.sensors) {
+                        const sensor = device.sensors.find(s => s.type === sensorType);
+                        if (sensor) return sensor.value;
+                    }
+                }
+                return null;
+            }
+
             updateDisplay(data) {
                 if (!data) return;
 
                 // Helper function
-                const updateElement = (id, value) => {
+                const updateElement = (id, value, alertClass = '') => {
                     const element = document.getElementById(id);
-                    if (element) element.textContent = value;
+                    const card = document.getElementById(id + 'Card');
+                    if (element) {
+                        element.textContent = value;
+                        if (alertClass) {
+                            element.className = `sensor-value ${alertClass}`;
+                            if (card) card.className = `sensor-card ${alertClass}`;
+                        }
+                    }
                 };
 
-                // Update sensor values
-                updateElement('tempInterior', data.interior?.temperature ? `${data.interior.temperature}°C` : '--°C');
-                updateElement('humidityInterior', data.interior?.humidity ? `${data.interior.humidity}%` : '--%');
-                updateElement('gasSensor', data.interior?.gasLevel ? `${data.interior.gasLevel} ppm` : '-- ppm');
+                // Interior conditions with alerts
+                const tempInt = data.interior?.temperature || 0;
+                updateElement('tempInterior', `${tempInt}°C`, 
+                    tempInt > 30 ? 'warning' : tempInt > 35 ? 'danger' : '');
+                
+                const humInt = data.interior?.humidity || 0;
+                updateElement('humidityInterior', `${humInt}%`,
+                    humInt > 80 ? 'warning' : humInt > 90 ? 'danger' : '');
+                
+                const gasLevel = data.interior?.gasLevel || 0;
+                updateElement('gasSensor', `${gasLevel} ppm`,
+                    gasLevel > 200 ? 'warning' : gasLevel > 300 ? 'danger' : '');
+                
                 updateElement('motionInterior', data.interior?.motion ? 'Détecté' : 'Aucun');
                 
-                updateElement('tempExterior', data.exterior?.temperature ? `${data.exterior.temperature}°C` : '--°C');
-                updateElement('humidityExterior', data.exterior?.humidity ? `${data.exterior.humidity}%` : '--%');
-                updateElement('windSpeed', data.exterior?.windSpeed ? `${data.exterior.windSpeed} km/h` : '-- km/h');
+                // Exterior conditions
+                updateElement('tempExterior', `${data.exterior?.temperature || 0}°C`);
+                updateElement('humidityExterior', `${data.exterior?.humidity || 0}%`);
+                updateElement('windSpeed', `${data.exterior?.windSpeed || 0} km/h`);
                 updateElement('motionExterior', data.exterior?.motion ? 'Détecté' : 'Aucun');
                 
-                updateElement('signal4g', data.system?.signal4G ? `${data.system.signal4G}%` : '-- %');
-                updateElement('battery', data.system?.batteryLevel ? `${data.system.batteryLevel}%` : '-- %');
-                updateElement('cpuTemp', data.system?.deviceTemperature ? `${data.system.deviceTemperature}°C` : '--°C');
+                // System status
+                updateElement('signal4g', `${data.system?.signal4G || 0}%`);
+                
+                const battery = data.system?.batteryLevel || 0;
+                updateElement('battery', `${battery}%`,
+                    battery < 30 ? 'warning' : battery < 10 ? 'danger' : '');
+                
+                updateElement('cpuTemp', `${data.system?.deviceTemperature || 0}°C`);
                 
                 // Update timestamp
                 const now = new Date();
@@ -443,33 +690,63 @@
                 console.log('✅ Display updated with real data');
             }
 
+            async loadWeatherData() {
+                try {
+                    const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=983555eb43804ce58f0162524252405&q=36.4,10.6&lang=fr`);
+                    
+                    if (response.ok) {
+                        const weather = await response.json();
+                        
+                        document.getElementById('weatherTemp').textContent = `${Math.round(weather.current.temp_c)}°C`;
+                        document.getElementById('weatherDesc').textContent = weather.current.condition.text;
+                        document.getElementById('weatherIcon').textContent = this.getWeatherIcon(weather.current.condition.code);
+                        document.getElementById('weatherInfo').style.display = 'block';
+                    }
+                } catch (error) {
+                    console.warn('Weather data unavailable:', error);
+                }
+            }
+
+            getWeatherIcon(code) {
+                const iconMap = {
+                    1000: '☀️', 1003: '⛅', 1006: '☁️', 1009: '☁️',
+                    1030: '🌫️', 1063: '🌦️', 1066: '🌨️', 1069: '🌨️',
+                    1072: '🌨️', 1087: '⛈️', 1114: '❄️', 1117: '❄️',
+                    1135: '🌫️', 1147: '🌫️', 1150: '🌦️', 1153: '🌦️',
+                    1168: '🌨️', 1171: '🌨️', 1180: '🌧️', 1183: '🌧️',
+                    1186: '🌧️', 1189: '🌧️', 1192: '🌧️', 1195: '🌧️',
+                    1198: '🌨️', 1201: '🌨️', 1204: '🌨️', 1207: '🌨️',
+                    1210: '🌨️', 1213: '🌨️', 1216: '🌨️', 1219: '🌨️',
+                    1222: '🌨️', 1225: '🌨️', 1237: '🌨️', 1240: '🌦️',
+                    1243: '🌧️', 1246: '🌧️', 1249: '🌨️', 1252: '🌨️',
+                    1255: '🌨️', 1258: '🌨️', 1261: '🌨️', 1264: '🌨️',
+                    1273: '⛈️', 1276: '⛈️', 1279: '⛈️', 1282: '⛈️'
+                };
+                return iconMap[code] || '🌤️';
+            }
+
             showOfflineData() {
                 console.log('📦 Showing offline data...');
                 
-                // Show placeholder data
-                const elements = [
-                    'tempInterior', 'humidityInterior', 'gasSensor', 'motionInterior',
-                    'tempExterior', 'humidityExterior', 'windSpeed', 'motionExterior',
-                    'signal4g', 'battery', 'cpuTemp'
-                ];
-                
-                elements.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-                    }
-                });
-                
                 // Try to load cached data
-                const cached = localStorage.getItem('smart-tent-last-data');
+                const cached = SafeStorage.get('smart-tent-last-data');
                 if (cached) {
-                    try {
-                        const data = JSON.parse(cached);
-                        this.updateDisplay(data);
-                        this.showNotification('Données en cache utilisées', 'warning');
-                    } catch (e) {
-                        console.warn('Failed to parse cached data');
-                    }
+                    this.updateDisplay(cached);
+                    this.showNotification('Données en cache utilisées', 'warning');
+                } else {
+                    // Show loading spinners
+                    const elements = [
+                        'tempInterior', 'humidityInterior', 'gasSensor', 'motionInterior',
+                        'tempExterior', 'humidityExterior', 'windSpeed', 'motionExterior',
+                        'signal4g', 'battery', 'cpuTemp'
+                    ];
+                    
+                    elements.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                        }
+                    });
                 }
             }
 
@@ -521,28 +798,6 @@
             }
         }
 
-        // Initialize app when ready
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                window.smartTentApp = new SmartTentApp();
-            }, 500);
-        });
-
-        // Connection monitoring
-        window.addEventListener('online', () => {
+        function testAPI() {
             if (window.smartTentApp) {
-                window.smartTentApp.isOnline = true;
-                window.smartTentApp.updateStatus(true);
-                window.smartTentApp.loadData();
-            }
-        });
-
-        window.addEventListener('offline', () => {
-            if (window.smartTentApp) {
-                window.smartTentApp.isOnline = false;
-                window.smartTentApp.updateStatus(false);
-            }
-        });
-    </script>
-</body>
-</html>
+                window
