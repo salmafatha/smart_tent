@@ -4,7 +4,7 @@ class SmartTentAPI {
     // Simple configuration - you can change these easily
     this.config = {
       // Use simple local network name or IP
-      baseUrl: 'http://192.168.100.169:5000', // or 'http://192.168.1.100:5000'
+      baseUrl: 'http://196.179.23.222:5000', // or 'http://192.168.1.100:5000'
       tentId: 'tente_v01',
       updateInterval: 2000,  // 2 seconds for real-time
       retryAttempts: 3,
