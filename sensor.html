@@ -2,45 +2,383 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <!-- 📱 PWA META TAGS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4CAF50">
-    <meta name="background-color" content="#4CAF50">
-    <meta name="display" content="standalone">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Smart Tent">
-    
     <title>🏕️ Smart Tent - Tableau de Bord</title>
-    
-    <!-- 🎯 PWA ICONS & MANIFEST -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
     <link rel="stylesheet" href="main.css">
     
-    <!-- ⚡ PRELOAD CRITICAL RESOURCES -->
-    <link rel="preload" href="api.js" as="script">
+    <style>
+        /* Styles inline pour assurer l'affichage */
+        :root {
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --light-green: #81C784;
+            --bg-green: #F1F8E9;
+            --warning-orange: #FF9800;
+            --danger-red: #F44336;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator.online {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .dashboard-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        .sensor-card {
+            background: var(--bg-green);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .sensor-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sensor-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .sensor-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--bg-green);
+            border-top: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .action-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: var(--dark-green);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-green);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Votre contenu HTML reste identique -->
-    
-    <!-- 🔧 SCRIPTS CORRIGÉS -->
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <a href="index.html" class="back-btn">← Retour</a>
+                <div>
+                    <h1>🏕️ Smart Tent</h1>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">Tableau de Bord</p>
+                </div>
+            </div>
+            <div class="status-indicator online" id="connectionStatus">
+                <div class="status-dot"></div>
+                En ligne
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <!-- CONDITIONS INTÉRIEURES -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <span>🏠</span>
+                <span>Conditions Intérieures</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-value" id="tempInterior">--°C</div>
+                    <div class="sensor-label">Température</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-value" id="humidityInterior">--%</div>
+                    <div class="sensor-label">Humidité</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💨</div>
+                    <div class="sensor-value" id="gasSensor">-- ppm</div>
+                    <div class="sensor-label">Gaz (MQ2)</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">👁️</div>
+                    <div class="sensor-value" id="motionInterior">Aucun</div>
+                    <div class="sensor-label">Mouvement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONDITIONS EXTÉRIEURES -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <span>🌍</span>
+                <span>Conditions Extérieures</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-value" id="tempExterior">--°C</div>
+                    <div class="sensor-label">Température</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-value" id="humidityExterior">--%</div>
+                    <div class="sensor-label">Humidité</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌬️</div>
+                    <div class="sensor-value" id="windSpeed">-- km/h</div>
+                    <div class="sensor-label">Vent</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🚶</div>
+                    <div class="sensor-value" id="motionExterior">Aucun</div>
+                    <div class="sensor-label">Mouvement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYSTÈME -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <span>🔧</span>
+                <span>Système</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">📡</div>
+                    <div class="sensor-value" id="signal4g">-- %</div>
+                    <div class="sensor-label">Signal 4G</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🔋</div>
+                    <div class="sensor-value" id="battery">-- %</div>
+                    <div class="sensor-label">Batterie</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💻</div>
+                    <div class="sensor-value" id="cpuTemp">--°C</div>
+                    <div class="sensor-label">CPU Temp</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">⏰</div>
+                    <div class="sensor-value" id="lastUpdate">--:--</div>
+                    <div class="sensor-label">Dernière MAJ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <span>🧭</span>
+                <span>Navigation</span>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                <a href="history.html" class="action-btn">📊 Historique</a>
+                <a href="map.html" class="action-btn">🗺️ Carte</a>
+                <a href="settings.html" class="action-btn">⚙️ Paramètres</a>
+                <button class="action-btn" onclick="refreshData()">🔄 Actualiser</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="api.js"></script>
     <script>
-        // 📱 SMART TENT MOBILE APP - VERSION CORRIGÉE
-        class SmartTentMobileApp {
+        // Simple Smart Tent App
+        class SmartTentApp {
             constructor() {
                 this.updateInterval = null;
-                this.currentTent = 'tent_001';
                 this.isOnline = navigator.onLine;
-                this.dataUsage = 0;
-                
-                // ✅ ATTENDRE QUE L'API SOIT CHARGÉE
-                this.initWhenReady();
+                this.init();
             }
 
-            async initWhenReady() {
-                // Attendre que l'API soit disponible
+            async init() {
+                console.log('🏕️ Initializing Smart Tent...');
+                
+                // Wait for API to be ready
+                await this.waitForAPI();
+                
+                // Load initial data
+                await this.loadData();
+                
+                // Start auto-update
+                this.startAutoUpdate();
+                
+                console.log('✅ Smart Tent initialized');
+            }
+
+            async waitForAPI() {
                 let attempts = 0;
                 while (!window.smartTentAPI && attempts < 50) {
                     await new Promise(resolve => setTimeout(resolve, 100));
@@ -49,292 +387,66 @@
                 
                 if (window.smartTentAPI) {
                     this.api = window.smartTentAPI;
-                    console.log('📱 API trouvée, initialisation...');
-                    await this.init();
                 } else {
-                    console.error('❌ API non trouvée après 5 secondes');
-                    this.showOfflineData();
-                }
-            }
-
-            async init() {
-                console.log('📱 Initializing Smart Tent Mobile App...');
-                
-                try {
-                    // Setup core functionality
-                    this.setupTentSelector();
-                    this.setupConnectionMonitoring();
-                    this.setupDataUsageTracking();
-                    this.setupCriticalAlerts();
-                    
-                    // Load initial data
-                    await this.loadData();
-                    
-                    // Start auto-update
-                    this.startAutoUpdate();
-                    
-                    console.log('✅ Mobile app initialized');
-                } catch (error) {
-                    console.error('❌ Erreur d\'initialisation:', error);
-                    this.showOfflineData();
-                }
-            }
-
-            setupTentSelector() {
-                const selector = document.getElementById('tentSelector');
-                if (!selector) {
-                    console.warn('⚠️ Tent selector not found');
-                    return;
-                }
-                
-                // Charger les appareils depuis localStorage
-                const savedDevices = localStorage.getItem('smartTentDevices');
-                
-                if (savedDevices) {
-                    const devices = JSON.parse(savedDevices);
-                    
-                    if (devices.length === 0) {
-                        selector.innerHTML = '<option value="">Aucune tente configurée</option>';
-                        this.showNotification('Aucune tente configurée. Redirection...', 'warning');
-                        setTimeout(() => window.location.href = 'index.html', 3000);
-                        return;
-                    }
-                    
-                    // Remplir le dropdown
-                    selector.innerHTML = devices.map(device => 
-                        `<option value="${device.id}">🏕️ ${device.name}</option>`
-                    ).join('');
-                    
-                    // Sélectionner le premier appareil
-                    this.currentTent = devices[0].id;
-                    selector.value = this.currentTent;
-                    
-                } else {
-                    selector.innerHTML = '<option value="">Configurez vos appareils</option>';
-                    this.showNotification('Veuillez configurer vos appareils', 'warning');
-                    setTimeout(() => window.location.href = 'index.html', 3000);
-                    return;
-                }
-                
-                // Event listener pour changement
-                selector.addEventListener('change', async (e) => {
-                    await this.switchTent(e.target.value);
-                });
-            }
-
-            async switchTent(tentId) {
-                console.log(`🔄 Switching to tent: ${tentId}`);
-                this.currentTent = tentId;
-                localStorage.setItem('selectedTent', tentId);
-                this.showLoading();
-                await this.loadData();
-                this.showNotification(`Basculé vers ${tentId}`, 'success');
-            }
-
-            setupConnectionMonitoring() {
-                const updateConnectionStatus = () => {
-                    const status = document.getElementById('connectionStatus');
-                    if (!status) return;
-                    
-                    if (navigator.onLine) {
-                        status.className = 'status-indicator online';
-                        status.innerHTML = '<div class="status-dot"></div>En ligne';
-                        this.isOnline = true;
-                    } else {
-                        status.className = 'status-indicator offline';
-                        status.innerHTML = '<div class="status-dot"></div>Hors ligne';
-                        this.isOnline = false;
-                    }
-                };
-
-                window.addEventListener('online', updateConnectionStatus);
-                window.addEventListener('offline', updateConnectionStatus);
-                updateConnectionStatus(); // Initial call
-            }
-
-            setupDataUsageTracking() {
-                const updateDataUsage = () => {
-                    this.dataUsage += 0.1;
-                    const dataElement = document.getElementById('dataUsage');
-                    if (dataElement) {
-                        dataElement.textContent = `📊 ${this.dataUsage.toFixed(1)} MB`;
-                    }
-                };
-
-                setInterval(updateDataUsage, 30000);
-            }
-
-            setupCriticalAlerts() {
-                setInterval(() => {
-                    this.checkCriticalConditions();
-                }, 5000);
-            }
-
-            checkCriticalConditions() {
-                const gasElement = document.getElementById('gasSensor');
-                const batteryElement = document.getElementById('battery');
-                
-                if (!gasElement || !batteryElement) return;
-                
-                const gasValue = parseInt(gasElement.textContent) || 0;
-                const batteryValue = parseInt(batteryElement.textContent) || 0;
-                
-                // Gas alert
-                if (gasValue >= 300) {
-                    this.showCriticalAlert(
-                        '⚠️ ALERTE GAZ!',
-                        `Niveau détecté: ${gasValue} ppm - Ventilez immédiatement`
-                    );
-                }
-                
-                // Battery alert
-                if (batteryValue <= 10) {
-                    this.showCriticalAlert(
-                        '🔋 BATTERIE FAIBLE!',
-                        `Niveau batterie: ${batteryValue}% - Rechargez immédiatement`
-                    );
-                }
-            }
-
-            showCriticalAlert(title, message) {
-                const alertsDiv = document.getElementById('criticalAlerts');
-                if (alertsDiv) {
-                    const content = alertsDiv.querySelector('.alert-content div');
-                    if (content) {
-                        content.innerHTML = `<strong>${title}</strong><br>${message}`;
-                    }
-                    alertsDiv.classList.add('visible');
-                    
-                    // Vibrate if supported
-                    if ('vibrate' in navigator) {
-                        navigator.vibrate([300, 100, 300, 100, 300]);
-                    }
+                    console.warn('⚠️ API not found, using offline mode');
                 }
             }
 
             async loadData() {
                 try {
-                    this.updateConnectionStatus(true);
-                    
-                    if (!this.api) {
-                        throw new Error('API not available');
-                    }
-                    
-                    console.log('🔄 Loading data for tent:', this.currentTent);
-                    const data = await this.api.getAllSensorData();
-                    
-                    if (data) {
-                        this.updateSensorDisplays(data);
-                        this.updateLastSync();
-                        
-                        // Cache les données
-                        localStorage.setItem(`sensor-data-${this.currentTent}`, JSON.stringify(data));
+                    if (this.api) {
+                        console.log('📡 Loading data from API...');
+                        const data = await this.api.getAllSensorData();
+                        this.updateDisplay(data);
+                        this.updateStatus(true);
                     } else {
                         this.showOfflineData();
                     }
-                    
                 } catch (error) {
                     console.error('❌ Failed to load data:', error);
-                    this.updateConnectionStatus(false);
+                    this.updateStatus(false);
                     this.showOfflineData();
                 }
             }
 
-            updateSensorDisplays(data) {
-                // Helper function to safely update element
+            updateDisplay(data) {
+                if (!data) return;
+
+                // Helper function
                 const updateElement = (id, value) => {
                     const element = document.getElementById(id);
-                    if (element) {
-                        element.textContent = value;
-                    }
+                    if (element) element.textContent = value;
                 };
 
-                // Interior conditions
+                // Update sensor values
                 updateElement('tempInterior', data.interior?.temperature ? `${data.interior.temperature}°C` : '--°C');
                 updateElement('humidityInterior', data.interior?.humidity ? `${data.interior.humidity}%` : '--%');
                 updateElement('gasSensor', data.interior?.gasLevel ? `${data.interior.gasLevel} ppm` : '-- ppm');
                 updateElement('motionInterior', data.interior?.motion ? 'Détecté' : 'Aucun');
                 
-                // Exterior conditions
                 updateElement('tempExterior', data.exterior?.temperature ? `${data.exterior.temperature}°C` : '--°C');
                 updateElement('humidityExterior', data.exterior?.humidity ? `${data.exterior.humidity}%` : '--%');
                 updateElement('windSpeed', data.exterior?.windSpeed ? `${data.exterior.windSpeed} km/h` : '-- km/h');
                 updateElement('motionExterior', data.exterior?.motion ? 'Détecté' : 'Aucun');
                 
-                // System status
                 updateElement('signal4g', data.system?.signal4G ? `${data.system.signal4G}%` : '-- %');
                 updateElement('battery', data.system?.batteryLevel ? `${data.system.batteryLevel}%` : '-- %');
                 updateElement('cpuTemp', data.system?.deviceTemperature ? `${data.system.deviceTemperature}°C` : '--°C');
                 
-                // Update visual indicators
-                this.updateVisualIndicators(data);
+                // Update timestamp
+                const now = new Date();
+                updateElement('lastUpdate', now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                }));
                 
-                console.log('✅ Sensor displays updated');
-            }
-
-            updateVisualIndicators(data) {
-                // Gas sensor bar
-                const gasValue = data.interior?.gasLevel || 0;
-                const gasBar = document.getElementById('gasSensorBar');
-                if (gasBar) {
-                    const gasPercentage = Math.min((gasValue / 1000) * 100, 100);
-                    gasBar.style.width = `${gasPercentage}%`;
-                    
-                    if (gasValue < 200) {
-                        gasBar.className = 'battery-fill';
-                    } else if (gasValue < 300) {
-                        gasBar.className = 'battery-fill low';
-                    } else {
-                        gasBar.className = 'battery-fill critical';
-                    }
-                }
-                
-                // Battery indicator
-                const batteryValue = data.system?.batteryLevel || 0;
-                const batteryBar = document.getElementById('battery-indicator');
-                if (batteryBar) {
-                    batteryBar.style.width = `${batteryValue}%`;
-                    
-                    if (batteryValue > 30) {
-                        batteryBar.className = 'battery-fill';
-                    } else if (batteryValue > 10) {
-                        batteryBar.className = 'battery-fill low';
-                    } else {
-                        batteryBar.className = 'battery-fill critical';
-                    }
-                }
-                
-                // Signal bars
-                const signalValue = data.system?.signal4G || 0;
-                const signalBars = document.querySelectorAll('#signal-bars .bar');
-                const activeBars = Math.ceil((signalValue / 100) * 4);
-                
-                signalBars.forEach((bar, index) => {
-                    if (index < activeBars) {
-                        bar.classList.add('active');
-                    } else {
-                        bar.classList.remove('active');
-                    }
-                });
+                console.log('✅ Display updated with real data');
             }
 
             showOfflineData() {
-                const cachedData = localStorage.getItem(`sensor-data-${this.currentTent}`);
-                if (cachedData) {
-                    try {
-                        const data = JSON.parse(cachedData);
-                        this.updateSensorDisplays(data);
-                        this.showNotification('Utilisation des données en cache', 'warning');
-                    } catch (error) {
-                        console.error('❌ Error parsing cached data:', error);
-                        this.setDefaultValues();
-                    }
-                } else {
-                    this.setDefaultValues();
-                }
-            }
-
-            setDefaultValues() {
+                console.log('📦 Showing offline data...');
+                
+                // Show placeholder data
                 const elements = [
                     'tempInterior', 'humidityInterior', 'gasSensor', 'motionInterior',
                     'tempExterior', 'humidityExterior', 'windSpeed', 'motionExterior',
@@ -344,12 +456,24 @@
                 elements.forEach(id => {
                     const element = document.getElementById(id);
                     if (element) {
-                        element.textContent = '--';
+                        element.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
                     }
                 });
+                
+                // Try to load cached data
+                const cached = localStorage.getItem('smart-tent-last-data');
+                if (cached) {
+                    try {
+                        const data = JSON.parse(cached);
+                        this.updateDisplay(data);
+                        this.showNotification('Données en cache utilisées', 'warning');
+                    } catch (e) {
+                        console.warn('Failed to parse cached data');
+                    }
+                }
             }
 
-            updateConnectionStatus(online) {
+            updateStatus(online) {
                 const status = document.getElementById('connectionStatus');
                 if (status) {
                     if (online) {
@@ -362,38 +486,18 @@
                 }
             }
 
-            updateLastSync() {
-                const now = new Date();
-                const time = now.toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                const cameraInfo = document.getElementById('cameraInfo');
-                if (cameraInfo) {
-                    cameraInfo.textContent = `Dernière mise à jour: ${time}`;
-                }
-            }
-
             startAutoUpdate() {
                 if (this.updateInterval) {
                     clearInterval(this.updateInterval);
                 }
                 
                 this.updateInterval = setInterval(() => {
-                    if (this.isOnline && this.api) {
+                    if (this.isOnline) {
                         this.loadData();
                     }
-                }, 2000);
+                }, 5000); // Update every 5 seconds
                 
                 console.log('🔄 Auto-update started');
-            }
-
-            showLoading() {
-                const sensors = document.querySelectorAll('.sensor-value');
-                sensors.forEach(sensor => {
-                    sensor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-                });
             }
 
             showNotification(message, type = 'success') {
@@ -410,32 +514,35 @@
         }
 
         // Global functions
-        let mobileApp;
-
-        function dismissCriticalAlert() {
-            const alertsDiv = document.getElementById('criticalAlerts');
-            if (alertsDiv) {
-                alertsDiv.classList.remove('visible');
+        function refreshData() {
+            if (window.smartTentApp) {
+                window.smartTentApp.loadData();
+                window.smartTentApp.showNotification('Données actualisées!');
             }
         }
 
-        // Wait for DOM and API to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeApp);
-        } else {
-            initializeApp();
-        }
-
-        function initializeApp() {
-            // Wait a bit for api.js to load
+        // Initialize app when ready
+        document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                mobileApp = new SmartTentMobileApp();
-                window.mobileApp = mobileApp; // Make it globally available
+                window.smartTentApp = new SmartTentApp();
             }, 500);
-        }
-    </script>
+        });
 
-    <!-- 🔧 API SCRIPT - CHARGÉ EN DERNIER -->
-    <script src="api.js"></script>
+        // Connection monitoring
+        window.addEventListener('online', () => {
+            if (window.smartTentApp) {
+                window.smartTentApp.isOnline = true;
+                window.smartTentApp.updateStatus(true);
+                window.smartTentApp.loadData();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            if (window.smartTentApp) {
+                window.smartTentApp.isOnline = false;
+                window.smartTentApp.updateStatus(false);
+            }
+        });
+    </script>
 </body>
 </html>
