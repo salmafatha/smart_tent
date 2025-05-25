@@ -150,63 +150,7 @@ class SmartTentAPI {
    * TRANSFORM BACKEND DATA to frontend format
    * Converts your MongoDB structure to easy-to-use frontend format
    */
-  transformSensorData(backendData) {
-    if (!backendData || !backendData.success) {
-      return this.getEmptyDataStructure();
-    }
-
-    const { sensor_data, gps_data, esp32_data } = backendData;
-
-    return {
-      timestamp: new Date().toISOString(),
-      
-      // Interior conditions from Raspberry Pi
-      interior: {
-        temperature: sensor_data?.temperature || 0,
-        humidity: sensor_data?.humidity || 0,
-        motion: sensor_data?.motion_interior || false,
-        gasLevel: sensor_data?.gas_detection || 0,
-        gasSafe: (sensor_data?.gas_detection || 0) < 300,
-        luminosity: sensor_data?.luminosity || 0
-      },
-      
-      // Exterior conditions (mix of Pi sensors and ESP32)
-      exterior: {
-        temperature: sensor_data?.temperature_exterior || sensor_data?.temperature || 0,
-        humidity: sensor_data?.humidity_exterior || sensor_data?.humidity || 0,
-        motion: sensor_data?.motion_exterior || false,
-        windSpeed: this.getESP32SensorValue(esp32_data, 'wind_speed') || 0,
-        windDirection: this.getESP32SensorValue(esp32_data, 'wind_direction') || 0
-      },
-      
-      // System & connectivity
-      system: {
-        signal4G: sensor_data?.signal_4g || this.estimateSignalStrength(),
-        batteryLevel: sensor_data?.battery_level || 100,
-        deviceTemperature: sensor_data?.device_temperature || 35,
-        uptime: sensor_data?.uptime || '00:00:00'
-      },
-      
-      // GPS data
-      gps: {
-        latitude: gps_data?.latitude || 0,
-        longitude: gps_data?.longitude || 0,
-        altitude: gps_data?.altitude || 0,
-        accuracy: gps_data?.accuracy || 0,
-        timestamp: gps_data?.timestamp || new Date().toISOString()
-      },
-      
-      // ESP32 devices status
-      esp32Devices: this.transformESP32Data(esp32_data),
-      
-      // Camera data from ESP32
-      camera: {
-        hasImage: this.hasESP32Camera(esp32_data),
-        imageData: this.getESP32CameraData(esp32_data),
-        motionDetected: this.getESP32MotionDetection(esp32_data),
-        lastUpdate: new Date().toISOString()
-      }
-    };
+  
   }
 
   /**
@@ -222,7 +166,64 @@ class SmartTentAPI {
       console.error(`❌ Failed to get ${sensorType} history:`, error);
       return this.generateMockHistoryData(sensorType, hours);
     }
+  transformSensorData(backendData) {
+  if (!backendData || !backendData.success) {
+    return this.getEmptyDataStructure();
   }
+
+  const { sensor_data, gps_data, esp32_data } = backendData;
+
+  return {
+    timestamp: new Date().toISOString(),
+    
+    // Interior conditions - CORRIGÉ pour correspondre à vos données
+    interior: {
+      temperature: sensor_data?.temperature_interior || 0,
+      humidity: sensor_data?.humidity_interior || 0,
+      motion: sensor_data?.motion_interior || false,
+      gasLevel: sensor_data?.gas_detection || 0,
+      gasSafe: (sensor_data?.gas_detection || 0) < 300,
+      luminosity: sensor_data?.luminosity || 0
+    },
+    
+    // Exterior conditions - CORRIGÉ
+    exterior: {
+      temperature: sensor_data?.temperature_exterior || 0,
+      humidity: sensor_data?.humidity_exterior || 0,
+      motion: sensor_data?.motion_exterior || false,
+      windSpeed: sensor_data?.wind_speed || 0,
+      windDirection: sensor_data?.wind_direction || 0
+    },
+    
+    // System & connectivity - Ajout de valeurs par défaut
+    system: {
+      signal4G: 75, // Valeur par défaut car pas dans vos données
+      batteryLevel: 85, // Valeur par défaut
+      deviceTemperature: sensor_data?.temperature_interior || 25,
+      uptime: '02:30:00' // Valeur par défaut
+    },
+    
+    // GPS data - CORRIGÉ
+    gps: {
+      latitude: gps_data?.latitude || 0,
+      longitude: gps_data?.longitude || 0,
+      altitude: gps_data?.altitude || 0,
+      accuracy: gps_data?.accuracy || 0,
+      timestamp: gps_data?.timestamp || new Date().toISOString()
+    },
+    
+    // ESP32 devices status
+    esp32Devices: this.transformESP32Data(esp32_data),
+    
+    // Camera data
+    camera: {
+      hasImage: false,
+      imageData: null,
+      motionDetected: sensor_data?.motion_exterior || false,
+      lastUpdate: new Date().toISOString()
+    }
+  };
+}
 
   /**
    * GET RECENT ALERTS
