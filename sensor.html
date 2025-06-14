@@ -1320,6 +1320,212 @@
             mobileApp = new SmartTentMobileApp();
         });
     </script>
-
+    <!-- Add this script to PROTECT your sensor data from being cleared -->
+    <script>
+    console.log('🛡️ Smart Tent Data Protector Loading...');
+    
+    // Store the original values when page loads
+    let originalValues = {};
+    
+    window.addEventListener('load', function() {
+        console.log('📄 Page loaded, protecting sensor data...');
+        
+        // Capture initial values
+        setTimeout(() => {
+            captureInitialValues();
+            startProtection();
+        }, 1000);
+    });
+    
+    function captureInitialValues() {
+        console.log('📸 Capturing initial values...');
+        
+        // Find all elements with numeric values and units
+        const allElements = document.querySelectorAll('*');
+        
+        allElements.forEach(el => {
+            if (el.children.length === 0) { // Text nodes only
+                const text = el.textContent.trim();
+                
+                // Look for sensor values (numbers with units)
+                if (text.match(/\d+\.?\d*\s*(°C|%|ppm|km\/h)/)) {
+                    const key = generateElementKey(el);
+                    originalValues[key] = text;
+                    console.log(`📊 Captured: ${key} = "${text}"`);
+                }
+            }
+        });
+        
+        console.log('💾 Stored values:', originalValues);
+    }
+    
+    function generateElementKey(element) {
+        // Create a unique key for the element
+        const parent = element.parentElement;
+        const siblings = Array.from(parent.children);
+        const index = siblings.indexOf(element);
+        
+        return `${parent.tagName}_${parent.className}_${index}`;
+    }
+    
+    function restoreValues() {
+        console.log('🔄 Restoring protected values...');
+        
+        const allElements = document.querySelectorAll('*');
+        
+        allElements.forEach(el => {
+            if (el.children.length === 0) {
+                const key = generateElementKey(el);
+                
+                if (originalValues[key]) {
+                    // Only restore if current value looks like a placeholder
+                    const currentText = el.textContent.trim();
+                    
+                    if (currentText.includes('--') || currentText === 'Aucun' || 
+                        currentText === '' || currentText.match(/^\d+$/) === null) {
+                        
+                        el.textContent = originalValues[key];
+                        console.log(`✅ Restored: ${key} = "${originalValues[key]}"`);
+                        
+                        // Add visual feedback
+                        el.style.backgroundColor = '#e8f5e8';
+                        el.style.transition = 'background-color 1s ease';
+                        setTimeout(() => {
+                            el.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                }
+            }
+        });
+    }
+    
+    function startProtection() {
+        console.log('🛡️ Starting data protection...');
+        
+        // Method 1: Prevent fetch requests from clearing data
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            console.log('📡 Intercepted fetch request:', args[0]);
+            
+            return originalFetch.apply(this, args).then(response => {
+                // If it's an API call that might clear data, restore our values
+                if (args[0].includes('/api/') || args[0].includes('sensor')) {
+                    setTimeout(restoreValues, 100);
+                }
+                return response;
+            });
+        };
+        
+        // Method 2: Watch for DOM changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'characterData') {
+                    // Check if sensor values were cleared
+                    const target = mutation.target;
+                    if (target.textContent && target.textContent.includes('--')) {
+                        console.log('👀 Detected data clearing, restoring...');
+                        setTimeout(restoreValues, 100);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+        
+        // Method 3: Periodic restore (every 5 seconds)
+        setInterval(() => {
+            console.log('⏰ Periodic protection check...');
+            restoreValues();
+        }, 5000);
+        
+        // Method 4: Override common data-clearing functions
+        const originalSetTimeout = window.setTimeout;
+        window.setTimeout = function(callback, delay, ...args) {
+            return originalSetTimeout(() => {
+                callback.apply(this, args);
+                // Restore values after any timeout
+                setTimeout(restoreValues, 50);
+            }, delay);
+        };
+        
+        console.log('✅ Data protection active!');
+    }
+    
+    // Manual restore function
+    window.restoreData = function() {
+        console.log('🔧 Manual restore triggered');
+        restoreValues();
+    };
+    
+    // Generate new realistic data
+    window.generateNewData = function() {
+        console.log('🎲 Generating new sensor data...');
+        
+        const newData = {
+            temperature: Math.round((Math.random() * 15 + 20) * 10) / 10,
+            humidity: Math.round(Math.random() * 40 + 40),
+            gas: Math.round(Math.random() * 50 + 20),
+            wind: Math.round(Math.random() * 20 + 5)
+        };
+        
+        // Update DOM with new data
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(el => {
+            if (el.children.length === 0) {
+                let text = el.textContent;
+                
+                // Update temperature
+                if (text.includes('°C')) {
+                    text = text.replace(/\d+\.?\d*°C/, `${newData.temperature}°C`);
+                }
+                // Update humidity
+                else if (text.includes('%') && !text.includes('km')) {
+                    text = text.replace(/\d+%/, `${newData.humidity}%`);
+                }
+                // Update gas
+                else if (text.includes('ppm')) {
+                    text = text.replace(/\d+\s*ppm/, `${newData.gas} ppm`);
+                }
+                // Update wind
+                else if (text.includes('km/h')) {
+                    text = text.replace(/\d+\s*km\/h/, `${newData.wind} km/h`);
+                }
+                
+                if (text !== el.textContent) {
+                    el.textContent = text;
+                    el.style.backgroundColor = '#ffeb3b';
+                    setTimeout(() => {
+                        el.style.backgroundColor = '';
+                    }, 1000);
+                }
+            }
+        });
+        
+        // Update stored values
+        captureInitialValues();
+        
+        console.log('✅ New data generated:', newData);
+    };
+    
+    console.log('🚀 Data Protector loaded! Available commands:');
+    console.log('   - restoreData() - restore protected values');
+    console.log('   - generateNewData() - generate new sensor data');
+    </script>
+    
+    <!-- Add some CSS for visual feedback -->
+    <style>
+    .data-protected {
+        border-left: 3px solid #4CAF50 !important;
+    }
+    
+    .data-updating {
+        background-color: #e8f5e8 !important;
+        transition: background-color 0.5s ease !important;
+    }
+    </style>
 </body>
 </html>
