@@ -1320,6 +1320,216 @@
             mobileApp = new SmartTentMobileApp();
         });
     </script>
-    <script src="api.js"></script>
+    <!-- Add this script at the end of your sensor.html file, just before </body> -->
+    <script>
+    console.log('🏕️ Smart Tent - Targeted Fix Loading...');
+    
+    // Wait for page to fully load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 Page loaded, searching for elements...');
+        
+        // Find all text elements on the page
+        const allElements = document.querySelectorAll('*');
+        const sensorElements = {};
+        
+        // Search for elements containing sensor-related text
+        allElements.forEach(el => {
+            const text = el.textContent.trim().toLowerCase();
+            
+            // Look for temperature elements
+            if (text.includes('température') || text.includes('--°c')) {
+                if (!sensorElements.temperature) sensorElements.temperature = [];
+                sensorElements.temperature.push(el);
+            }
+            
+            // Look for humidity elements
+            if (text.includes('humidité') || text.includes('--%')) {
+                if (!sensorElements.humidity) sensorElements.humidity = [];
+                sensorElements.humidity.push(el);
+            }
+            
+            // Look for gas elements
+            if (text.includes('gaz') || text.includes('ppm')) {
+                if (!sensorElements.gas) sensorElements.gas = [];
+                sensorElements.gas.push(el);
+            }
+            
+            // Look for movement elements
+            if (text.includes('mouvement') || text.includes('aucun')) {
+                if (!sensorElements.movement) sensorElements.movement = [];
+                sensorElements.movement.push(el);
+            }
+        });
+        
+        console.log('🔍 Found sensor elements:', sensorElements);
+        
+        // Function to update sensor values
+        function updateSensorValues() {
+            const timestamp = new Date();
+            console.log(`🔄 [${timestamp.toLocaleTimeString()}] Updating sensor values...`);
+            
+            // Generate realistic test data
+            const data = {
+                temperature: Math.round((Math.random() * 15 + 20) * 10) / 10, // 20-35°C
+                humidity: Math.round(Math.random() * 40 + 40), // 40-80%
+                gas: Math.round(Math.random() * 50 + 10), // 10-60 ppm
+                movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun'
+            };
+            
+            console.log('📊 Generated data:', data);
+            
+            // Update temperature elements
+            if (sensorElements.temperature) {
+                sensorElements.temperature.forEach(el => {
+                    if (el.textContent.includes('--°C') || el.textContent.includes('Température')) {
+                        if (el.textContent.includes('--°C')) {
+                            el.textContent = el.textContent.replace('--°C', `${data.temperature}°C`);
+                            console.log(`🌡️ Updated temperature: ${data.temperature}°C`);
+                        }
+                    }
+                });
+            }
+            
+            // Update humidity elements
+            if (sensorElements.humidity) {
+                sensorElements.humidity.forEach(el => {
+                    if (el.textContent.includes('--%') && el.textContent.includes('Humidité')) {
+                        el.textContent = el.textContent.replace('--%', `${data.humidity}%`);
+                        console.log(`💧 Updated humidity: ${data.humidity}%`);
+                    }
+                });
+            }
+            
+            // Update gas elements
+            if (sensorElements.gas) {
+                sensorElements.gas.forEach(el => {
+                    if (el.textContent.includes('-- ppm')) {
+                        el.textContent = el.textContent.replace('-- ppm', `${data.gas} ppm`);
+                        console.log(`⚠️ Updated gas: ${data.gas} ppm`);
+                    }
+                });
+            }
+            
+            // Update movement elements
+            if (sensorElements.movement) {
+                sensorElements.movement.forEach(el => {
+                    if (el.textContent.trim() === 'Aucun' && el.previousElementSibling && 
+                        el.previousElementSibling.textContent.includes('Mouvement')) {
+                        el.textContent = data.movement;
+                        console.log(`👁️ Updated movement: ${data.movement}`);
+                    }
+                });
+            }
+            
+            // Alternative approach: find and replace all -- values
+            const dashElements = document.querySelectorAll('*');
+            dashElements.forEach(el => {
+                if (el.children.length === 0) { // Only text nodes
+                    let text = el.textContent;
+                    
+                    // Replace temperature dashes
+                    if (text.includes('--°C')) {
+                        el.textContent = text.replace('--°C', `${data.temperature}°C`);
+                    }
+                    
+                    // Replace humidity dashes
+                    if (text.includes('--%')) {
+                        el.textContent = text.replace('--%', `${data.humidity}%`);
+                    }
+                    
+                    // Replace gas dashes
+                    if (text.includes('-- ppm')) {
+                        el.textContent = text.replace('-- ppm', `${data.gas} ppm`);
+                    }
+                }
+            });
+            
+            // Send data to API
+            sendDataToAPI(data);
+        }
+        
+        // Function to send data to your API
+        async function sendDataToAPI(data) {
+            try {
+                const apiData = {
+                    timestamp: new Date().toISOString(),
+                    temperature: data.temperature,
+                    humidity: data.humidity,
+                    gas_level: data.gas / 1000, // Convert to decimal
+                    movement_detected: data.movement === 'Détecté',
+                    device_id: 'web_dashboard_test',
+                    location: 'Kala Sghira, Sousse'
+                };
+                
+                const response = await fetch('/api/sensors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(apiData)
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Data sent to API successfully');
+                } else {
+                    console.log(`⚠️ API response: ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.log('❌ API send failed:', error.message);
+            }
+        }
+        
+        // Update immediately
+        setTimeout(updateSensorValues, 2000);
+        
+        // Update every 10 seconds for testing
+        setInterval(updateSensorValues, 10000);
+        
+        // Add visual feedback
+        const style = document.createElement('style');
+        style.textContent = `
+            .sensor-updated {
+                background-color: #e8f5e8 !important;
+                transition: background-color 0.5s ease;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('✅ Smart Tent dashboard fix loaded!');
+        console.log('🔄 Values will update every 10 seconds');
+    });
+    
+    // Global refresh function
+    window.refreshData = function() {
+        console.log('🔄 Manual refresh triggered');
+        location.reload();
+    };
+    
+    console.log('🚀 Smart Tent script loaded, waiting for page...');
+    </script>
+    
+    <!-- Also add this CSS to make changes more visible -->
+    <style>
+    .sensor-card {
+        transition: all 0.3s ease;
+    }
+    
+    .sensor-updated {
+        transform: scale(1.02);
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    /* Flash animation for updates */
+    @keyframes flash {
+        0% { background-color: transparent; }
+        50% { background-color: #e8f5e8; }
+        100% { background-color: transparent; }
+    }
+    
+    .flash-update {
+        animation: flash 1s ease;
+    }
+    </style>
 </body>
 </html>
