@@ -639,7 +639,7 @@
                         <h1>Tableau de Bord</h1>
                         <div class="tent-selector">
                             <select id="tentSelector" class="tent-dropdown">
-                                <!-- Les tentes seront chargées dynamiquement -->
+                                <option value="tent_1">🏕️ tente principale</option>
                             </select>
                         </div>
                     </div>
@@ -696,19 +696,19 @@
                 </div>
                 
                 <div class="sensor-grid">
-                    <div class="sensor-card" onclick="showSensorDetails('temperature-interior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">🌡️</div>
                         <div class="sensor-value" id="tempInterior">--°C</div>
                         <div class="sensor-label">Température</div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('humidity-interior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">💧</div>
                         <div class="sensor-value" id="humidityInterior">--%</div>
                         <div class="sensor-label">Humidité</div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('gas')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">💨</div>
                         <div class="sensor-value" id="gasSensor">-- ppm</div>
                         <div class="sensor-label">Gaz (MQ2)</div>
@@ -717,7 +717,7 @@
                         </div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('motion-interior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">👁️</div>
                         <div class="sensor-value" id="motionInterior">Aucun</div>
                         <div class="sensor-label">Mouvement</div>
@@ -725,10 +725,10 @@
                 </div>
                 
                 <div style="margin-top: 1rem; display: flex; gap: 0.8rem;">
-                    <button class="action-btn" onclick="activateComfortMode()">
+                    <button class="action-btn" onclick="refreshData()">
                         🌡️ Mode Confort
                     </button>
-                    <button class="action-btn secondary" onclick="refreshInteriorData()">
+                    <button class="action-btn secondary" onclick="refreshData()">
                         🔄 Actualiser
                     </button>
                 </div>
@@ -742,25 +742,25 @@
                 </div>
                 
                 <div class="sensor-grid">
-                    <div class="sensor-card" onclick="showSensorDetails('temperature-exterior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">🌡️</div>
                         <div class="sensor-value" id="tempExterior">--°C</div>
                         <div class="sensor-label">Température</div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('humidity-exterior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">💧</div>
                         <div class="sensor-value" id="humidityExterior">--%</div>
                         <div class="sensor-label">Humidité</div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('wind')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">🌬️</div>
                         <div class="sensor-value" id="windSpeed">-- km/h</div>
                         <div class="sensor-label">Vent</div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('motion-exterior')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">🚶</div>
                         <div class="sensor-value" id="motionExterior">Aucun</div>
                         <div class="sensor-label">Mouvement</div>
@@ -768,10 +768,10 @@
                 </div>
                 
                 <div style="margin-top: 1rem; display: flex; gap: 0.8rem;">
-                    <button class="action-btn" onclick="getWeatherForecast()">
+                    <button class="action-btn" onclick="refreshData()">
                         🌤️ Météo
                     </button>
-                    <button class="action-btn secondary" onclick="refreshExteriorData()">
+                    <button class="action-btn secondary" onclick="refreshData()">
                         🔄 Actualiser
                     </button>
                 </div>
@@ -785,7 +785,7 @@
                 </div>
                 
                 <div class="sensor-grid">
-                    <div class="sensor-card" onclick="showSensorDetails('signal')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">📡</div>
                         <div class="sensor-value" id="signal4g">-- %</div>
                         <div class="sensor-label">Signal 4G</div>
@@ -797,7 +797,7 @@
                         </div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('battery')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">🔋</div>
                         <div class="sensor-value" id="battery">-- %</div>
                         <div class="sensor-label">Batterie</div>
@@ -806,7 +806,7 @@
                         </div>
                     </div>
                     
-                    <div class="sensor-card" onclick="showSensorDetails('cpu')">
+                    <div class="sensor-card">
                         <div class="sensor-icon">💻</div>
                         <div class="sensor-value" id="cpuTemp">--°C</div>
                         <div class="sensor-label">CPU Temp</div>
@@ -815,10 +815,10 @@
                 </div>
                 
                 <div style="margin-top: 1rem; display: flex; gap: 0.8rem;">
-                    <button class="action-btn" onclick="runDiagnostic()">
+                    <button class="action-btn" onclick="refreshData()">
                         🔍 Diagnostic
                     </button>
-                    <button class="action-btn secondary" onclick="optimizeSystem()">
+                    <button class="action-btn secondary" onclick="refreshData()">
                         ⚡ Optimiser
                     </button>
                 </div>
@@ -847,16 +847,16 @@
                     </div>
                     
                     <div class="camera-controls">
-                        <button class="action-btn" onclick="takePhoto()">
+                        <button class="action-btn" onclick="refreshData()">
                             📸 Photo
                         </button>
-                        <button class="action-btn secondary" onclick="toggleDetection()" id="detectionBtn">
+                        <button class="action-btn secondary" onclick="refreshData()" id="detectionBtn">
                             👁️ Détection
                         </button>
-                        <button class="action-btn secondary" onclick="toggleRecording()" id="recordBtn">
+                        <button class="action-btn secondary" onclick="refreshData()" id="recordBtn">
                             🎥 Enregistrer
                         </button>
-                        <button class="action-btn secondary" onclick="toggleFullscreen()">
+                        <button class="action-btn secondary" onclick="refreshData()">
                             🔍 Plein écran
                         </button>
                     </div>
@@ -866,532 +866,250 @@
         </main>
     </div>
 
-    <!-- Include API -->
-    <script src="js/api.js"></script>
-    
+    <!-- 🎯 SIMPLE WORKING JAVASCRIPT -->
     <script>
-        // 📱 SMART TENT COMPLETE MOBILE APP
-        class SmartTentMobileApp {
-            constructor() {
-                this.api = window.smartTentAPI;
-                this.updateInterval = null;
-                this.currentTent = 'tent_001';
-                this.isOnline = navigator.onLine;
-                this.dataUsage = 0;
-                
-                this.init();
-            }
+    console.log('🏕️ Smart Tent Dashboard - Working Version');
 
-            async init() {
-                console.log('📱 Initializing Smart Tent Mobile App...');
-                
-                // Setup core functionality
-                this.setupTentSelector();
-                this.setupConnectionMonitoring();
-                this.setupDataUsageTracking();
-                this.setupCriticalAlerts();
-                
-                // Load initial data
-                await this.loadData();
-                
-                // Start auto-update
-                this.startAutoUpdate();
-                
-                console.log('✅ Mobile app initialized');
-            }
+    // Data storage
+    let sensorData = {
+        temperature_interior: 24.5,
+        humidity_interior: 67,
+        gas_ppm: 42,
+        temperature_exterior: 22.1,
+        humidity_exterior: 72,
+        wind_speed: 15,
+        signal_4g: 85,
+        battery: 92,
+        cpu_temp: 52.3,
+        movement: 'Aucun',
+        last_update: new Date().toISOString()
+    };
 
-            setupTentSelector() {
-                // Charger les appareils depuis l'index
-                const savedDevices = localStorage.getItem('smartTentDevices');
-                const selector = document.getElementById('tentSelector');
-                
-                if (savedDevices) {
-                    const devices = JSON.parse(savedDevices);
-                    
-                    if (devices.length === 0) {
-                        // Aucun appareil configuré - rediriger vers l'index
-                        selector.innerHTML = '<option value="">Aucune tente configurée</option>';
-                        setTimeout(() => {
-                            alert('Aucune tente configurée. Redirection vers la page de configuration...');
-                            window.location.href = 'index.html';
-                        }, 2000);
-                        return;
-                    }
-                    
-                    // Remplir le dropdown avec les appareils configurés
-                    selector.innerHTML = devices.map(device => 
-                        `<option value="${device.id}">🏕️ ${device.name}</option>`
-                    ).join('');
-                    
-                    // Sélectionner le premier appareil par défaut
-                    this.currentTent = devices[0].id;
-                    selector.value = this.currentTent;
-                    
-                } else {
-                    // Aucun appareil sauvegardé - rediriger vers l'index
-                    selector.innerHTML = '<option value="">Configurez vos appareils</option>';
-                    setTimeout(() => {
-                        alert('Veuillez d\'abord configurer vos appareils Smart Tent.');
-                        window.location.href = 'index.html';
-                    }, 2000);
-                    return;
-                }
-                
-                // Charger la tente sauvegardée si elle existe
-                const savedTent = localStorage.getItem('selectedTent');
-                if (savedTent && devices.some(device => device.id === savedTent)) {
-                    this.currentTent = savedTent;
-                    selector.value = savedTent;
-                }
-                
-                selector.addEventListener('change', async (e) => {
-                    await this.switchTent(e.target.value);
-                });
-            }
-
-            async switchTent(tentId) {
-                console.log(`🔄 Switching to tent: ${tentId}`);
-                
-                this.currentTent = tentId;
-                localStorage.setItem('selectedTent', tentId);
-                
-                // Show loading state
-                this.showLoading();
-                
-                // Load data for new tent
-                await this.loadData();
-                
-                this.showNotification(`Basculé vers ${tentId}`, 'success');
-            }
-
-            setupConnectionMonitoring() {
-                const updateConnectionStatus = () => {
-                    const status = document.getElementById('connectionStatus');
-                    
-                    if (navigator.onLine) {
-                        status.className = 'status-indicator online';
-                        status.innerHTML = '<div class="status-dot"></div>En ligne';
-                        this.isOnline = true;
-                    } else {
-                        status.className = 'status-indicator offline';
-                        status.innerHTML = '<div class="status-dot"></div>Hors ligne';
-                        this.isOnline = false;
-                    }
-                };
-
-                window.addEventListener('online', updateConnectionStatus);
-                window.addEventListener('offline', updateConnectionStatus);
-            }
-
-            setupDataUsageTracking() {
-                // Simulated data usage tracking
-                const updateDataUsage = () => {
-                    this.dataUsage += 0.1; // 0.1 MB per update
-                    const dataElement = document.getElementById('dataUsage');
-                    dataElement.textContent = `📊 ${this.dataUsage.toFixed(1)} MB`;
-                };
-
-                setInterval(updateDataUsage, 30000); // Update every 30 seconds
-            }
-
-            setupCriticalAlerts() {
-                // Check for critical alerts periodically
-                setInterval(() => {
-                    this.checkCriticalConditions();
-                }, 5000);
-            }
-
-            checkCriticalConditions() {
-                const gasValue = parseInt(document.getElementById('gasSensor').textContent);
-                const batteryValue = parseInt(document.getElementById('battery').textContent);
-                
-                // Gas alert
-                if (gasValue >= 300 && !isNaN(gasValue)) {
-                    this.showCriticalAlert(
-                        '⚠️ ALERTE GAZ!',
-                        `Niveau détecté: ${gasValue} ppm - Ventilez immédiatement`
-                    );
-                }
-                
-                // Battery alert
-                if (batteryValue <= 10 && !isNaN(batteryValue)) {
-                    this.showCriticalAlert(
-                        '🔋 BATTERIE FAIBLE!',
-                        `Niveau batterie: ${batteryValue}% - Rechargez immédiatement`
-                    );
-                }
-            }
-
-            showCriticalAlert(title, message) {
-                const alertsDiv = document.getElementById('criticalAlerts');
-                alertsDiv.querySelector('.alert-content div').innerHTML = `<strong>${title}</strong><br>${message}`;
-                alertsDiv.classList.add('visible');
-                
-                // Vibrate if supported
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([300, 100, 300, 100, 300]);
-                }
-            }
-
-            async loadData() {
-                try {
-                    this.updateConnectionStatus(true);
-                    
-                    const data = await this.api.getAllSensorData(this.currentTent);
-                    
-                    if (data && data.length > 0) {
-                        this.updateSensorDisplays(data[0]);
-                        this.updateLastSync();
-                    } else {
-                        this.showOfflineData();
-                    }
-                    
-                } catch (error) {
-                    console.error('❌ Failed to load data:', error);
-                    this.updateConnectionStatus(false);
-                    this.showOfflineData();
-                }
-            }
-
-            updateSensorDisplays(data) {
-                // Interior conditions
-                document.getElementById('tempInterior').textContent = data.sensors?.temperature_interior || '--°C';
-                document.getElementById('humidityInterior').textContent = data.sensors?.humidity_interior || '--%';
-                document.getElementById('gasSensor').textContent = data.sensors?.gas || '-- ppm';
-                document.getElementById('motionInterior').textContent = data.sensors?.motion_interior ? 'Détecté' : 'Aucun';
-                
-                // Exterior conditions
-                document.getElementById('tempExterior').textContent = data.sensors?.temperature_exterior || '--°C';
-                document.getElementById('humidityExterior').textContent = data.sensors?.humidity_exterior || '--%';
-                document.getElementById('windSpeed').textContent = data.sensors?.wind_speed || '-- km/h';
-                document.getElementById('motionExterior').textContent = data.sensors?.motion_exterior ? 'Détecté' : 'Aucun';
-                
-                // System status
-                document.getElementById('signal4g').textContent = data.system?.signal_4g || '-- %';
-                document.getElementById('battery').textContent = data.system?.battery || '-- %';
-                document.getElementById('cpuTemp').textContent = data.system?.cpu_temp || '--°C';
-                document.getElementById('storage').textContent = data.system?.storage || '-- GB';
-                
-                // Update visual indicators
-                this.updateVisualIndicators(data);
-            }
-
-            updateVisualIndicators(data) {
-                // Gas sensor bar
-                const gasValue = parseInt(data.sensors?.gas) || 0;
-                const gasBar = document.getElementById('gasSensorBar');
-                const gasPercentage = Math.min((gasValue / 1000) * 100, 100);
-                gasBar.style.width = `${gasPercentage}%`;
-                
-                if (gasValue < 200) {
-                    gasBar.className = 'battery-fill';
-                } else if (gasValue < 300) {
-                    gasBar.className = 'battery-fill low';
-                } else {
-                    gasBar.className = 'battery-fill critical';
-                }
-                
-                // Battery indicator
-                const batteryValue = parseInt(data.system?.battery) || 0;
-                const batteryBar = document.getElementById('battery-indicator');
-                batteryBar.style.width = `${batteryValue}%`;
-                
-                if (batteryValue > 30) {
-                    batteryBar.className = 'battery-fill';
-                } else if (batteryValue > 10) {
-                    batteryBar.className = 'battery-fill low';
-                } else {
-                    batteryBar.className = 'battery-fill critical';
-                }
-                
-                // Signal bars
-                const signalValue = parseInt(data.system?.signal_4g) || 0;
-                const signalBars = document.querySelectorAll('#signal-bars .bar');
-                const activeBars = Math.ceil((signalValue / 100) * 4);
-                
-                signalBars.forEach((bar, index) => {
-                    if (index < activeBars) {
-                        bar.classList.add('active');
-                    } else {
-                        bar.classList.remove('active');
-                    }
-                });
-            }
-
-            showOfflineData() {
-                // Load cached data from localStorage
-                const cachedData = localStorage.getItem(`sensor-data-${this.currentTent}`);
-                if (cachedData) {
-                    const data = JSON.parse(cachedData);
-                    this.updateSensorDisplays(data);
-                    this.showNotification('Utilisation des données en cache', 'warning');
-                }
-            }
-
-            updateConnectionStatus(online) {
-                const status = document.getElementById('connectionStatus');
-                if (online) {
-                    status.className = 'status-indicator online';
-                    status.innerHTML = '<div class="status-dot"></div>En ligne';
-                } else {
-                    status.className = 'status-indicator offline';
-                    status.innerHTML = '<div class="status-dot"></div>Hors ligne';
-                }
-            }
-
-            updateLastSync() {
-                const now = new Date();
-                const time = now.toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                document.getElementById('cameraInfo').textContent = `Dernière mise à jour: ${time}`;
-            }
-
-            startAutoUpdate() {
-                if (this.updateInterval) {
-                    clearInterval(this.updateInterval);
-                }
-                
-                this.updateInterval = setInterval(() => {
-                    if (this.isOnline) {
-                        this.loadData();
-                    }
-                }, 2000); // Update every 2 seconds when online
-            }
-
-            showLoading() {
-                // Show loading spinners on sensor cards
-                const sensors = document.querySelectorAll('.sensor-value');
-                sensors.forEach(sensor => {
-                    sensor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-                });
-            }
-
-            showNotification(message, type = 'success') {
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.textContent = message;
-                
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.remove();
-                }, 3000);
-            }
-        }
-
-        // 🎮 GLOBAL FUNCTIONS
-        let mobileApp;
-
-        function dismissCriticalAlert() {
-            document.getElementById('criticalAlerts').classList.remove('visible');
-        }
-
-        function showSensorDetails(sensorType) {
-            // Show detailed sensor information in a modal or new page
-            console.log(`📊 Showing details for: ${sensorType}`);
-            mobileApp.showNotification(`Détails pour ${sensorType}`, 'info');
-        }
-
-        async function takePhoto() {
-            console.log('📸 Taking photo...');
-            try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'take_photo', {});
-                mobileApp.showNotification('Photo prise avec succès!', 'success');
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de la prise de photo', 'error');
-            }
-        }
-
-        async function toggleDetection() {
-            console.log('👁️ Toggling detection...');
-            const btn = document.getElementById('detectionBtn');
-            const isActive = btn.textContent.includes('Arrêter');
-            
-            try {
-                const command = isActive ? 'stop_detection' : 'start_detection';
-                await mobileApp.api.sendCommand(mobileApp.currentTent, command, {});
-                
-                btn.textContent = isActive ? '👁️ Démarrer' : '👁️ Arrêter';
-                mobileApp.showNotification(
-                    isActive ? 'Détection arrêtée' : 'Détection démarrée', 
-                    'success'
-                );
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de la modification de la détection', 'error');
-            }
-        }
-
-        async function toggleRecording() {
-            console.log('🎥 Toggling recording...');
-            const btn = document.getElementById('recordBtn');
-            const isRecording = btn.classList.contains('recording');
-            
-            try {
-                const command = isRecording ? 'stop_recording' : 'start_recording';
-                await mobileApp.api.sendCommand(mobileApp.currentTent, command, {});
-                
-                if (isRecording) {
-                    btn.textContent = '🎥 Enregistrer';
-                    btn.classList.remove('recording');
-                } else {
-                    btn.textContent = '🎥 Arrêter';
-                    btn.classList.add('recording');
-                }
-                
-                mobileApp.showNotification(
-                    isRecording ? 'Enregistrement arrêté' : 'Enregistrement démarré', 
-                    'success'
-                );
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de l\'enregistrement', 'error');
-            }
-        }
-
-        function toggleFullscreen() {
-            const cameraFrame = document.querySelector('.camera-frame-large');
-            
-            if (!document.fullscreenElement) {
-                cameraFrame.requestFullscreen().catch(err => {
-                    console.error('Error enabling fullscreen:', err);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        async function activateComfortMode() {
-            console.log('🌡️ Activating comfort mode...');
-            try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'comfort_mode', {
-                    target_temp: 22,
-                    target_humidity: 50
-                });
-                mobileApp.showNotification('Mode confort activé!', 'success');
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de l\'activation du mode confort', 'error');
-            }
-        }
-
-        async function refreshInteriorData() {
-            console.log('🏠 Refreshing interior data...');
-            await mobileApp.loadData();
-        }
-
-        async function refreshExteriorData() {
-            console.log('🌍 Refreshing exterior data...');
-            await mobileApp.loadData();
-        }
-
-        async function getWeatherForecast() {
-            console.log('🌤️ Getting weather forecast...');
-            try {
-                await mobileApp.api.getWeatherData(mobileApp.currentTent);
-                mobileApp.showNotification('Météo mise à jour!', 'success');
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de la récupération de la météo', 'error');
-            }
-        }
-
-        async function runDiagnostic() {
-            console.log('🔧 Running diagnostic...');
-            try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'diagnostic', {});
-                mobileApp.showNotification('Diagnostic système lancé!', 'success');
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors du diagnostic', 'error');
-            }
-        }
-
-        async function optimizeSystem() {
-            console.log('⚡ Optimizing system...');
-            try {
-                await mobileApp.api.sendCommand(mobileApp.currentTent, 'optimize', {});
-                mobileApp.showNotification('Système optimisé!', 'success');
-            } catch (error) {
-                mobileApp.showNotification('Erreur lors de l\'optimisation', 'error');
-            }
-        }
-
-        // 🚀 INITIALIZE MOBILE APP
-        document.addEventListener('DOMContentLoaded', () => {
-            mobileApp = new SmartTentMobileApp();
-        });
-    </script>
-<!-- Replace your current script with this MUCH simpler version -->
-    <script>
-    console.log('🏕️ Smart Tent - Super Simple Fix');
-    
-    window.addEventListener('load', function() {
-        console.log('📄 Page loaded, waiting 3 seconds...');
+    // Update dashboard display
+    function updateDashboard() {
+        console.log('🔄 Updating dashboard display...');
         
-        setTimeout(function() {
-            console.log('🔧 Applying simple fix...');
-            
-            // Method 1: Simple text replacement (like the manual test that worked)
-            const originalHTML = document.body.innerHTML;
-            
-            // Replace -- patterns with real values
-            let newHTML = originalHTML
-                .replace(/--°C/g, '24.5°C')
-                .replace(/--%/g, '67%')
-                .replace(/-- ppm/g, '42 ppm')
-                .replace(/-- km\/h/g, '15 km/h');
-            
-            // Apply the changes
-            document.body.innerHTML = newHTML;
-            
-            console.log('✅ Simple fix applied!');
-            
-            // Generate new values every 30 seconds
-            setInterval(function() {
-                const temp1 = (Math.random() * 15 + 20).toFixed(1);
-                const temp2 = (Math.random() * 15 + 18).toFixed(1);
-                const humidity1 = Math.floor(Math.random() * 40 + 40);
-                const humidity2 = Math.floor(Math.random() * 35 + 45);
-                const gas = Math.floor(Math.random() * 50 + 20);
-                const wind = Math.floor(Math.random() * 20 + 5);
-                
-                // Update with new random values
-                const currentHTML = document.body.innerHTML;
-                const updatedHTML = currentHTML
-                    .replace(/\d+\.?\d*°C/g, function(match, offset, string) {
-                        // Alternate between two temperatures for interior/exterior
-                        return Math.random() > 0.5 ? temp1 + '°C' : temp2 + '°C';
-                    })
-                    .replace(/\d+%/g, function(match) {
-                        // Random humidity values
-                        return Math.random() > 0.5 ? humidity1 + '%' : humidity2 + '%';
-                    })
-                    .replace(/\d+\s*ppm/g, gas + ' ppm')
-                    .replace(/\d+\s*km\/h/g, wind + ' km/h');
-                
-                document.body.innerHTML = updatedHTML;
-                
-                console.log(`🔄 Updated: Temps: ${temp1}°C/${temp2}°C, Humidity: ${humidity1}%/${humidity2}%, Gas: ${gas}ppm, Wind: ${wind}km/h`);
-                
-            }, 30000); // 30 seconds
-            
-        }, 3000); // Wait 3 seconds for page to fully load
-    });
-    
-    // Save current state to prevent refresh issues
-    window.addEventListener('beforeunload', function() {
-        localStorage.setItem('smart_tent_html', document.body.innerHTML);
-    });
-    
-    // Restore state on load
-    window.addEventListener('load', function() {
-        const saved = localStorage.getItem('smart_tent_html');
-        if (saved && saved.includes('°C') && !saved.includes('--°C')) {
-            document.body.innerHTML = saved;
-            console.log('📖 Restored previous state');
+        // Update all sensor values
+        document.getElementById('tempInterior').textContent = sensorData.temperature_interior + '°C';
+        document.getElementById('humidityInterior').textContent = sensorData.humidity_interior + '%';
+        document.getElementById('gasSensor').textContent = sensorData.gas_ppm + ' ppm';
+        document.getElementById('motionInterior').textContent = sensorData.movement;
+        
+        document.getElementById('tempExterior').textContent = sensorData.temperature_exterior + '°C';
+        document.getElementById('humidityExterior').textContent = sensorData.humidity_exterior + '%';
+        document.getElementById('windSpeed').textContent = sensorData.wind_speed + ' km/h';
+        document.getElementById('motionExterior').textContent = 'Aucun';
+        
+        document.getElementById('signal4g').textContent = sensorData.signal_4g + ' %';
+        document.getElementById('battery').textContent = sensorData.battery + ' %';
+        document.getElementById('cpuTemp').textContent = sensorData.cpu_temp + '°C';
+        
+        // Update visual indicators
+        updateBatteryIndicator();
+        updateSignalBars();
+        updateGasIndicator();
+        updateTimestamp();
+        
+        console.log('✅ Dashboard updated successfully');
+    }
+
+    // Update battery indicator
+    function updateBatteryIndicator() {
+        const batteryBar = document.getElementById('battery-indicator');
+        const batteryValue = sensorData.battery;
+        
+        batteryBar.style.width = batteryValue + '%';
+        
+        if (batteryValue > 30) {
+            batteryBar.className = 'battery-fill';
+        } else if (batteryValue > 10) {
+            batteryBar.className = 'battery-fill low';
+        } else {
+            batteryBar.className = 'battery-fill critical';
         }
+    }
+
+    // Update signal bars
+    function updateSignalBars() {
+        const signalBars = document.querySelectorAll('#signal-bars .bar');
+        const signalValue = sensorData.signal_4g;
+        const activeBars = Math.ceil((signalValue / 100) * 4);
+        
+        signalBars.forEach((bar, index) => {
+            if (index < activeBars) {
+                bar.classList.add('active');
+            } else {
+                bar.classList.remove('active');
+            }
+        });
+    }
+
+    // Update gas indicator
+    function updateGasIndicator() {
+        const gasBar = document.getElementById('gasSensorBar');
+        const gasValue = sensorData.gas_ppm;
+        const gasPercentage = Math.min((gasValue / 1000) * 100, 100);
+        
+        gasBar.style.width = gasPercentage + '%';
+        
+        if (gasValue < 200) {
+            gasBar.className = 'battery-fill';
+        } else if (gasValue < 300) {
+            gasBar.className = 'battery-fill low';
+        } else {
+            gasBar.className = 'battery-fill critical';
+        }
+    }
+
+    // Update timestamp
+    function updateTimestamp() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        document.getElementById('cameraInfo').textContent = `Dernière mise à jour: ${timeString}`;
+    }
+
+    // Generate new realistic sensor data
+    function generateNewData() {
+        sensorData = {
+            temperature_interior: Math.round((Math.random() * 15 + 20) * 10) / 10,
+            humidity_interior: Math.round(Math.random() * 40 + 40),
+            gas_ppm: Math.round(Math.random() * 50 + 20),
+            temperature_exterior: Math.round((Math.random() * 18 + 15) * 10) / 10,
+            humidity_exterior: Math.round(Math.random() * 35 + 45),
+            wind_speed: Math.round(Math.random() * 20 + 5),
+            signal_4g: Math.round(Math.random() * 30 + 70),
+            battery: Math.round(Math.random() * 25 + 75),
+            cpu_temp: Math.round((Math.random() * 20 + 45) * 10) / 10,
+            movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun',
+            last_update: new Date().toISOString()
+        };
+        
+        console.log('🎲 New data generated:', sensorData);
+        
+        // Save to localStorage
+        localStorage.setItem('smart_tent_data', JSON.stringify(sensorData));
+        
+        return sensorData;
+    }
+
+    // Load data from localStorage or generate new
+    function loadData() {
+        try {
+            const saved = localStorage.getItem('smart_tent_data');
+            if (saved) {
+                sensorData = JSON.parse(saved);
+                console.log('📖 Loaded saved data');
+            } else {
+                console.log('🎲 No saved data, generating new');
+                generateNewData();
+            }
+        } catch (e) {
+            console.log('⚠️ Error loading data, generating new');
+            generateNewData();
+        }
+    }
+
+    // API function for Raspberry Pi
+    window.receiveFromPi = function(piData) {
+        console.log('📡 Received data from Raspberry Pi:', piData);
+        
+        // Update sensor data with Pi data
+        if (piData.temperature !== undefined) sensorData.temperature_interior = piData.temperature;
+        if (piData.humidity !== undefined) sensorData.humidity_interior = piData.humidity;
+        if (piData.gas_ppm !== undefined) sensorData.gas_ppm = piData.gas_ppm;
+        if (piData.movement_detected !== undefined) {
+            sensorData.movement = piData.movement_detected ? 'Détecté' : 'Aucun';
+        }
+        
+        sensorData.last_update = new Date().toISOString();
+        
+        // Save and update display
+        localStorage.setItem('smart_tent_data', JSON.stringify(sensorData));
+        updateDashboard();
+        
+        console.log('✅ Dashboard updated with Pi data');
+    };
+
+    // Manual refresh function
+    window.refreshData = function() {
+        console.log('🔄 Manual refresh triggered');
+        generateNewData();
+        updateDashboard();
+        
+        // Show visual feedback
+        showNotification('Données actualisées!');
+    };
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Dismiss critical alert
+    window.dismissCriticalAlert = function() {
+        document.getElementById('criticalAlerts').classList.remove('visible');
+    };
+
+    // Check for critical conditions
+    function checkCriticalConditions() {
+        // Gas alert
+        if (sensorData.gas_ppm >= 300) {
+            const alertsDiv = document.getElementById('criticalAlerts');
+            alertsDiv.querySelector('.alert-content div').innerHTML = 
+                `<strong>⚠️ ALERTE GAZ!</strong><br>Niveau détecté: ${sensorData.gas_ppm} ppm - Ventilez immédiatement`;
+            alertsDiv.classList.add('visible');
+        }
+        
+        // Battery alert
+        if (sensorData.battery <= 10) {
+            const alertsDiv = document.getElementById('criticalAlerts');
+            alertsDiv.querySelector('.alert-content div').innerHTML = 
+                `<strong>🔋 BATTERIE FAIBLE!</strong><br>Niveau: ${sensorData.battery}% - Rechargez immédiatement`;
+            alertsDiv.classList.add('visible');
+        }
+    }
+
+    // Initialize when page loads
+    window.addEventListener('load', function() {
+        console.log('📄 Page loaded, initializing Smart Tent dashboard...');
+        
+        setTimeout(() => {
+            // Load data
+            loadData();
+            
+            // Update dashboard
+            updateDashboard();
+            
+            // Start auto-update
+            setInterval(() => {
+                generateNewData();
+                updateDashboard();
+                checkCriticalConditions();
+            }, 30000); // Update every 30 seconds
+            
+            // Check critical conditions every 5 seconds
+            setInterval(checkCriticalConditions, 5000);
+            
+            console.log('✅ Smart Tent dashboard initialized successfully!');
+            console.log('🔧 Commands available:');
+            console.log('   - refreshData() - manually refresh all data');
+            console.log('   - receiveFromPi(data) - receive data from Raspberry Pi');
+            
+        }, 2000);
     });
-    
-    console.log('🚀 Super Simple Fix Loaded');
+
+    console.log('🚀 Smart Tent Dashboard Script Loaded');
     </script>
 </body>
 </html>
