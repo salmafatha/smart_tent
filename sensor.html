@@ -1320,212 +1320,218 @@
             mobileApp = new SmartTentMobileApp();
         });
     </script>
-    <!-- Add this script to PROTECT your sensor data from being cleared -->
+    <!-- Add this to your sensor.html to persist data across page refreshes -->
     <script>
-    console.log('🛡️ Smart Tent Data Protector Loading...');
+    console.log('🏕️ Smart Tent Persistent Data Loading...');
     
-    // Store the original values when page loads
-    let originalValues = {};
+    // Data storage key
+    const STORAGE_KEY = 'smart_tent_sensor_data';
     
-    window.addEventListener('load', function() {
-        console.log('📄 Page loaded, protecting sensor data...');
+    // Default sensor data
+    const defaultData = {
+        interior_temp: 24.5,
+        interior_humidity: 67,
+        gas_ppm: 42,
+        interior_movement: 'Aucun',
+        exterior_temp: 22.1,
+        exterior_humidity: 72,
+        wind_speed: 15,
+        exterior_movement: 'Aucun',
+        signal_4g: 85,
+        battery: 92,
+        cpu_temp: 52.3,
+        last_update: new Date().toISOString()
+    };
+    
+    // Load data from localStorage or use defaults
+    function loadSensorData() {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data = JSON.parse(stored);
+                console.log('📖 Loaded stored data:', data);
+                return data;
+            }
+        } catch (e) {
+            console.log('⚠️ Could not load stored data, using defaults');
+        }
+        return defaultData;
+    }
+    
+    // Save data to localStorage
+    function saveSensorData(data) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            console.log('💾 Data saved to storage');
+        } catch (e) {
+            console.log('⚠️ Could not save data to storage');
+        }
+    }
+    
+    // Generate new realistic sensor data
+    function generateNewData() {
+        const data = {
+            interior_temp: Math.round((Math.random() * 15 + 20) * 10) / 10,
+            interior_humidity: Math.round(Math.random() * 40 + 40),
+            gas_ppm: Math.round(Math.random() * 50 + 20),
+            interior_movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun',
+            exterior_temp: Math.round((Math.random() * 18 + 15) * 10) / 10,
+            exterior_humidity: Math.round(Math.random() * 35 + 45),
+            wind_speed: Math.round(Math.random() * 20 + 5),
+            exterior_movement: 'Aucun',
+            signal_4g: Math.round(Math.random() * 30 + 70),
+            battery: Math.round(Math.random() * 25 + 75),
+            cpu_temp: Math.round((Math.random() * 20 + 45) * 10) / 10,
+            last_update: new Date().toISOString()
+        };
         
-        // Capture initial values
+        console.log('🎲 Generated new data:', data);
+        return data;
+    }
+    
+    // Update the dashboard with sensor data
+    function updateDashboard(data) {
+        console.log('🔄 Updating dashboard...');
+        
+        // Update interior conditions
+        updateValue('température', data.interior_temp + '°C');
+        updateValue('humidité', data.interior_humidity + '%');
+        updateValue('gaz', data.gas_ppm + ' ppm');
+        updateValue('mouvement', data.interior_movement);
+        
+        // Update exterior conditions (second set)
+        updateValueAtIndex('température', data.exterior_temp + '°C', 1);
+        updateValueAtIndex('humidité', data.exterior_humidity + '%', 1);
+        updateValue('vent', data.wind_speed + ' km/h');
+        
+        console.log('✅ Dashboard updated successfully');
+    }
+    
+    // Helper function to update values by text content
+    function updateValue(labelText, newValue) {
+        const allElements = document.querySelectorAll('*');
+        
+        allElements.forEach(el => {
+            if (el.textContent && el.textContent.toLowerCase().includes(labelText.toLowerCase())) {
+                // Look for sibling or child elements with -- or numeric values
+                const container = el.closest('div') || el.parentElement;
+                if (container) {
+                    const valueElements = container.querySelectorAll('*');
+                    valueElements.forEach(valueEl => {
+                        if (valueEl.textContent && 
+                            (valueEl.textContent.includes('--') || 
+                             valueEl.textContent.match(/^\d+\.?\d*\s*(°C|%|ppm|km\/h)$/))) {
+                            valueEl.textContent = newValue;
+                            valueEl.style.backgroundColor = '#e8f5e8';
+                            setTimeout(() => valueEl.style.backgroundColor = '', 1000);
+                            console.log(`Updated ${labelText}: ${newValue}`);
+                        }
+                    });
+                }
+            }
+        });
+    }
+    
+    // Helper function to update the nth occurrence of a label
+    function updateValueAtIndex(labelText, newValue, index) {
+        const allElements = document.querySelectorAll('*');
+        let found = 0;
+        
+        allElements.forEach(el => {
+            if (el.textContent && el.textContent.toLowerCase().includes(labelText.toLowerCase())) {
+                if (found === index) {
+                    const container = el.closest('div') || el.parentElement;
+                    if (container) {
+                        const valueElements = container.querySelectorAll('*');
+                        valueElements.forEach(valueEl => {
+                            if (valueEl.textContent && 
+                                (valueEl.textContent.includes('--') || 
+                                 valueEl.textContent.match(/^\d+\.?\d*\s*(°C|%|ppm|km\/h)$/))) {
+                                valueEl.textContent = newValue;
+                                valueEl.style.backgroundColor = '#ffe8e8';
+                                setTimeout(() => valueEl.style.backgroundColor = '', 1000);
+                                console.log(`Updated ${labelText} #${index}: ${newValue}`);
+                            }
+                        });
+                    }
+                }
+                found++;
+            }
+        });
+    }
+    
+    // API endpoint for Raspberry Pi
+    window.receiveDataFromPi = function(piData) {
+        console.log('📡 Received data from Raspberry Pi:', piData);
+        
+        const data = loadSensorData();
+        
+        // Update with Pi data
+        if (piData.temperature !== undefined) data.interior_temp = piData.temperature;
+        if (piData.humidity !== undefined) data.interior_humidity = piData.humidity;
+        if (piData.gas_ppm !== undefined) data.gas_ppm = piData.gas_ppm;
+        if (piData.movement_detected !== undefined) {
+            data.interior_movement = piData.movement_detected ? 'Détecté' : 'Aucun';
+        }
+        
+        data.last_update = new Date().toISOString();
+        
+        // Save and update
+        saveSensorData(data);
+        updateDashboard(data);
+        
+        console.log('✅ Dashboard updated with Pi data');
+    };
+    
+    // Manual functions for testing
+    window.refreshSensorData = function() {
+        const newData = generateNewData();
+        saveSensorData(newData);
+        updateDashboard(newData);
+        console.log('🔄 Manual refresh completed');
+    };
+    
+    window.resetToDefaults = function() {
+        saveSensorData(defaultData);
+        updateDashboard(defaultData);
+        console.log('🔄 Reset to default values');
+    };
+    
+    // Initialize when page loads
+    window.addEventListener('load', function() {
+        console.log('📄 Page loaded, initializing sensor data...');
+        
         setTimeout(() => {
-            captureInitialValues();
-            startProtection();
-        }, 1000);
+            // Load and apply stored data
+            const data = loadSensorData();
+            updateDashboard(data);
+            
+            // Auto-update every 30 seconds
+            setInterval(() => {
+                console.log('⏰ Auto-updating sensor data...');
+                const newData = generateNewData();
+                saveSensorData(newData);
+                updateDashboard(newData);
+            }, 30000);
+            
+            console.log('✅ Smart Tent persistent data system ready!');
+            console.log('🔧 Commands: refreshSensorData(), resetToDefaults()');
+            
+        }, 2000);
     });
     
-    function captureInitialValues() {
-        console.log('📸 Capturing initial values...');
-        
-        // Find all elements with numeric values and units
-        const allElements = document.querySelectorAll('*');
-        
-        allElements.forEach(el => {
-            if (el.children.length === 0) { // Text nodes only
-                const text = el.textContent.trim();
-                
-                // Look for sensor values (numbers with units)
-                if (text.match(/\d+\.?\d*\s*(°C|%|ppm|km\/h)/)) {
-                    const key = generateElementKey(el);
-                    originalValues[key] = text;
-                    console.log(`📊 Captured: ${key} = "${text}"`);
-                }
-            }
-        });
-        
-        console.log('💾 Stored values:', originalValues);
-    }
+    // API simulation for Pi
+    fetch('/api/sensors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: true })
+    }).then(() => {
+        console.log('📡 API endpoint ready for Pi data');
+    }).catch(() => {
+        console.log('ℹ️ API endpoint not found (normal for static site)');
+    });
     
-    function generateElementKey(element) {
-        // Create a unique key for the element
-        const parent = element.parentElement;
-        const siblings = Array.from(parent.children);
-        const index = siblings.indexOf(element);
-        
-        return `${parent.tagName}_${parent.className}_${index}`;
-    }
-    
-    function restoreValues() {
-        console.log('🔄 Restoring protected values...');
-        
-        const allElements = document.querySelectorAll('*');
-        
-        allElements.forEach(el => {
-            if (el.children.length === 0) {
-                const key = generateElementKey(el);
-                
-                if (originalValues[key]) {
-                    // Only restore if current value looks like a placeholder
-                    const currentText = el.textContent.trim();
-                    
-                    if (currentText.includes('--') || currentText === 'Aucun' || 
-                        currentText === '' || currentText.match(/^\d+$/) === null) {
-                        
-                        el.textContent = originalValues[key];
-                        console.log(`✅ Restored: ${key} = "${originalValues[key]}"`);
-                        
-                        // Add visual feedback
-                        el.style.backgroundColor = '#e8f5e8';
-                        el.style.transition = 'background-color 1s ease';
-                        setTimeout(() => {
-                            el.style.backgroundColor = '';
-                        }, 2000);
-                    }
-                }
-            }
-        });
-    }
-    
-    function startProtection() {
-        console.log('🛡️ Starting data protection...');
-        
-        // Method 1: Prevent fetch requests from clearing data
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            console.log('📡 Intercepted fetch request:', args[0]);
-            
-            return originalFetch.apply(this, args).then(response => {
-                // If it's an API call that might clear data, restore our values
-                if (args[0].includes('/api/') || args[0].includes('sensor')) {
-                    setTimeout(restoreValues, 100);
-                }
-                return response;
-            });
-        };
-        
-        // Method 2: Watch for DOM changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList' || mutation.type === 'characterData') {
-                    // Check if sensor values were cleared
-                    const target = mutation.target;
-                    if (target.textContent && target.textContent.includes('--')) {
-                        console.log('👀 Detected data clearing, restoring...');
-                        setTimeout(restoreValues, 100);
-                    }
-                }
-            });
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            characterData: true
-        });
-        
-        // Method 3: Periodic restore (every 5 seconds)
-        setInterval(() => {
-            console.log('⏰ Periodic protection check...');
-            restoreValues();
-        }, 5000);
-        
-        // Method 4: Override common data-clearing functions
-        const originalSetTimeout = window.setTimeout;
-        window.setTimeout = function(callback, delay, ...args) {
-            return originalSetTimeout(() => {
-                callback.apply(this, args);
-                // Restore values after any timeout
-                setTimeout(restoreValues, 50);
-            }, delay);
-        };
-        
-        console.log('✅ Data protection active!');
-    }
-    
-    // Manual restore function
-    window.restoreData = function() {
-        console.log('🔧 Manual restore triggered');
-        restoreValues();
-    };
-    
-    // Generate new realistic data
-    window.generateNewData = function() {
-        console.log('🎲 Generating new sensor data...');
-        
-        const newData = {
-            temperature: Math.round((Math.random() * 15 + 20) * 10) / 10,
-            humidity: Math.round(Math.random() * 40 + 40),
-            gas: Math.round(Math.random() * 50 + 20),
-            wind: Math.round(Math.random() * 20 + 5)
-        };
-        
-        // Update DOM with new data
-        const allElements = document.querySelectorAll('*');
-        allElements.forEach(el => {
-            if (el.children.length === 0) {
-                let text = el.textContent;
-                
-                // Update temperature
-                if (text.includes('°C')) {
-                    text = text.replace(/\d+\.?\d*°C/, `${newData.temperature}°C`);
-                }
-                // Update humidity
-                else if (text.includes('%') && !text.includes('km')) {
-                    text = text.replace(/\d+%/, `${newData.humidity}%`);
-                }
-                // Update gas
-                else if (text.includes('ppm')) {
-                    text = text.replace(/\d+\s*ppm/, `${newData.gas} ppm`);
-                }
-                // Update wind
-                else if (text.includes('km/h')) {
-                    text = text.replace(/\d+\s*km\/h/, `${newData.wind} km/h`);
-                }
-                
-                if (text !== el.textContent) {
-                    el.textContent = text;
-                    el.style.backgroundColor = '#ffeb3b';
-                    setTimeout(() => {
-                        el.style.backgroundColor = '';
-                    }, 1000);
-                }
-            }
-        });
-        
-        // Update stored values
-        captureInitialValues();
-        
-        console.log('✅ New data generated:', newData);
-    };
-    
-    console.log('🚀 Data Protector loaded! Available commands:');
-    console.log('   - restoreData() - restore protected values');
-    console.log('   - generateNewData() - generate new sensor data');
+    console.log('🚀 Smart Tent Persistent Data System Loaded!');
     </script>
-    
-    <!-- Add some CSS for visual feedback -->
-    <style>
-    .data-protected {
-        border-left: 3px solid #4CAF50 !important;
-    }
-    
-    .data-updating {
-        background-color: #e8f5e8 !important;
-        transition: background-color 0.5s ease !important;
-    }
-    </style>
 </body>
 </html>
