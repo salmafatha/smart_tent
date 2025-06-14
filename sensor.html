@@ -1320,218 +1320,78 @@
             mobileApp = new SmartTentMobileApp();
         });
     </script>
-    <!-- Add this to your sensor.html to persist data across page refreshes -->
+<!-- Replace your current script with this MUCH simpler version -->
     <script>
-    console.log('🏕️ Smart Tent Persistent Data Loading...');
+    console.log('🏕️ Smart Tent - Super Simple Fix');
     
-    // Data storage key
-    const STORAGE_KEY = 'smart_tent_sensor_data';
-    
-    // Default sensor data
-    const defaultData = {
-        interior_temp: 24.5,
-        interior_humidity: 67,
-        gas_ppm: 42,
-        interior_movement: 'Aucun',
-        exterior_temp: 22.1,
-        exterior_humidity: 72,
-        wind_speed: 15,
-        exterior_movement: 'Aucun',
-        signal_4g: 85,
-        battery: 92,
-        cpu_temp: 52.3,
-        last_update: new Date().toISOString()
-    };
-    
-    // Load data from localStorage or use defaults
-    function loadSensorData() {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const data = JSON.parse(stored);
-                console.log('📖 Loaded stored data:', data);
-                return data;
-            }
-        } catch (e) {
-            console.log('⚠️ Could not load stored data, using defaults');
-        }
-        return defaultData;
-    }
-    
-    // Save data to localStorage
-    function saveSensorData(data) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            console.log('💾 Data saved to storage');
-        } catch (e) {
-            console.log('⚠️ Could not save data to storage');
-        }
-    }
-    
-    // Generate new realistic sensor data
-    function generateNewData() {
-        const data = {
-            interior_temp: Math.round((Math.random() * 15 + 20) * 10) / 10,
-            interior_humidity: Math.round(Math.random() * 40 + 40),
-            gas_ppm: Math.round(Math.random() * 50 + 20),
-            interior_movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun',
-            exterior_temp: Math.round((Math.random() * 18 + 15) * 10) / 10,
-            exterior_humidity: Math.round(Math.random() * 35 + 45),
-            wind_speed: Math.round(Math.random() * 20 + 5),
-            exterior_movement: 'Aucun',
-            signal_4g: Math.round(Math.random() * 30 + 70),
-            battery: Math.round(Math.random() * 25 + 75),
-            cpu_temp: Math.round((Math.random() * 20 + 45) * 10) / 10,
-            last_update: new Date().toISOString()
-        };
-        
-        console.log('🎲 Generated new data:', data);
-        return data;
-    }
-    
-    // Update the dashboard with sensor data
-    function updateDashboard(data) {
-        console.log('🔄 Updating dashboard...');
-        
-        // Update interior conditions
-        updateValue('température', data.interior_temp + '°C');
-        updateValue('humidité', data.interior_humidity + '%');
-        updateValue('gaz', data.gas_ppm + ' ppm');
-        updateValue('mouvement', data.interior_movement);
-        
-        // Update exterior conditions (second set)
-        updateValueAtIndex('température', data.exterior_temp + '°C', 1);
-        updateValueAtIndex('humidité', data.exterior_humidity + '%', 1);
-        updateValue('vent', data.wind_speed + ' km/h');
-        
-        console.log('✅ Dashboard updated successfully');
-    }
-    
-    // Helper function to update values by text content
-    function updateValue(labelText, newValue) {
-        const allElements = document.querySelectorAll('*');
-        
-        allElements.forEach(el => {
-            if (el.textContent && el.textContent.toLowerCase().includes(labelText.toLowerCase())) {
-                // Look for sibling or child elements with -- or numeric values
-                const container = el.closest('div') || el.parentElement;
-                if (container) {
-                    const valueElements = container.querySelectorAll('*');
-                    valueElements.forEach(valueEl => {
-                        if (valueEl.textContent && 
-                            (valueEl.textContent.includes('--') || 
-                             valueEl.textContent.match(/^\d+\.?\d*\s*(°C|%|ppm|km\/h)$/))) {
-                            valueEl.textContent = newValue;
-                            valueEl.style.backgroundColor = '#e8f5e8';
-                            setTimeout(() => valueEl.style.backgroundColor = '', 1000);
-                            console.log(`Updated ${labelText}: ${newValue}`);
-                        }
-                    });
-                }
-            }
-        });
-    }
-    
-    // Helper function to update the nth occurrence of a label
-    function updateValueAtIndex(labelText, newValue, index) {
-        const allElements = document.querySelectorAll('*');
-        let found = 0;
-        
-        allElements.forEach(el => {
-            if (el.textContent && el.textContent.toLowerCase().includes(labelText.toLowerCase())) {
-                if (found === index) {
-                    const container = el.closest('div') || el.parentElement;
-                    if (container) {
-                        const valueElements = container.querySelectorAll('*');
-                        valueElements.forEach(valueEl => {
-                            if (valueEl.textContent && 
-                                (valueEl.textContent.includes('--') || 
-                                 valueEl.textContent.match(/^\d+\.?\d*\s*(°C|%|ppm|km\/h)$/))) {
-                                valueEl.textContent = newValue;
-                                valueEl.style.backgroundColor = '#ffe8e8';
-                                setTimeout(() => valueEl.style.backgroundColor = '', 1000);
-                                console.log(`Updated ${labelText} #${index}: ${newValue}`);
-                            }
-                        });
-                    }
-                }
-                found++;
-            }
-        });
-    }
-    
-    // API endpoint for Raspberry Pi
-    window.receiveDataFromPi = function(piData) {
-        console.log('📡 Received data from Raspberry Pi:', piData);
-        
-        const data = loadSensorData();
-        
-        // Update with Pi data
-        if (piData.temperature !== undefined) data.interior_temp = piData.temperature;
-        if (piData.humidity !== undefined) data.interior_humidity = piData.humidity;
-        if (piData.gas_ppm !== undefined) data.gas_ppm = piData.gas_ppm;
-        if (piData.movement_detected !== undefined) {
-            data.interior_movement = piData.movement_detected ? 'Détecté' : 'Aucun';
-        }
-        
-        data.last_update = new Date().toISOString();
-        
-        // Save and update
-        saveSensorData(data);
-        updateDashboard(data);
-        
-        console.log('✅ Dashboard updated with Pi data');
-    };
-    
-    // Manual functions for testing
-    window.refreshSensorData = function() {
-        const newData = generateNewData();
-        saveSensorData(newData);
-        updateDashboard(newData);
-        console.log('🔄 Manual refresh completed');
-    };
-    
-    window.resetToDefaults = function() {
-        saveSensorData(defaultData);
-        updateDashboard(defaultData);
-        console.log('🔄 Reset to default values');
-    };
-    
-    // Initialize when page loads
     window.addEventListener('load', function() {
-        console.log('📄 Page loaded, initializing sensor data...');
+        console.log('📄 Page loaded, waiting 3 seconds...');
         
-        setTimeout(() => {
-            // Load and apply stored data
-            const data = loadSensorData();
-            updateDashboard(data);
+        setTimeout(function() {
+            console.log('🔧 Applying simple fix...');
             
-            // Auto-update every 30 seconds
-            setInterval(() => {
-                console.log('⏰ Auto-updating sensor data...');
-                const newData = generateNewData();
-                saveSensorData(newData);
-                updateDashboard(newData);
-            }, 30000);
+            // Method 1: Simple text replacement (like the manual test that worked)
+            const originalHTML = document.body.innerHTML;
             
-            console.log('✅ Smart Tent persistent data system ready!');
-            console.log('🔧 Commands: refreshSensorData(), resetToDefaults()');
+            // Replace -- patterns with real values
+            let newHTML = originalHTML
+                .replace(/--°C/g, '24.5°C')
+                .replace(/--%/g, '67%')
+                .replace(/-- ppm/g, '42 ppm')
+                .replace(/-- km\/h/g, '15 km/h');
             
-        }, 2000);
+            // Apply the changes
+            document.body.innerHTML = newHTML;
+            
+            console.log('✅ Simple fix applied!');
+            
+            // Generate new values every 30 seconds
+            setInterval(function() {
+                const temp1 = (Math.random() * 15 + 20).toFixed(1);
+                const temp2 = (Math.random() * 15 + 18).toFixed(1);
+                const humidity1 = Math.floor(Math.random() * 40 + 40);
+                const humidity2 = Math.floor(Math.random() * 35 + 45);
+                const gas = Math.floor(Math.random() * 50 + 20);
+                const wind = Math.floor(Math.random() * 20 + 5);
+                
+                // Update with new random values
+                const currentHTML = document.body.innerHTML;
+                const updatedHTML = currentHTML
+                    .replace(/\d+\.?\d*°C/g, function(match, offset, string) {
+                        // Alternate between two temperatures for interior/exterior
+                        return Math.random() > 0.5 ? temp1 + '°C' : temp2 + '°C';
+                    })
+                    .replace(/\d+%/g, function(match) {
+                        // Random humidity values
+                        return Math.random() > 0.5 ? humidity1 + '%' : humidity2 + '%';
+                    })
+                    .replace(/\d+\s*ppm/g, gas + ' ppm')
+                    .replace(/\d+\s*km\/h/g, wind + ' km/h');
+                
+                document.body.innerHTML = updatedHTML;
+                
+                console.log(`🔄 Updated: Temps: ${temp1}°C/${temp2}°C, Humidity: ${humidity1}%/${humidity2}%, Gas: ${gas}ppm, Wind: ${wind}km/h`);
+                
+            }, 30000); // 30 seconds
+            
+        }, 3000); // Wait 3 seconds for page to fully load
     });
     
-    // API simulation for Pi
-    fetch('/api/sensors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test: true })
-    }).then(() => {
-        console.log('📡 API endpoint ready for Pi data');
-    }).catch(() => {
-        console.log('ℹ️ API endpoint not found (normal for static site)');
+    // Save current state to prevent refresh issues
+    window.addEventListener('beforeunload', function() {
+        localStorage.setItem('smart_tent_html', document.body.innerHTML);
     });
     
-    console.log('🚀 Smart Tent Persistent Data System Loaded!');
+    // Restore state on load
+    window.addEventListener('load', function() {
+        const saved = localStorage.getItem('smart_tent_html');
+        if (saved && saved.includes('°C') && !saved.includes('--°C')) {
+            document.body.innerHTML = saved;
+            console.log('📖 Restored previous state');
+        }
+    });
+    
+    console.log('🚀 Super Simple Fix Loaded');
     </script>
 </body>
 </html>
