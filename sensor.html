@@ -2,410 +2,577 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏕️ Smart Tent - Dashboard Firebase</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4CAF50">
+    <title>🏕️ Smart Tent Dashboard</title>
     <style>
-        :root {
-            --primary-green: #4CAF50;
-            --dark-green: #2E7D32;
-            --light-green: #81C784;
-            --bg-green: #F1F8E9;
-            --warning-orange: #FF9800;
-            --danger-red: #F44336;
-            --text-dark: #2C3E50;
-            --card-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-green) 0%, #E8F5E8 100%);
-            color: var(--text-dark);
-            line-height: 1.6;
+            background: #f5f5f5;
+            color: #333;
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
         }
 
+        /* Header */
         .header {
-            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            background: #4CAF50;
             color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: var(--card-shadow);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .header h1 {
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 0.5rem;
+            gap: 15px;
         }
 
-        .connection-status {
+        .disconnect-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .tent-selector {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .data-usage {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .nav-tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* Section */
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+        .section-icon {
+            font-size: 20px;
+        }
+
+        /* Sensor Grid */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .sensor-card {
+            background: #f8f8f8;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
             background: #4CAF50;
-            animation: pulse 2s infinite;
         }
 
-        .status-dot.offline {
-            background: #F44336;
-            animation: none;
+        .sensor-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
         }
 
-        @keyframes pulse {
+        .sensor-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .sensor-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        /* Camera Section */
+        .camera-frame {
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16/9;
+            margin-bottom: 15px;
+        }
+
+        .camera-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-status {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #f44336;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .camera-status::before {
+            content: '🔴';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
 
-        .firebase-config {
-            background: #FFF3E0;
-            border: 2px dashed #FF9800;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+        .camera-info {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
         }
 
-        .config-status {
-            margin-top: 1rem;
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .config-status.success {
-            background: #C8E6C9;
-            color: #2E7D32;
-        }
-
-        .config-status.error {
-            background: #FFCDD2;
-            color: #C62828;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .sensor-section {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.2s;
-        }
-
-        .sensor-section:hover {
-            transform: translateY(-2px);
-        }
-
-        .sensor-section h2 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 1rem;
-            color: var(--dark-green);
-        }
-
-        .sensor-grid {
+        .camera-controls {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            gap: 10px;
         }
 
-        .sensor-card {
-            background: var(--bg-green);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s;
+        /* Signal Bars */
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 15px;
+            margin-top: 10px;
+            justify-content: center;
         }
 
-        .sensor-card.updating {
-            animation: updatePulse 0.5s ease;
+        .signal-bar {
+            width: 4px;
+            background: #ddd;
+            border-radius: 2px;
         }
 
-        @keyframes updatePulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .signal-bar:nth-child(1) { height: 5px; }
+        .signal-bar:nth-child(2) { height: 8px; }
+        .signal-bar:nth-child(3) { height: 11px; }
+        .signal-bar:nth-child(4) { height: 14px; }
+
+        .signal-bar.active {
+            background: #4CAF50;
         }
 
-        .sensor-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .sensor-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-green);
-            margin-bottom: 0.25rem;
-            min-height: 2rem;
-        }
-
-        .sensor-label {
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        .alert-banner {
-            background: linear-gradient(90deg, var(--danger-red), #FF6B6B);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-            animation: alertSlide 0.5s ease;
-        }
-
-        .alert-banner.show {
-            display: block;
-        }
-
-        @keyframes alertSlide {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .last-update {
-            text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0,0,0,.1);
-            border-radius: 50%;
-            border-top-color: var(--primary-green);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .setup-instructions {
-            background: #E3F2FD;
-            border-left: 4px solid #2196F3;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-        }
-
-        .setup-instructions h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        .setup-instructions ol {
-            margin-left: 1.5rem;
-        }
-
-        .setup-instructions code {
-            background: #F5F5F5;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: monospace;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 15px;
             }
-            
+
+            .main-content {
+                padding: 15px;
+            }
+
             .sensor-grid {
-                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .sensor-card {
+                padding: 15px;
+            }
+
+            .sensor-icon {
+                font-size: 30px;
+            }
+
+            .sensor-value {
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>🏕️ Smart Tent - Dashboard Firebase</h1>
-            <div class="connection-status">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="connectionStatus">Connexion en cours...</span>
-                <span id="lastUpdate"></span>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="disconnect-btn">
+                    <span>déconnection</span>
+                    <span>🏕️</span>
+                </div>
+                <button class="tent-selector">
+                    <span>🏕️ tente principale</span>
+                    <span>▼</span>
+                </button>
             </div>
-        </header>
-
-        <div class="setup-instructions" id="setupInstructions">
-            <h3>⚙️ Configuration Firebase Requise</h3>
-            <ol>
-                <li>Créez un projet sur <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
-                <li>Activez Realtime Database en mode test</li>
-                <li>Copiez votre configuration ci-dessous</li>
-                <li>Modifiez le code source de cette page avec vos clés</li>
-            </ol>
-            <p><strong>URL actuelle:</strong> <code id="currentUrl">Non configuré</code></p>
-        </div>
-
-        <div class="firebase-config">
-            <h3>🔥 Configuration Firebase</h3>
-            <p>Remplacez les valeurs dans le code source de cette page:</p>
-            <div class="config-status" id="configStatus">
-                ⏳ En attente de données Firebase...
+            <div class="header-right">
+                <span style="font-size: 12px;">🌐 En ligne</span>
+                <div class="data-usage">📊 0 MB</div>
             </div>
         </div>
+    </header>
 
-        <div class="alert-banner" id="alertBanner">
-            <strong>⚠️ ALERTE:</strong> <span id="alertMessage"></span>
-        </div>
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab active">
+            <span>🏠</span>
+            <span>Tableau de bord</span>
+        </a>
+        <a href="history.html" class="nav-tab">
+            <span>📈</span>
+            <span>Historique</span>
+        </a>
+        <a href="map.html" class="nav-tab">
+            <span>🗺️</span>
+            <span>Carte</span>
+        </a>
+        <a href="settings.html" class="nav-tab">
+            <span>⚙️</span>
+            <span>Paramètres</span>
+        </a>
+    </nav>
 
-        <div class="dashboard-grid">
-            <div class="sensor-section">
-                <h2>🏠 Conditions Intérieures</h2>
-                <div class="sensor-grid">
-                    <div class="sensor-card" id="tempIntCard">
-                        <div class="sensor-icon">🌡️</div>
-                        <div class="sensor-value" id="tempInt">--°C</div>
-                        <div class="sensor-label">Température</div>
-                    </div>
-                    <div class="sensor-card" id="humIntCard">
-                        <div class="sensor-icon">💧</div>
-                        <div class="sensor-value" id="humInt">--%</div>
-                        <div class="sensor-label">Humidité</div>
-                    </div>
-                    <div class="sensor-card" id="gasCard">
-                        <div class="sensor-icon">💨</div>
-                        <div class="sensor-value" id="gas">-- ppm</div>
-                        <div class="sensor-label">Gaz (MQ-5)</div>
-                    </div>
-                    <div class="sensor-card" id="movementCard">
-                        <div class="sensor-icon">👁️</div>
-                        <div class="sensor-value" id="movement">--</div>
-                        <div class="sensor-label">Mouvement</div>
-                    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Conditions Intérieures -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">🏠</span>
+                <span>Conditions Intérieures</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-value" id="tempInt">--°C</div>
+                    <div class="sensor-label">Température</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-value" id="humInt">--%</div>
+                    <div class="sensor-label">Humidité</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💨</div>
+                    <div class="sensor-value" id="gas">-- ppm</div>
+                    <div class="sensor-label">Gaz (MQ2)</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">👁️</div>
+                    <div class="sensor-value" id="movementInt">Aucun</div>
+                    <div class="sensor-label">Mouvement</div>
                 </div>
             </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn primary">
+                    <span>🌡️</span>
+                    <span>Mode Confort</span>
+                </button>
+                <button class="action-btn secondary" onclick="refreshData()">
+                    <span>🔄</span>
+                    <span>Actualiser</span>
+                </button>
+            </div>
+        </section>
 
-            <div class="sensor-section">
-                <h2>🌍 Conditions Extérieures</h2>
-                <div class="sensor-grid">
-                    <div class="sensor-card">
-                        <div class="sensor-icon">🌡️</div>
-                        <div class="sensor-value" id="tempExt">--°C</div>
-                        <div class="sensor-label">Température</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">💧</div>
-                        <div class="sensor-value" id="humExt">--%</div>
-                        <div class="sensor-label">Humidité</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">🌬️</div>
-                        <div class="sensor-value" id="wind">-- km/h</div>
-                        <div class="sensor-label">Vent</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">🔋</div>
-                        <div class="sensor-value" id="battery">--%</div>
-                        <div class="sensor-label">Batterie</div>
-                    </div>
+        <!-- Conditions Extérieures -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">🌍</span>
+                <span>Conditions Extérieures</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-value" id="tempExt">--°C</div>
+                    <div class="sensor-label">Température</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-value" id="humExt">--%</div>
+                    <div class="sensor-label">Humidité</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🌬️</div>
+                    <div class="sensor-value" id="wind">-- km/h</div>
+                    <div class="sensor-label">Vent</div>
+                </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🚶</div>
+                    <div class="sensor-value" id="movementExt">Aucun</div>
+                    <div class="sensor-label">Mouvement</div>
                 </div>
             </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn primary">
+                    <span>🌤️</span>
+                    <span>Météo</span>
+                </button>
+                <button class="action-btn secondary" onclick="refreshData()">
+                    <span>🔄</span>
+                    <span>Actualiser</span>
+                </button>
+            </div>
+        </section>
 
-            <div class="sensor-section">
-                <h2>🔧 Système</h2>
-                <div class="sensor-grid">
-                    <div class="sensor-card">
-                        <div class="sensor-icon">📡</div>
-                        <div class="sensor-value" id="signal">--%</div>
-                        <div class="sensor-label">Signal 4G</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">📍</div>
-                        <div class="sensor-value" id="location" style="font-size: 1rem;">--</div>
-                        <div class="sensor-label">Localisation</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">🆔</div>
-                        <div class="sensor-value" id="deviceId" style="font-size: 0.9rem;">--</div>
-                        <div class="sensor-label">Device ID</div>
-                    </div>
-                    <div class="sensor-card">
-                        <div class="sensor-icon">📊</div>
-                        <div class="sensor-value" id="dataCount">0</div>
-                        <div class="sensor-label">Mises à jour</div>
+        <!-- Système -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">🔧</span>
+                <span>Système</span>
+            </div>
+            
+            <div class="sensor-grid">
+                <div class="sensor-card">
+                    <div class="sensor-icon">📡</div>
+                    <div class="sensor-value" id="signal">-- %</div>
+                    <div class="sensor-label">Signal 4G</div>
+                    <div class="signal-bars" id="signalBars">
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
                     </div>
                 </div>
+                
+                <div class="sensor-card">
+                    <div class="sensor-icon">🔋</div>
+                    <div class="sensor-value" id="battery">-- %</div>
+                    <div class="sensor-label">Batterie</div>
+                </div>
+                
+                <div class="sensor-card" style="grid-column: span 2;">
+                    <div class="sensor-icon">💻</div>
+                    <div class="sensor-value" id="cpuTemp">--°C</div>
+                    <div class="sensor-label">CPU Temp</div>
+                </div>
             </div>
-        </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn primary">
+                    <span>🔍</span>
+                    <span>Diagnostic</span>
+                </button>
+                <button class="action-btn secondary">
+                    <span>⚡</span>
+                    <span>Optimiser</span>
+                </button>
+            </div>
+        </section>
 
-        <div class="last-update">
-            <p id="updateInfo">En attente de connexion Firebase...</p>
-        </div>
-    </div>
+        <!-- Surveillance -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-icon">📹</span>
+                <span>Surveillance</span>
+            </div>
+            
+            <div class="camera-frame">
+                <img id="cameraFeed" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect width='800' height='450' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='0.3em' font-family='Arial' font-size='20' fill='%23555'%3EFlux caméra%3C/text%3E%3C/svg%3E" alt="Camera feed">
+                <div class="camera-status">EN DIRECT</div>
+                <div class="camera-info" id="cameraTime">Dernière mise à jour: --:--</div>
+            </div>
+            
+            <div class="camera-controls">
+                <button class="action-btn primary" onclick="capturePhoto()">
+                    <span>📸</span>
+                    <span>Photo</span>
+                </button>
+                <button class="action-btn secondary">
+                    <span>👁️</span>
+                    <span>Détection</span>
+                </button>
+                <button class="action-btn secondary">
+                    <span>🎥</span>
+                    <span>Enregistrer</span>
+                </button>
+                <button class="action-btn secondary">
+                    <span>🔍</span>
+                    <span>Plein écran</span>
+                </button>
+            </div>
+        </section>
+    </main>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ⚠️ REMPLACEZ CES VALEURS PAR VOS PROPRES CLÉS FIREBASE
+        // ⚠️ REMPLACEZ PAR VOS CLÉS FIREBASE
         const firebaseConfig = {
-            apiKey: "IzaSyCiXvPYhgNQlrPJfA067hM-7eL5L88QlCE",
+            apiKey: "YOUR-API-KEY",
             authDomain: "smart-tent-iot.firebaseapp.com",
             databaseURL: "https://smart-tent-iot-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "smart-tent-iot",
-            storageBucket: "smart-tent-iot.firebasestorage.app",
-            messagingSenderId: "Y99002146412",
-            appId: "1:99002146412:web:a5123156ac49de6db74249"
+            storageBucket: "smart-tent-iot.appspot.com",
+            messagingSenderId: "YOUR-SENDER-ID",
+            appId: "YOUR-APP-ID"
         };
 
         // Variables globales
         let database;
-        let isConnected = false;
-        let updateCount = 0;
-        let lastData = null;
+        let dataUsage = 0;
 
         // Initialiser Firebase
         function initFirebase() {
             try {
-                // Initialiser l'app Firebase
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
                 
-                console.log('🔥 Firebase initialisé');
-                document.getElementById('currentUrl').textContent = firebaseConfig.databaseURL;
-                
-                // Écouter les changements
+                // Écouter les données
                 listenToSensorData();
-                listenToAlerts();
                 
-                // Tester la connexion
-                testConnection();
-                
+                console.log('🔥 Firebase initialisé');
             } catch (error) {
                 console.error('❌ Erreur Firebase:', error);
-                updateConfigStatus('error', 'Erreur: Vérifiez votre configuration Firebase');
             }
         }
 
@@ -418,190 +585,131 @@
                 
                 if (data) {
                     console.log('📊 Données reçues:', data);
-                    lastData = data;
-                    updateCount++;
+                    updateDashboard(data);
                     
-                    // Mettre à jour l'interface
-                    updateSensorDisplay(data);
-                    updateConnectionStatus(true);
-                    updateConfigStatus('success', '✅ Connecté à Firebase - Données en temps réel');
-                    
-                    // Masquer les instructions si tout fonctionne
-                    if (updateCount > 2) {
-                        document.getElementById('setupInstructions').style.display = 'none';
-                    }
-                } else {
-                    console.log('⚠️ Aucune donnée disponible');
-                    updateConfigStatus('error', 'Aucune donnée - Lancez le script Raspberry Pi');
-                }
-            }, (error) => {
-                console.error('❌ Erreur lecture:', error);
-                updateConnectionStatus(false);
-                updateConfigStatus('error', `Erreur: ${error.message}`);
-            });
-        }
-
-        // Écouter les alertes
-        function listenToAlerts() {
-            const alertRef = database.ref('alerts/raspberry_kala_sghira/current');
-            
-            alertRef.on('value', (snapshot) => {
-                const alert = snapshot.val();
-                
-                if (alert && alert.type) {
-                    showAlert(alert.message || 'Alerte détectée');
-                } else {
-                    hideAlert();
+                    // Simuler l'usage de données
+                    dataUsage += 0.01;
+                    document.querySelector('.data-usage').textContent = `📊 ${dataUsage.toFixed(2)} MB`;
                 }
             });
         }
 
-        // Tester la connexion
-        function testConnection() {
-            const testRef = database.ref('.info/connected');
-            
-            testRef.on('value', (snapshot) => {
-                isConnected = snapshot.val() === true;
-                
-                if (isConnected) {
-                    console.log('✅ Connecté à Firebase');
-                } else {
-                    console.log('❌ Déconnecté de Firebase');
-                    updateConnectionStatus(false);
-                }
-            });
-        }
-
-        // Mettre à jour l'affichage des capteurs
-        function updateSensorDisplay(data) {
-            // Animation des cartes
-            animateCard('tempIntCard');
-            animateCard('humIntCard');
-            animateCard('gasCard');
-            animateCard('movementCard');
-            
-            // Valeurs intérieures
+        // Mettre à jour le dashboard
+        function updateDashboard(data) {
+            // Intérieur
             document.getElementById('tempInt').textContent = data.temperature_interior + '°C';
             document.getElementById('humInt').textContent = data.humidity_interior + '%';
             document.getElementById('gas').textContent = data.gas_ppm + ' ppm';
-            document.getElementById('movement').textContent = data.movement || 'Aucun';
+            document.getElementById('movementInt').textContent = data.movement || 'Aucun';
             
-            // Valeurs extérieures
+            // Extérieur
             document.getElementById('tempExt').textContent = data.temperature_exterior + '°C';
             document.getElementById('humExt').textContent = data.humidity_exterior + '%';
             document.getElementById('wind').textContent = data.wind_speed + ' km/h';
-            document.getElementById('battery').textContent = data.battery + '%';
+            document.getElementById('movementExt').textContent = 'Aucun';
             
             // Système
-            document.getElementById('signal').textContent = data.signal_4g + '%';
-            document.getElementById('location').textContent = data.location || 'Kala Sghira';
-            document.getElementById('deviceId').textContent = data.device_id || 'tent_01';
-            document.getElementById('dataCount').textContent = updateCount;
+            document.getElementById('signal').textContent = data.signal_4g + ' %';
+            document.getElementById('battery').textContent = data.battery + ' %';
+            document.getElementById('cpuTemp').textContent = (data.cpu_temp || 52) + '°C';
             
-            // Couleur de la batterie
-            const batteryCard = document.querySelector('#battery').parentElement;
-            if (data.battery < 20) {
-                batteryCard.style.background = '#FFEBEE';
-            } else if (data.battery < 50) {
-                batteryCard.style.background = '#FFF3E0';
-            }
+            // Signal bars
+            updateSignalBars(data.signal_4g);
             
-            // Alerte gaz
-            const gasCard = document.querySelector('#gas').parentElement;
-            if (data.gas_ppm > 300) {
-                gasCard.style.background = '#FFEBEE';
-                showAlert(`ALERTE GAZ: ${data.gas_ppm} ppm - Ventilez immédiatement!`);
-            } else if (data.gas_ppm > 200) {
-                gasCard.style.background = '#FFF3E0';
-            }
+            // Heure caméra
+            updateCameraTime();
             
-            // Timestamp
-            if (data.timestamp) {
-                const date = new Date(data.timestamp);
-                document.getElementById('lastUpdate').textContent = 
-                    ` - Dernière MAJ: ${date.toLocaleTimeString('fr-FR')}`;
-            }
+            // Animation des cartes
+            animateCards();
         }
 
-        // Animer une carte
-        function animateCard(cardId) {
-            const card = document.getElementById(cardId);
-            card.classList.add('updating');
-            setTimeout(() => card.classList.remove('updating'), 500);
-        }
-
-        // Mettre à jour le statut de connexion
-        function updateConnectionStatus(connected) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('connectionStatus');
+        // Mettre à jour les barres de signal
+        function updateSignalBars(signal) {
+            const bars = document.querySelectorAll('.signal-bar');
+            const activeBars = Math.ceil((signal / 100) * 4);
             
-            if (connected) {
-                statusDot.classList.remove('offline');
-                statusText.textContent = 'Connecté à Firebase';
-                document.getElementById('updateInfo').innerHTML = 
-                    `<span class="loading"></span> Écoute des données en temps réel...`;
-            } else {
-                statusDot.classList.add('offline');
-                statusText.textContent = 'Déconnecté';
-                document.getElementById('updateInfo').textContent = 
-                    'Connexion perdue - Vérifiez votre configuration';
-            }
+            bars.forEach((bar, index) => {
+                if (index < activeBars) {
+                    bar.classList.add('active');
+                } else {
+                    bar.classList.remove('active');
+                }
+            });
         }
 
-        // Mettre à jour le statut de configuration
-        function updateConfigStatus(type, message) {
-            const statusDiv = document.getElementById('configStatus');
-            statusDiv.className = `config-status ${type}`;
-            statusDiv.textContent = message;
+        // Mettre à jour l'heure de la caméra
+        function updateCameraTime() {
+            const now = new Date();
+            document.getElementById('cameraTime').textContent = 
+                `Dernière mise à jour: ${now.toLocaleTimeString('fr-FR')}`;
         }
 
-        // Afficher une alerte
-        function showAlert(message) {
-            const alertBanner = document.getElementById('alertBanner');
-            const alertMessage = document.getElementById('alertMessage');
-            
-            alertMessage.textContent = message;
-            alertBanner.classList.add('show');
-            
-            // Jouer un son d'alerte (optionnel)
-            try {
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSt+zPLaizsIGmS48OScTgwOUKXh8LNgGQU7k9n1zn0s');
-                audio.volume = 0.3;
-                audio.play();
-            } catch (e) {}
+        // Animation des cartes
+        function animateCards() {
+            const cards = document.querySelectorAll('.sensor-card');
+            cards.forEach(card => {
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 100);
+            });
         }
 
-        // Masquer l'alerte
-        function hideAlert() {
-            document.getElementById('alertBanner').classList.remove('show');
+        // Rafraîchir les données
+        function refreshData() {
+            console.log('🔄 Actualisation...');
+            // Animation de rotation sur les boutons
+            event.target.querySelector('span:first-child').style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                event.target.querySelector('span:first-child').style.transform = 'rotate(0deg)';
+            }, 500);
         }
 
-        // Initialisation au chargement
+        // Capturer une photo
+        function capturePhoto() {
+            console.log('📸 Photo capturée');
+            // Flash effect
+            document.getElementById('cameraFeed').style.filter = 'brightness(2)';
+            setTimeout(() => {
+                document.getElementById('cameraFeed').style.filter = 'brightness(1)';
+            }, 100);
+        }
+
+        // Initialisation
         window.addEventListener('load', function() {
-            console.log('🏕️ Smart Tent Firebase Dashboard');
-            console.log('📝 Configuration requise:');
-            console.log('1. Créez un projet Firebase');
-            console.log('2. Activez Realtime Database');
-            console.log('3. Remplacez firebaseConfig dans ce fichier');
-            console.log('4. Lancez le script Python sur votre Raspberry Pi');
+            console.log('🏕️ Smart Tent Dashboard Mobile');
             
-            // Vérifier si la configuration est modifiée
+            // Ajouter les transitions
+            document.querySelectorAll('.sensor-card, .action-btn').forEach(el => {
+                el.style.transition = 'all 0.2s ease';
+            });
+            
+            // Vérifier Firebase
             if (firebaseConfig.apiKey === "YOUR-API-KEY") {
-                updateConfigStatus('error', '⚠️ Configurez d\'abord vos clés Firebase dans le code!');
-                document.getElementById('updateInfo').innerHTML = 
-                    '📝 Modifiez le code source de cette page avec vos clés Firebase';
+                // Mode démo sans Firebase
+                console.log('Mode démo - Configurez Firebase pour les vraies données');
+                setInterval(() => {
+                    const demoData = {
+                        temperature_interior: 20 + Math.random() * 10,
+                        humidity_interior: 50 + Math.random() * 30,
+                        gas_ppm: 30 + Math.random() * 50,
+                        temperature_exterior: 18 + Math.random() * 12,
+                        humidity_exterior: 60 + Math.random() * 30,
+                        wind_speed: 5 + Math.random() * 20,
+                        signal_4g: 70 + Math.random() * 30,
+                        battery: 80 + Math.random() * 20,
+                        movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun'
+                    };
+                    updateDashboard(demoData);
+                }, 3000);
             } else {
                 // Initialiser Firebase
                 initFirebase();
             }
+            
+            // Mettre à jour l'heure régulièrement
+            setInterval(updateCameraTime, 1000);
         });
-
-        // Afficher les données en console pour debug
-        window.showLastData = function() {
-            console.log('Dernières données reçues:', lastData);
-        };
     </script>
 </body>
 </html>
-
-        //
