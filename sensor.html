@@ -548,13 +548,13 @@
     <script>
         // ⚠️ REMPLACEZ PAR VOS CLÉS FIREBASE
         const firebaseConfig = {
-            apiKey: "YOUR-API-KEY",
+            apiKey: "IzaSyCiXvPYhgNQlrPJfA067hM-7eL5L88QlCE",
             authDomain: "smart-tent-iot.firebaseapp.com",
             databaseURL: "https://smart-tent-iot-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "smart-tent-iot",
-            storageBucket: "smart-tent-iot.appspot.com",
-            messagingSenderId: "YOUR-SENDER-ID",
-            appId: "YOUR-APP-ID"
+            storageBucket: "smart-tent-iot.firebasestorage.app",
+            messagingSenderId: "Y99002146412",
+            appId: "1:99002146412:web:a5123156ac49de6db74249"
         };
 
         // Variables globales
@@ -570,9 +570,9 @@
                 // Écouter les données
                 listenToSensorData();
                 
-                console.log('🔥 Firebase initialisé');
+                console.log('🔥  initialisé');
             } catch (error) {
-                console.error('❌ Erreur Firebase:', error);
+                console.error('❌ Erreur :', error);
             }
         }
 
@@ -596,22 +596,22 @@
 
         // Mettre à jour le dashboard
         function updateDashboard(data) {
-            // Intérieur
-            document.getElementById('tempInt').textContent = data.temperature_interior + '°C';
-            document.getElementById('humInt').textContent = data.humidity_interior + '%';
-            document.getElementById('gas').textContent = data.gas_ppm + ' ppm';
+            // Intérieur - Arrondir les valeurs
+            document.getElementById('tempInt').textContent = Math.round(data.temperature_interior * 10) / 10 + '°C';
+            document.getElementById('humInt').textContent = Math.round(data.humidity_interior) + '%';
+            document.getElementById('gas').textContent = Math.round(data.gas_ppm) + ' ppm';
             document.getElementById('movementInt').textContent = data.movement || 'Aucun';
             
-            // Extérieur
-            document.getElementById('tempExt').textContent = data.temperature_exterior + '°C';
-            document.getElementById('humExt').textContent = data.humidity_exterior + '%';
-            document.getElementById('wind').textContent = data.wind_speed + ' km/h';
+            // Extérieur - Arrondir les valeurs
+            document.getElementById('tempExt').textContent = Math.round(data.temperature_exterior * 10) / 10 + '°C';
+            document.getElementById('humExt').textContent = Math.round(data.humidity_exterior) + '%';
+            document.getElementById('wind').textContent = Math.round(data.wind_speed) + ' km/h';
             document.getElementById('movementExt').textContent = 'Aucun';
             
-            // Système
-            document.getElementById('signal').textContent = data.signal_4g + ' %';
-            document.getElementById('battery').textContent = data.battery + ' %';
-            document.getElementById('cpuTemp').textContent = (data.cpu_temp || 52) + '°C';
+            // Système - Arrondir les valeurs
+            document.getElementById('signal').textContent = Math.round(data.signal_4g) + ' %';
+            document.getElementById('battery').textContent = Math.round(data.battery) + ' %';
+            document.getElementById('cpuTemp').textContent = Math.round(data.cpu_temp || 52) + '°C';
             
             // Signal bars
             updateSignalBars(data.signal_4g);
@@ -687,17 +687,17 @@
             // Vérifier Firebase
             if (firebaseConfig.apiKey === "YOUR-API-KEY") {
                 // Mode démo sans Firebase
-                console.log('Mode démo - Configurez Firebase pour les vraies données');
+                console.log('Mode démo - Configurez  pour les vraies données');
                 setInterval(() => {
                     const demoData = {
-                        temperature_interior: 20 + Math.random() * 10,
-                        humidity_interior: 50 + Math.random() * 30,
-                        gas_ppm: 30 + Math.random() * 50,
-                        temperature_exterior: 18 + Math.random() * 12,
-                        humidity_exterior: 60 + Math.random() * 30,
-                        wind_speed: 5 + Math.random() * 20,
-                        signal_4g: 70 + Math.random() * 30,
-                        battery: 80 + Math.random() * 20,
+                        temperature_interior: Math.round((20 + Math.random() * 10) * 10) / 10,
+                        humidity_interior: Math.round(50 + Math.random() * 30),
+                        gas_ppm: Math.round(30 + Math.random() * 50),
+                        temperature_exterior: Math.round((18 + Math.random() * 12) * 10) / 10,
+                        humidity_exterior: Math.round(60 + Math.random() * 30),
+                        wind_speed: Math.round(5 + Math.random() * 20),
+                        signal_4g: Math.round(70 + Math.random() * 30),
+                        battery: Math.round(80 + Math.random() * 20),
                         movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun'
                     };
                     updateDashboard(demoData);
