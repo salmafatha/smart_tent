@@ -168,7 +168,7 @@
     <header class="header">
         <div class="header-content">
             <h1>🗺️ Localisation Smart Tent</h1>
-            <a href="index.html" class="nav-btn">← Retour au Dashboard</a>
+            <a href="sensor.html" class="nav-btn">← Retour au Dashboard</a>
         </div>
     </header>
 
@@ -237,13 +237,13 @@
     <script>
         // ⚠️ REMPLACEZ PAR VOS CLÉS FIREBASE
         const firebaseConfig = {
-            apiKey: "YOUR-API-KEY",
+            apiKey: "IzaSyCiXvPYhgNQlrPJfA067hM-7eL5L88QlCE",
             authDomain: "smart-tent-iot.firebaseapp.com",
             databaseURL: "https://smart-tent-iot-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "smart-tent-iot",
-            storageBucket: "smart-tent-iot.appspot.com",
-            messagingSenderId: "YOUR-SENDER-ID",
-            appId: "YOUR-APP-ID"
+            storageBucket: "mart-tent-iot.firebasestorage.app",
+            messagingSenderId: "Y99002146412",
+            appId: "1:99002146412:web:a5123156ac49de6db74249"
         };
 
         // Variables globales
@@ -253,8 +253,8 @@
 
         // Initialiser la carte
         function initMap() {
-            // Position par défaut (Kala Sghira, Sousse)
-            const defaultPosition = [35.8245, 10.5965];
+            // Position par défaut (riadh, Sousse)
+            const defaultPosition = [35.796865, 10.599500];
             
             // Créer la carte
             map = L.map('map').setView(defaultPosition, 13);
@@ -277,7 +277,7 @@
             tentMarker = L.marker(defaultPosition, { icon: tentIcon })
                 .addTo(map)
                 .bindPopup(createPopupContent({
-                    location: "Kala Sghira",
+                    location: "riadh sousse",
                     temperature: "--",
                     humidity: "--"
                 }));
@@ -305,9 +305,9 @@
                 // Écouter les données
                 listenToSensorData();
                 
-                console.log('🔥 Firebase initialisé');
+                console.log('initialisé');
             } catch (error) {
-                console.error('❌ Erreur Firebase:', error);
+                console.error('❌ Erreur :', error);
             }
         }
 
