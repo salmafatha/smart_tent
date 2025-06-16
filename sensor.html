@@ -552,7 +552,7 @@
             authDomain: "smart-tent-iot.firebaseapp.com",
             databaseURL: "https://smart-tent-iot-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "smart-tent-iot",
-            storageBucket: "smart-tent-iot.firebasestorage.app",
+            storageBucket: "smart-tent-iot.firebasestorage.ap",
             messagingSenderId: "Y99002146412",
             appId: "1:99002146412:web:a5123156ac49de6db74249"
         };
@@ -570,9 +570,9 @@
                 // Écouter les données
                 listenToSensorData();
                 
-                console.log('🔥  initialisé');
+                console.log('🔥 Firebase initialisé');
             } catch (error) {
-                console.error('❌ Erreur :', error);
+                console.error('❌ Erreur Firebase:', error);
             }
         }
 
@@ -636,9 +636,6 @@
                 }
             });
         }
-                    // Mettre à jour l'heure régulièrement
-            setInterval(updateCameraTime, 1000);
-        });
 
         // Mettre à jour l'heure de la caméra
         function updateCameraTime() {
@@ -690,7 +687,7 @@
             // Vérifier Firebase
             if (firebaseConfig.apiKey === "YOUR-API-KEY") {
                 // Mode démo sans Firebase
-                console.log('Mode démo - Configurez  pour les vraies données');
+                console.log('Mode démo - Configurez Firebase pour les vraies données');
                 setInterval(() => {
                     const demoData = {
                         temperature_interior: Math.round((20 + Math.random() * 10) * 10) / 10,
@@ -708,7 +705,11 @@
             } else {
                 // Initialiser Firebase
                 initFirebase();
-            }         
+            }
+            
+            // Mettre à jour l'heure régulièrement
+            setInterval(updateCameraTime, 1000);
+        });
     </script>
 </body>
 </html>
