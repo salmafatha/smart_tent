@@ -221,7 +221,9 @@
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <span>déconnection 🏕️</span>
+            <div class="disconnect-btn">
+                <span>déconnection 🏕️</span>
+            </div>
             <button class="tent-selector">🏕️ tente principale ▼</button>
         </div>
         <div class="header-right">
@@ -231,12 +233,24 @@
     </div>
 
     <!-- Navigation -->
-    <div class="nav-tabs">
-        <a href="#" class="nav-tab active">🏠 Tableau de bord</a>
-        <a href="#" class="nav-tab">📈 Historique</a>
-        <a href="#" class="nav-tab">🗺️ Carte</a>
-        <a href="#" class="nav-tab">⚙️ Paramètres</a>
-    </div>
+    <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab active">
+            <span>🏠</span>
+            <span>Tableau de bord</span>
+        </a>
+        <a href="history.html" class="nav-tab">
+            <span>📈</span>
+            <span>Historique</span>
+        </a>
+        <a href="map.html" class="nav-tab">
+            <span>🗺️</span>
+            <span>Carte</span>
+        </a>
+        <a href="settings.html" class="nav-tab">
+            <span>⚙️</span>
+            <span>Paramètres</span>
+        </a>
+    </nav>
 
     <!-- Main Content -->
     <div class="container">
@@ -294,19 +308,19 @@
             <div class="sensor-grid">
                 <div class="sensor-card">
                     <div class="sensor-icon">🌡️</div>
-                    <div class="sensor-value" id="tempExt">22.8°C</div>
+                    <div class="sensor-value" id="tempExt">34°C</div>
                     <div class="sensor-label">Température</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">💧</div>
-                    <div class="sensor-value" id="humExt">75%</div>
+                    <div class="sensor-value" id="humExt">20%</div>
                     <div class="sensor-label">Humidité</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">🌬️</div>
-                    <div class="sensor-value" id="wind">12 km/h</div>
+                    <div class="sensor-value" id="wind">0 km/h</div>
                     <div class="sensor-label">Vent</div>
                 </div>
                 
