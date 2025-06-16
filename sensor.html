@@ -1,3 +1,48 @@
+
+        // Écouter les données des capteurs
+        function listenToSensorData() {
+            const sensorRef = database.ref('sensors/tent_01');
+            
+            sensorRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    console.log('📊 Données reçues:', data);
+                    updateDashboard(data);
+                    
+                    // Mettre à jour l'image de la caméra si disponible
+                    if (data.last_image_url) {
+                        updateCameraImage(data.last_image_url);
+                    }
+                    
+                    // Simuler l'usage de données
+                    dataUsage += 0.01;
+                    document.querySelector('.data-usage').textContent = `📊 ${dataUsage.toFixed(2)} MB`;
+                }
+            });
+        }
+
+        // Mettre à jour l'image de la caméra
+        function updateCameraImage(imageUrl) {
+            const cameraFeed = document.getElementById('cameraFeed');
+            
+            // Si c'est une URL locale du Raspberry, la transformer
+            if (imageUrl.includes('localhost')) {
+                // Remplacer localhost par l'IP du Raspberry
+                const raspberryIP = window.prompt("Entrez l'IP du Raspberry Pi:", "192.168.158.68");
+                if (raspberryIP) {
+                    imageUrl = imageUrl.replace('localhost', raspberryIP);
+                    localStorage.setItem('raspberryIP', raspberryIP);
+                }
+            } else if (imageUrl.includes('localhost') && localStorage.getItem('raspberryIP')) {
+                imageUrl = imageUrl.replace('localhost', localStorage.getItem('raspberryIP'));
+            }
+            
+            // Charger l'image
+            const img = new Image();
+            img.onload = function() {
+                cameraFeed.src = imageUrl;
+                console.log('📸 Image caméra mise à jour');
 <!DOCTYPE html>
 <html lang="fr">
 <head>
