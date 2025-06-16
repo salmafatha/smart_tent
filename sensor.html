@@ -2,23 +2,19 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4CAF50">
-    <title>🏕️ Smart Tent Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tent Dashboard</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
             color: #333;
-            min-height: 100vh;
-            overflow-x: hidden;
         }
 
         /* Header */
@@ -26,13 +22,6 @@
             background: #4CAF50;
             color: white;
             padding: 15px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,26 +30,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
-        }
-
-        .disconnect-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .tent-selector {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            gap: 20px;
         }
 
         .header-right {
@@ -69,42 +39,35 @@
             gap: 15px;
         }
 
-        .data-usage {
+        .tent-selector {
             background: rgba(255,255,255,0.2);
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
         }
 
-        /* Navigation Tabs */
+        /* Navigation */
         .nav-tabs {
             background: white;
             padding: 10px 20px;
             display: flex;
             gap: 10px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .nav-tabs::-webkit-scrollbar {
-            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .nav-tab {
-            background: #f0f0f0;
+            background: #e0e0e0;
             border: none;
             padding: 10px 20px;
             border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #666;
             display: flex;
             align-items: center;
             gap: 8px;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            color: #666;
-            text-decoration: none;
         }
 
         .nav-tab.active {
@@ -113,9 +76,10 @@
         }
 
         /* Main Content */
-        .main-content {
+        .container {
             padding: 20px;
-            padding-bottom: 80px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         /* Section */
@@ -132,19 +96,14 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 20px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            color: #333;
-        }
-
-        .section-icon {
-            font-size: 20px;
         }
 
         /* Sensor Grid */
         .sensor-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
 
@@ -153,20 +112,7 @@
             border-radius: 15px;
             padding: 20px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .sensor-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #4CAF50;
+            border-top: 4px solid #4CAF50;
         }
 
         .sensor-icon {
@@ -175,51 +121,49 @@
         }
 
         .sensor-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             color: #4CAF50;
-            margin-bottom: 5px;
+            margin: 10px 0;
         }
 
         .sensor-label {
-            font-size: 12px;
-            color: #999;
+            font-size: 14px;
+            color: #666;
         }
 
-        /* Action Buttons */
-        .action-buttons {
+        /* Buttons */
+        .button-group {
             display: flex;
             gap: 10px;
             margin-top: 20px;
         }
 
-        .action-btn {
+        .btn {
             flex: 1;
-            padding: 12px 20px;
+            padding: 12px;
             border: none;
             border-radius: 25px;
             font-weight: 600;
-            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
-        .action-btn.primary {
+        .btn-primary {
             background: #4CAF50;
             color: white;
         }
 
-        .action-btn.secondary {
+        .btn-secondary {
             background: #e0e0e0;
             color: #666;
         }
 
         /* Camera Section */
-        .camera-frame {
+        .camera-container {
             background: #000;
             border-radius: 15px;
             overflow: hidden;
@@ -228,7 +172,7 @@
             margin-bottom: 15px;
         }
 
-        .camera-frame img {
+        .camera-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -244,138 +188,42 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .camera-status::before {
-            content: '🔴';
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .camera-info {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 11px;
         }
 
         .camera-controls {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-        }
-
-        /* Signal Bars */
-        .signal-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 15px;
-            margin-top: 10px;
-            justify-content: center;
-        }
-
-        .signal-bar {
-            width: 4px;
-            background: #ddd;
-            border-radius: 2px;
-        }
-
-        .signal-bar:nth-child(1) { height: 5px; }
-        .signal-bar:nth-child(2) { height: 8px; }
-        .signal-bar:nth-child(3) { height: 11px; }
-        .signal-bar:nth-child(4) { height: 14px; }
-
-        .signal-bar.active {
-            background: #4CAF50;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .header {
-                padding: 12px 15px;
-            }
-
-            .main-content {
-                padding: 15px;
-            }
-
-            .sensor-grid {
-                gap: 10px;
-            }
-
-            .sensor-card {
-                padding: 15px;
-            }
-
-            .sensor-icon {
-                font-size: 30px;
-            }
-
-            .sensor-value {
-                font-size: 20px;
-            }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="disconnect-btn">
-                    <span>déconnection</span>
-                    <span>🏕️</span>
-                </div>
-                <button class="tent-selector">
-                    <span>🏕️ tente principale</span>
-                    <span>▼</span>
-                </button>
-            </div>
-            <div class="header-right">
-                <span style="font-size: 12px;">🌐 En ligne</span>
-                <div class="data-usage">📊 0 MB</div>
-            </div>
+    <div class="header">
+        <div class="header-left">
+            <span>déconnection 🏕️</span>
+            <button class="tent-selector">🏕️ tente principale ▼</button>
         </div>
-    </header>
+        <div class="header-right">
+            <span>🌐 En ligne</span>
+            <span>📊 <span id="dataUsage">0</span> MB</span>
+        </div>
+    </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
-        <a href="index.html" class="nav-tab active">
-            <span>🏠</span>
-            <span>Tableau de bord</span>
-        </a>
-        <a href="history.html" class="nav-tab">
-            <span>📈</span>
-            <span>Historique</span>
-        </a>
-        <a href="map.html" class="nav-tab">
-            <span>🗺️</span>
-            <span>Carte</span>
-        </a>
-        <a href="settings.html" class="nav-tab">
-            <span>⚙️</span>
-            <span>Paramètres</span>
-        </a>
-    </nav>
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <a href="#" class="nav-tab active">🏠 Tableau de bord</a>
+        <a href="#" class="nav-tab">📈 Historique</a>
+        <a href="#" class="nav-tab">🗺️ Carte</a>
+        <a href="#" class="nav-tab">⚙️ Paramètres</a>
+    </div>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <div class="container">
         <!-- Conditions Intérieures -->
-        <section class="section">
+        <div class="section">
             <div class="section-header">
-                <span class="section-icon">🏠</span>
+                <span>🏠</span>
                 <span>Conditions Intérieures</span>
             </div>
             
@@ -405,22 +253,16 @@
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <button class="action-btn primary">
-                    <span>🌡️</span>
-                    <span>Mode Confort</span>
-                </button>
-                <button class="action-btn secondary" onclick="refreshData()">
-                    <span>🔄</span>
-                    <span>Actualiser</span>
-                </button>
+            <div class="button-group">
+                <button class="btn btn-primary">🌡️ Mode Confort</button>
+                <button class="btn btn-secondary" onclick="refreshData()">🔄 Actualiser</button>
             </div>
-        </section>
+        </div>
 
         <!-- Conditions Extérieures -->
-        <section class="section">
+        <div class="section">
             <div class="section-header">
-                <span class="section-icon">🌍</span>
+                <span>🌍</span>
                 <span>Conditions Extérieures</span>
             </div>
             
@@ -450,22 +292,16 @@
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <button class="action-btn primary">
-                    <span>🌤️</span>
-                    <span>Météo</span>
-                </button>
-                <button class="action-btn secondary" onclick="refreshData()">
-                    <span>🔄</span>
-                    <span>Actualiser</span>
-                </button>
+            <div class="button-group">
+                <button class="btn btn-primary">🌤️ Météo</button>
+                <button class="btn btn-secondary" onclick="refreshData()">🔄 Actualiser</button>
             </div>
-        </section>
+        </div>
 
         <!-- Système -->
-        <section class="section">
+        <div class="section">
             <div class="section-header">
-                <span class="section-icon">🔧</span>
+                <span>🔧</span>
                 <span>Système</span>
             </div>
             
@@ -474,12 +310,6 @@
                     <div class="sensor-icon">📡</div>
                     <div class="sensor-value" id="signal">-- %</div>
                     <div class="sensor-label">Signal 4G</div>
-                    <div class="signal-bars" id="signalBars">
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                        <div class="signal-bar"></div>
-                    </div>
                 </div>
                 
                 <div class="sensor-card">
@@ -488,228 +318,123 @@
                     <div class="sensor-label">Batterie</div>
                 </div>
                 
-                <div class="sensor-card" style="grid-column: span 2;">
+                <div class="sensor-card">
                     <div class="sensor-icon">💻</div>
                     <div class="sensor-value" id="cpuTemp">--°C</div>
                     <div class="sensor-label">CPU Temp</div>
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <button class="action-btn primary">
-                    <span>🔍</span>
-                    <span>Diagnostic</span>
-                </button>
-                <button class="action-btn secondary">
-                    <span>⚡</span>
-                    <span>Optimiser</span>
-                </button>
+            <div class="button-group">
+                <button class="btn btn-primary">🔍 Diagnostic</button>
+                <button class="btn btn-secondary">⚡ Optimiser</button>
             </div>
-        </section>
+        </div>
 
         <!-- Surveillance -->
-        <section class="section">
+        <div class="section">
             <div class="section-header">
-                <span class="section-icon">📹</span>
+                <span>📹</span>
                 <span>Surveillance</span>
             </div>
             
-            <div class="camera-frame">
-                <img id="cameraFeed" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect width='800' height='450' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='0.3em' font-family='Arial' font-size='20' fill='%23555'%3EFlux caméra%3C/text%3E%3C/svg%3E" alt="Camera feed">
-                <div class="camera-status">EN DIRECT</div>
-                <div class="camera-info" id="cameraTime">Dernière mise à jour: --:--</div>
+            <div class="camera-container">
+                <img id="cameraFeed" src="http://192.168.158.68/stream" alt="Camera feed">
+                <div class="camera-status">🔴 EN DIRECT</div>
             </div>
             
             <div class="camera-controls">
-                <button class="action-btn primary" onclick="capturePhoto()">
-                    <span>📸</span>
-                    <span>Photo</span>
-                </button>
-                <button class="action-btn secondary">
-                    <span>👁️</span>
-                    <span>Détection</span>
-                </button>
-                <button class="action-btn secondary">
-                    <span>🎥</span>
-                    <span>Enregistrer</span>
-                </button>
-                <button class="action-btn secondary">
-                    <span>🔍</span>
-                    <span>Plein écran</span>
-                </button>
+                <button class="btn btn-primary">📸 Photo</button>
+                <button class="btn btn-secondary">👁️ Détection</button>
+                <button class="btn btn-secondary">🎥 Enregistrer</button>
+                <button class="btn btn-secondary">🔍 Plein écran</button>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // ⚠️ REMPLACEZ PAR VOS CLÉS FIREBASE
+        // Configuration Firebase - REMPLACEZ PAR VOS CLÉS
         const firebaseConfig = {
-            apiKey: "IzaSyCiXvPYhgNQlrPJfA067hM-7eL5L88QlCE",
+            apiKey: "YOUR-API-KEY",
             authDomain: "smart-tent-iot.firebaseapp.com",
             databaseURL: "https://smart-tent-iot-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "smart-tent-iot",
-            storageBucket: "smart-tent-iot.firebasestorage.ap",
-            messagingSenderId: "Y99002146412",
-            appId: "1:99002146412:web:a5123156ac49de6db74249"
+            storageBucket: "smart-tent-iot.appspot.com",
+            messagingSenderId: "YOUR-SENDER-ID",
+            appId: "YOUR-APP-ID"
         };
 
-        // Variables globales
         let database;
         let dataUsage = 0;
 
         // Initialiser Firebase
         function initFirebase() {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                
-                // Écouter les données
-                listenToSensorData();
-                
-                console.log('🔥 Firebase initialisé');
-            } catch (error) {
-                console.error('❌ Erreur Firebase:', error);
-            }
-        }
-
-        // Écouter les données des capteurs
-        function listenToSensorData() {
-            const sensorRef = database.ref('sensors/tent_01');
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
             
+            // Écouter les données
+            const sensorRef = database.ref('sensors/tent_01');
             sensorRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                
                 if (data) {
-                    console.log('📊 Données reçues:', data);
                     updateDashboard(data);
-                    
-                    // Simuler l'usage de données
                     dataUsage += 0.01;
-                    document.querySelector('.data-usage').textContent = `📊 ${dataUsage.toFixed(2)} MB`;
+                    document.getElementById('dataUsage').textContent = dataUsage.toFixed(2);
                 }
             });
         }
 
         // Mettre à jour le dashboard
         function updateDashboard(data) {
-            // Intérieur - Arrondir les valeurs
+            // Intérieur
             document.getElementById('tempInt').textContent = Math.round(data.temperature_interior * 10) / 10 + '°C';
             document.getElementById('humInt').textContent = Math.round(data.humidity_interior) + '%';
             document.getElementById('gas').textContent = Math.round(data.gas_ppm) + ' ppm';
             document.getElementById('movementInt').textContent = data.movement || 'Aucun';
             
-            // Extérieur - Arrondir les valeurs
+            // Extérieur
             document.getElementById('tempExt').textContent = Math.round(data.temperature_exterior * 10) / 10 + '°C';
             document.getElementById('humExt').textContent = Math.round(data.humidity_exterior) + '%';
             document.getElementById('wind').textContent = Math.round(data.wind_speed) + ' km/h';
             document.getElementById('movementExt').textContent = 'Aucun';
             
-            // Système - Arrondir les valeurs
+            // Système
             document.getElementById('signal').textContent = Math.round(data.signal_4g) + ' %';
             document.getElementById('battery').textContent = Math.round(data.battery) + ' %';
             document.getElementById('cpuTemp').textContent = Math.round(data.cpu_temp || 52) + '°C';
-            
-            // Signal bars
-            updateSignalBars(data.signal_4g);
-            
-            // Heure caméra
-            updateCameraTime();
-            
-            // Animation des cartes
-            animateCards();
-        }
-
-        // Mettre à jour les barres de signal
-        function updateSignalBars(signal) {
-            const bars = document.querySelectorAll('.signal-bar');
-            const activeBars = Math.ceil((signal / 100) * 4);
-            
-            bars.forEach((bar, index) => {
-                if (index < activeBars) {
-                    bar.classList.add('active');
-                } else {
-                    bar.classList.remove('active');
-                }
-            });
-        }
-
-        // Mettre à jour l'heure de la caméra
-        function updateCameraTime() {
-            const now = new Date();
-            document.getElementById('cameraTime').textContent = 
-                `Dernière mise à jour: ${now.toLocaleTimeString('fr-FR')}`;
-        }
-
-        // Animation des cartes
-        function animateCards() {
-            const cards = document.querySelectorAll('.sensor-card');
-            cards.forEach(card => {
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.transform = 'scale(1)';
-                }, 100);
-            });
         }
 
         // Rafraîchir les données
         function refreshData() {
-            console.log('🔄 Actualisation...');
-            // Animation de rotation sur les boutons
-            event.target.querySelector('span:first-child').style.transform = 'rotate(360deg)';
-            setTimeout(() => {
-                event.target.querySelector('span:first-child').style.transform = 'rotate(0deg)';
-            }, 500);
+            console.log('Actualisation...');
         }
 
-        // Capturer une photo
-        function capturePhoto() {
-            console.log('📸 Photo capturée');
-            // Flash effect
-            document.getElementById('cameraFeed').style.filter = 'brightness(2)';
-            setTimeout(() => {
-                document.getElementById('cameraFeed').style.filter = 'brightness(1)';
-            }, 100);
-        }
-
-        // Initialisation
-        window.addEventListener('load', function() {
-            console.log('🏕️ Smart Tent Dashboard Mobile');
-            
-            // Ajouter les transitions
-            document.querySelectorAll('.sensor-card, .action-btn').forEach(el => {
-                el.style.transition = 'all 0.2s ease';
-            });
-            
-            // Vérifier Firebase
+        // Au chargement
+        window.onload = function() {
+            // Mode démo si pas de Firebase
             if (firebaseConfig.apiKey === "YOUR-API-KEY") {
-                // Mode démo sans Firebase
-                console.log('Mode démo - Configurez Firebase pour les vraies données');
                 setInterval(() => {
                     const demoData = {
-                        temperature_interior: Math.round((20 + Math.random() * 10) * 10) / 10,
-                        humidity_interior: Math.round(50 + Math.random() * 30),
-                        gas_ppm: Math.round(30 + Math.random() * 50),
-                        temperature_exterior: Math.round((18 + Math.random() * 12) * 10) / 10,
-                        humidity_exterior: Math.round(60 + Math.random() * 30),
-                        wind_speed: Math.round(5 + Math.random() * 20),
-                        signal_4g: Math.round(70 + Math.random() * 30),
-                        battery: Math.round(80 + Math.random() * 20),
+                        temperature_interior: 20 + Math.random() * 10,
+                        humidity_interior: 50 + Math.random() * 30,
+                        gas_ppm: 30 + Math.random() * 50,
+                        temperature_exterior: 18 + Math.random() * 12,
+                        humidity_exterior: 60 + Math.random() * 30,
+                        wind_speed: 5 + Math.random() * 20,
+                        signal_4g: 70 + Math.random() * 30,
+                        battery: 80 + Math.random() * 20,
                         movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun'
                     };
                     updateDashboard(demoData);
                 }, 3000);
             } else {
-                // Initialiser Firebase
                 initFirebase();
             }
-            
-            // Mettre à jour l'heure régulièrement
-            setInterval(updateCameraTime, 1000);
-        });
+        };
     </script>
 </body>
 </html>
