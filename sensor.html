@@ -201,7 +201,9 @@
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <span>déconnection 🏕️</span>
+            <a href="index.html" class="back-btn">
+                déconnection
+            </a>
             <button class="tent-selector">🏕️ tente principale ▼</button>
         </div>
         <div class="header-right">
@@ -211,11 +213,31 @@
     </div>
 
     <!-- Navigation -->
-    <div class="nav-tabs">
-        <a href="#" class="nav-tab active">🏠 Tableau de bord</a>
-        <a href="#" class="nav-tab">📈 Historique</a>
-        <a href="#" class="nav-tab">🗺️ Carte</a>
-        <a href="#" class="nav-tab">⚙️ Paramètres</a>
+    <nav class="main-nav">
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn active">
+                  🏠 Tableau de bord
+            </a>
+            <a href="history.html" class="nav-btn">
+                  📊 Historique
+            </a>
+            <a href="map.html" class="nav-btn">
+                   🗺️ Carte
+            </a>
+            <a href="settings.html" class="nav-btn">
+                    ⚙️ Paramètres
+            </a>
+        </div>
+    </nav>
+            <!-- 🚨 CRITICAL ALERTS -->
+    <div class="critical-alerts" id="criticalAlerts">
+        <div class="alert-content">
+            <div>
+                <strong>⚠️ ALERTE GAZ!</strong><br>
+                 Niveau détecté: 450 ppm - Ventilez immédiatement
+            </div>
+            <button class="alert-dismiss" onclick="dismissCriticalAlert()">×</button>
+        </div>
     </div>
 
     <!-- Main Content -->
