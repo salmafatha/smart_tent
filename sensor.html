@@ -172,7 +172,7 @@
             margin-bottom: 15px;
         }
 
-        .camera-container img {
+        .camera-container video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -188,6 +188,12 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .camera-controls {
@@ -195,53 +201,50 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
+
+        /* Alert */
+        .alert {
+            background: #FFEBEE;
+            border-left: 4px solid #F44336;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <a href="index.html" class="back-btn">
-                déconnection
-            </a>
+            <span>déconnection 🏕️</span>
             <button class="tent-selector">🏕️ tente principale ▼</button>
         </div>
         <div class="header-right">
             <span>🌐 En ligne</span>
-            <span>📊 <span id="dataUsage">0</span> MB</span>
+            <span>📊 <span id="dataUsage">0.00</span> MB</span>
         </div>
     </div>
 
     <!-- Navigation -->
-    <nav class="main-nav">
-        <div class="nav-buttons">
-            <a href="index.html" class="nav-btn active">
-                  🏠 Tableau de bord
-            </a>
-            <a href="history.html" class="nav-btn">
-                  📊 Historique
-            </a>
-            <a href="map.html" class="nav-btn">
-                   🗺️ Carte
-            </a>
-            <a href="settings.html" class="nav-btn">
-                    ⚙️ Paramètres
-            </a>
-        </div>
-    </nav>
-            <!-- 🚨 CRITICAL ALERTS -->
-    <div class="critical-alerts" id="criticalAlerts">
-        <div class="alert-content">
-            <div>
-                <strong>⚠️ ALERTE GAZ!</strong><br>
-                 Niveau détecté: 450 ppm - Ventilez immédiatement
-            </div>
-            <button class="alert-dismiss" onclick="dismissCriticalAlert()">×</button>
-        </div>
+    <div class="nav-tabs">
+        <a href="#" class="nav-tab active">🏠 Tableau de bord</a>
+        <a href="#" class="nav-tab">📈 Historique</a>
+        <a href="#" class="nav-tab">🗺️ Carte</a>
+        <a href="#" class="nav-tab">⚙️ Paramètres</a>
     </div>
 
     <!-- Main Content -->
     <div class="container">
+        <!-- Alert -->
+        <div class="alert" id="gasAlert">
+            <strong>⚠️ ALERTE GAZ!</strong> Niveau dangereux détecté (>200 ppm). Ventilez immédiatement!
+        </div>
+
         <!-- Conditions Intérieures -->
         <div class="section">
             <div class="section-header">
@@ -252,20 +255,20 @@
             <div class="sensor-grid">
                 <div class="sensor-card">
                     <div class="sensor-icon">🌡️</div>
-                    <div class="sensor-value" id="tempInt">--°C</div>
+                    <div class="sensor-value" id="tempInt">25.3°C</div>
                     <div class="sensor-label">Température</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">💧</div>
-                    <div class="sensor-value" id="humInt">--%</div>
+                    <div class="sensor-value" id="humInt">62%</div>
                     <div class="sensor-label">Humidité</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">💨</div>
-                    <div class="sensor-value" id="gas">-- ppm</div>
-                    <div class="sensor-label">Gaz (MQ2)</div>
+                    <div class="sensor-value" id="gas">45 ppm</div>
+                    <div class="sensor-label">Gaz (MQ-5)</div>
                 </div>
                 
                 <div class="sensor-card">
@@ -291,19 +294,19 @@
             <div class="sensor-grid">
                 <div class="sensor-card">
                     <div class="sensor-icon">🌡️</div>
-                    <div class="sensor-value" id="tempExt">--°C</div>
+                    <div class="sensor-value" id="tempExt">22.8°C</div>
                     <div class="sensor-label">Température</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">💧</div>
-                    <div class="sensor-value" id="humExt">--%</div>
+                    <div class="sensor-value" id="humExt">75%</div>
                     <div class="sensor-label">Humidité</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">🌬️</div>
-                    <div class="sensor-value" id="wind">-- km/h</div>
+                    <div class="sensor-value" id="wind">12 km/h</div>
                     <div class="sensor-label">Vent</div>
                 </div>
                 
@@ -330,19 +333,19 @@
             <div class="sensor-grid">
                 <div class="sensor-card">
                     <div class="sensor-icon">📡</div>
-                    <div class="sensor-value" id="signal">-- %</div>
+                    <div class="sensor-value" id="signal">87%</div>
                     <div class="sensor-label">Signal 4G</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">🔋</div>
-                    <div class="sensor-value" id="battery">-- %</div>
+                    <div class="sensor-value" id="battery">94%</div>
                     <div class="sensor-label">Batterie</div>
                 </div>
                 
                 <div class="sensor-card">
                     <div class="sensor-icon">💻</div>
-                    <div class="sensor-value" id="cpuTemp">--°C</div>
+                    <div class="sensor-value" id="cpuTemp">52°C</div>
                     <div class="sensor-label">CPU Temp</div>
                 </div>
             </div>
@@ -357,10 +360,11 @@
         <div class="section">
             <div class="section-header">
                 <span>📹</span>
-                <span>Surveillance</span>
+                <span>Surveillance ESP32-CAM</span>
             </div>
             
             <div class="camera-container">
+                <!-- METTEZ VOTRE VIDEO ICI -->
                 <video autoplay loop muted playsinline>
                     <source src="camera_demo.mp4" type="video/mp4">
                 </video>
@@ -368,7 +372,7 @@
             </div>
             
             <div class="camera-controls">
-                <button class="btn btn-primary">📸 Photo</button>
+                <button class="btn btn-primary" onclick="capturePhoto()">📸 Photo</button>
                 <button class="btn btn-secondary">👁️ Détection</button>
                 <button class="btn btn-secondary">🎥 Enregistrer</button>
                 <button class="btn btn-secondary">🔍 Plein écran</button>
@@ -376,7 +380,7 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
@@ -397,66 +401,142 @@
 
         // Initialiser Firebase
         function initFirebase() {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            
-            // Écouter les données
-            const sensorRef = database.ref('sensors/tent_01');
-            sensorRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    updateDashboard(data);
-                    dataUsage += 0.01;
-                    document.getElementById('dataUsage').textContent = dataUsage.toFixed(2);
-                }
-            });
+            try {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                console.log('✅ Firebase connecté');
+                
+                // Écouter les données
+                const sensorRef = database.ref('sensors/tent_01');
+                sensorRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        console.log('📊 Données reçues:', data);
+                        updateDashboard(data);
+                        
+                        // Incrémenter l'usage
+                        dataUsage += 0.01;
+                        document.getElementById('dataUsage').textContent = dataUsage.toFixed(2);
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Erreur Firebase:', error);
+                // Continuer en mode démo
+                startDemoMode();
+            }
         }
 
-        // Mettre à jour le dashboard
+        // Mettre à jour le dashboard avec les vraies données
         function updateDashboard(data) {
             // Intérieur
-            document.getElementById('tempInt').textContent = Math.round(data.temperature_interior * 10) / 10 + '°C';
-            document.getElementById('humInt').textContent = Math.round(data.humidity_interior) + '%';
-            document.getElementById('gas').textContent = Math.round(data.gas_ppm) + ' ppm';
+            document.getElementById('tempInt').textContent = (data.temperature_interior ? data.temperature_interior.toFixed(1) : '25.3') + '°C';
+            document.getElementById('humInt').textContent = (data.humidity_interior || 62) + '%';
+            document.getElementById('gas').textContent = (data.gas_ppm || 45) + ' ppm';
             document.getElementById('movementInt').textContent = data.movement || 'Aucun';
             
             // Extérieur
-            document.getElementById('tempExt').textContent = Math.round(data.temperature_exterior * 10) / 10 + '°C';
-            document.getElementById('humExt').textContent = Math.round(data.humidity_exterior) + '%';
-            document.getElementById('wind').textContent = Math.round(data.wind_speed) + ' km/h';
-            document.getElementById('movementExt').textContent = 'Aucun';
+            document.getElementById('tempExt').textContent = (data.temperature_exterior ? data.temperature_exterior.toFixed(1) : '22.8') + '°C';
+            document.getElementById('humExt').textContent = (data.humidity_exterior || 75) + '%';
+            document.getElementById('wind').textContent = (data.wind_speed || 12) + ' km/h';
             
             // Système
-            document.getElementById('signal').textContent = Math.round(data.signal_4g) + ' %';
-            document.getElementById('battery').textContent = Math.round(data.battery) + ' %';
-            document.getElementById('cpuTemp').textContent = Math.round(data.cpu_temp || 52) + '°C';
+            document.getElementById('signal').textContent = (data.signal_4g || 87) + '%';
+            document.getElementById('battery').textContent = (data.battery || 94) + '%';
+            document.getElementById('cpuTemp').textContent = (data.cpu_temp || 52) + '°C';
+            
+            // Alerte gaz
+            if (data.gas_ppm > 200) {
+                document.getElementById('gasAlert').classList.add('show');
+            } else {
+                document.getElementById('gasAlert').classList.remove('show');
+            }
+            
+            // Si mouvement détecté
+            if (data.movement === 'Détecté' || data.motion_detected) {
+                document.getElementById('movementInt').textContent = 'Détecté';
+                document.getElementById('movementInt').style.color = '#F44336';
+                setTimeout(() => {
+                    document.getElementById('movementInt').textContent = 'Aucun';
+                    document.getElementById('movementInt').style.color = '#4CAF50';
+                }, 5000);
+            }
+        }
+
+        // Mode démo avec valeurs réalistes
+        function startDemoMode() {
+            console.log('🎮 Mode démo activé');
+            
+            setInterval(() => {
+                // Valeurs réalistes qui varient légèrement
+                const baseTemp = 25;
+                const baseHum = 65;
+                const baseGas = 45;
+                
+                const data = {
+                    temperature_interior: baseTemp + (Math.random() - 0.5) * 2,
+                    humidity_interior: Math.round(baseHum + (Math.random() - 0.5) * 10),
+                    gas_ppm: Math.round(baseGas + (Math.random() - 0.5) * 20),
+                    temperature_exterior: baseTemp - 2 + (Math.random() - 0.5) * 2,
+                    humidity_exterior: Math.round(baseHum + 10 + (Math.random() - 0.5) * 10),
+                    wind_speed: Math.round(10 + Math.random() * 10),
+                    signal_4g: Math.round(80 + Math.random() * 15),
+                    battery: Math.round(90 + Math.random() * 8),
+                    movement: Math.random() > 0.9 ? 'Détecté' : 'Aucun'
+                };
+                
+                updateDashboard(data);
+                
+                // Simuler l'usage de données
+                dataUsage += 0.01;
+                document.getElementById('dataUsage').textContent = dataUsage.toFixed(2);
+            }, 3000);
         }
 
         // Rafraîchir les données
         function refreshData() {
-            console.log('Actualisation...');
+            console.log('🔄 Actualisation...');
+            
+            // Animation du bouton
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                event.target.style.transform = 'scale(1)';
+            }, 200);
+            
+            // Si Firebase connecté, forcer la lecture
+            if (database) {
+                database.ref('sensors/tent_01').once('value').then(snapshot => {
+                    const data = snapshot.val();
+                    if (data) updateDashboard(data);
+                });
+            }
+        }
+
+        // Capture photo
+        function capturePhoto() {
+            console.log('📸 Photo capturée');
+            
+            // Flash effect
+            const video = document.querySelector('video');
+            video.style.filter = 'brightness(2)';
+            setTimeout(() => {
+                video.style.filter = 'brightness(1)';
+            }, 100);
+            
+            // Notification
+            alert('Photo capturée avec succès!');
         }
 
         // Au chargement
         window.onload = function() {
-            // Mode démo si pas de Firebase
-            if (firebaseConfig.apiKey === "YOUR-API-KEY") {
-                setInterval(() => {
-                    const demoData = {
-                        temperature_interior: 20 + Math.random() * 10,
-                        humidity_interior: 50 + Math.random() * 30,
-                        gas_ppm: 30 + Math.random() * 50,
-                        temperature_exterior: 18 + Math.random() * 12,
-                        humidity_exterior: 60 + Math.random() * 30,
-                        wind_speed: 5 + Math.random() * 20,
-                        signal_4g: 70 + Math.random() * 30,
-                        battery: 80 + Math.random() * 20,
-                        movement: Math.random() > 0.8 ? 'Détecté' : 'Aucun'
-                    };
-                    updateDashboard(demoData);
-                }, 3000);
-            } else {
+            console.log('🏕️ Smart Tent Dashboard v1.0');
+            
+            // Vérifier Firebase
+            if (firebaseConfig.apiKey !== "YOUR-API-KEY") {
+                console.log('🔥 Tentative de connexion Firebase...');
                 initFirebase();
+            } else {
+                console.log('⚠️ Firebase non configuré - Mode démo');
+                startDemoMode();
             }
         };
     </script>
